@@ -32,9 +32,9 @@ export const RegistroPage = () => {
       </div>
 
       {/* LADO DERECHO (O ABAJO): Formulario */}
-      <div className="w-full lg:w-1/2 lg:h-full overflow-y-auto flex flex-col items-center justify-center p-6 sm:p-12 pt-10 lg:pt-32 pb-20">
+      <div className="w-full lg:w-1/2 lg:h-full overflow-y-auto flex flex-col items-center p-6 sm:p-12 pt-10 lg:pt-12 pb-20">
 
-        <div className="w-full max-w-xl">
+        <div className="w-full max-w-xl my-auto">
           <div className="text-center mb-8">
             <h1 className="text-3xl font-black text-[#d7f250] tracking-tighter mb-2">
               Crear Cuenta
