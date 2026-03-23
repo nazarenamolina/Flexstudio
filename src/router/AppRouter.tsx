@@ -2,12 +2,14 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { LoginPage } from '../pages/auth/LoginPage';
 import { AdminLayout } from '../components/layout/AdminLayout';
 import { RegistroPage } from '../pages/auth/RegistroPage';
+import HomePage from '../pages/auth/HomePage';
 
 export const AppRouter = () => {
   return (
     <BrowserRouter>
       <Routes>
         {/* === RUTAS PÚBLICAS === */}
+        <Route path="/" element={<HomePage />} />
         <Route path="/login" element={<LoginPage />} />
         <Route path='/registro' element={<RegistroPage/>}/>
 
