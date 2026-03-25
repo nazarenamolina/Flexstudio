@@ -3,8 +3,6 @@ import { useNavigate } from 'react-router-dom';
 import { Plus, Edit2, Trash2, ChevronRight } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { obtenerCategoriasRequest, eliminarCategoriaRequest, type Categoria } from '../../api/categoria';
-
-// Extendemos temporalmente la interfaz si tu BD devuelve los videos anidados
 interface CategoriaConVideos extends Categoria {
   videos?: any[]; 
 }
@@ -13,8 +11,6 @@ export const CategoriasPage = () => {
   const [categorias, setCategorias] = useState<CategoriaConVideos[]>([]);
   const [cargando, setCargando] = useState(true);
   const navigate = useNavigate();
-
-  // Colores de respaldo si la categoría no tiene imagen (Adaptados a tonos más oscuros/premium)
   const colores = ['#1f2937', '#374151', '#111827', '#0f172a', '#1e293b'];
 
   const cargarCategorias = async () => {
@@ -55,8 +51,6 @@ export const CategoriasPage = () => {
   }
 
   return (
-    // CONTENEDOR PRINCIPAL (.contenedor-categorias)
-    // Usamos variantes arbitrarias de Tailwind para el scrollbar personalizado
     <div className="w-full h-full flex flex-col gap-8 font-sans overflow-y-auto [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:bg-gray-800 [&::-webkit-scrollbar-thumb]:rounded-full hover:[&::-webkit-scrollbar-thumb]:bg-[#d7f250]/50 pr-2">
       
       {/* CABECERA PRINCIPAL */}

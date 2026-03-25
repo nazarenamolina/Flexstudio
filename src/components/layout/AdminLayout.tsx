@@ -31,7 +31,7 @@ export const AdminLayout = () => {
 /*     { name: 'Disciplinas', path: '/admin/categorias', icon: Tags }, */
     { name: 'Clientes', path: '#', icon: Tags },
     { name: 'categorias', path: '/admin/categorias', icon: Tags },
-    { name: 'videos', path: '#', icon: Video },
+    { name: 'videos', path: '/admin/videos', icon: Video },
 /*     { name: 'Videos Mux', path: '/admin/videos', icon: Video },
     { name: 'Configuración', path: '/admin/configuracion', icon: Settings }, */
   ];
