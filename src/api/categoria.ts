@@ -9,7 +9,7 @@ export interface Categoria {
   id: string; // O number, pero en MongoDB suele ser string (_id)
   titulo: string;
   descripcion: string;
-  imagenUrl?: string; // El '?' significa que es opcional
+  imagenTarjeta?: string; // El '?' significa que es opcional
 }
 
 // 3. UNA FUNCIÓN AUXILIAR PARA LOS ERRORES (Opcional pero muy profesional)
