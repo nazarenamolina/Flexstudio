@@ -2,7 +2,10 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { LoginPage } from '../pages/auth/LoginPage';
 import { AdminLayout } from '../components/layout/AdminLayout';
 import { RegistroPage } from '../pages/auth/RegistroPage';
-import HomePage from '../pages/auth/HomePage';
+import HomePage from '../pages/HomePage';
+import { CategoriasPage } from '../pages/admin/CategoriasPage';
+import { AdminVideosPage } from '../pages/admin/AdminVideosPage';
+import { NuevaCategoriaPage } from '../pages/admin/NuevaCategoriaPage';
 
 export const AppRouter = () => {
   return (
@@ -16,7 +19,9 @@ export const AppRouter = () => {
         {/* === RUTAS PRIVADAS (Panel de Control) === */}
         {/* Todas las rutas que empiecen con /admin pasarán por el AdminLayout */}
         <Route path="/admin" element={<AdminLayout />}>
-          {/* Aquí anidaremos <Route path="categorias" element={<CategoriasPage />} /> más adelante */}
+        <Route path="/admin/categorias" element={<CategoriasPage/>}/>
+        <Route path="categorias/nueva" element={<NuevaCategoriaPage />} />
+        <Route path="/admin/videos" element={<AdminVideosPage/>}/>
         </Route>
 
         {/* === FALLBACK (Ruta por defecto) === */}

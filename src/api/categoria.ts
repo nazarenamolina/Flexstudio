@@ -1,85 +1,74 @@
-// 1. Importamos la instancia configurada que ya tenías
-import axios from 'axios';
-// Importamos una utilidad extra de la librería axios original para manejar errores
-import { isAxiosError } from 'axios';
+import { api } from './axios'; 
 
-// 2. DEFINIMOS LA INTERFAZ CENTRAL (El "contrato" de los datos)
-// Exportamos esta interfaz para que otros archivos (como HomePage.tsx) puedan usarla
+// 1. LA INTERFAZ CENTRALIZADA
 export interface Categoria {
-  id: string; // O number, pero en MongoDB suele ser string (_id)
+  id: string;
   titulo: string;
-  descripcion: string;
-  imagenTarjeta?: string; // El '?' significa que es opcional
+  descripcionCard?: string;
+  descripcionBreve?: string;
+  descripcionDetallada?: string;
+  precio: number;
+  playbackIdMuestra?: string;
+  imagenHero?: string;
+  imagenTarjeta?: string;
+  beneficios?: { titulo: string; descripcion: string; icono?: string }[];
+  fechaCreacion?: string | Date;
 }
 
-// 3. UNA FUNCIÓN AUXILIAR PARA LOS ERRORES (Opcional pero muy profesional)
-// En TS, el bloque "catch (error)" recibe un error de tipo 'unknown'. 
-// Esta función nos asegura extraer el mensaje correctamente sin que TS se queje.
-const manejarErrorAxios = (error: unknown) => {
-    if (isAxiosError(error)) {
-        throw error.response?.data?.message || 'Error de conexión con el servidor';
-    }
-    throw 'Ocurrió un error inesperado';
-};
+// 2. LAS PETICIONES TIPADAS
 
-
-// --- LAS FUNCIONES DE LA API ---
-
-// GET: Devuelve un Array de Categorias -> Promise<Categoria[]>
+// Obtener todas
 export const obtenerCategoriasRequest = async (): Promise<Categoria[]> => {
-    try {
-        const respuesta = await axios.get('/categorias');
-        return respuesta.data;
-    } catch (error) {
-        throw manejarErrorAxios(error);
-    }
+  try {
+    const respuesta = await api.get('/categorias');
+    return respuesta.data;
+  } catch (error: any) {
+    throw error.response?.data?.message || 'Error al conectar con el servidor';
+  }
 };
 
-// POST: Recibe un formulario (FormData) porque envías archivos/imágenes a Cloudinary
-// Devuelve la Categoría recién creada -> Promise<Categoria>
-export const crearCategoriaRequest = async (datosCategoria: FormData): Promise<Categoria> => {
-    try {
-        const respuesta = await axios.post('/categorias', datosCategoria, {
-            headers: {
-                'Content-Type': 'multipart/form-data',
-            },
-        });
-        return respuesta.data;
-    } catch (error) {
-        throw manejarErrorAxios(error);
-    }
-};
-
-// PATCH: Recibe un ID (string) y un formulario (FormData)
-// Devuelve la Categoría actualizada -> Promise<Categoria>
-export const actualizarCategoriaRequest = async (id: string, datosCategoria: FormData): Promise<Categoria> => {
-    try {
-        const respuesta = await axios.patch(`/categorias/${id}`, datosCategoria, {
-            headers: { 'Content-Type': 'multipart/form-data' },
-        });
-        return respuesta.data;
-    } catch (error) {
-        throw manejarErrorAxios(error);
-    }
-};
-
-// DELETE: Recibe un ID (string) y usualmente no devuelve datos complejos, 
-// o devuelve un mensaje de éxito, por eso usamos Promise<any> o Promise<void>
-export const eliminarCategoriaRequest = async (id: string): Promise<any> => {
-    try {
-        const respuesta = await axios.delete(`/categorias/${id}`);
-        return respuesta.data;
-    } catch (error) {
-        throw manejarErrorAxios(error);
-    }
-};
-
-// GET by ID: Recibe un ID (string) y devuelve UNA sola Categoría -> Promise<Categoria>
+// Obtener por ID
 export const obtenerCategoriaPorIdRequest = async (id: string): Promise<Categoria> => {
-    try {
-        const respuesta = await axios.get(`/categorias/${id}`);
-        return respuesta.data;
-    } catch (error) {
-        throw manejarErrorAxios(error);
-    }
+  try {
+    const respuesta = await api.get(`/categorias/${id}`);
+    return respuesta.data;
+  } catch (error: any) {
+    throw error.response?.data?.message || 'Error al cargar los detalles de la categoría';
+  }
+};
+
+// Crear (Ojo: FormData porque envías imágenes)
+export const crearCategoriaRequest = async (datosCategoria: FormData): Promise<Categoria> => {
+  try {
+    const respuesta = await api.post('/categorias', datosCategoria, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    });
+    return respuesta.data;
+  } catch (error: any) {
+    throw error.response?.data?.message || 'Error al crear la categoría';
+  }
+};
+
+// Actualizar
+export const actualizarCategoriaRequest = async (id: string, datosCategoria: FormData): Promise<Categoria> => {
+  try {
+    const respuesta = await api.patch(`/categorias/${id}`, datosCategoria, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    });
+    return respuesta.data;
+  } catch (error: any) {
+    throw error.response?.data?.message || 'Error al actualizar la categoría';
+  }
+};
+
+// Eliminar
+export const eliminarCategoriaRequest = async (id: string): Promise<{ mensaje: string }> => {
+  try {
+    const respuesta = await api.delete(`/categorias/${id}`);
+    return respuesta.data;
+  } catch (error: any) {
+    throw error.response?.data?.message || 'Error al eliminar la categoría';
+  }
 };
