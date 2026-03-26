@@ -30,9 +30,12 @@ export const obtenerVideosPorCategoriaRequest = async (idCategoria: string): Pro
   return respuesta.data;
 };
 
-// Ojo: Recibe FormData porque enviamos un archivo físico
-export const solicitarUrlSubidaRequest = async (datos: Partial<Video>): Promise<{ uploadUrl: string, videoId: string }> => {
-  const respuesta = await api.post('/videos/solicitar-subida', datos);
+export const solicitarUrlSubidaRequest = async (datos: FormData): Promise<{ uploadUrl: string, videoId: string }> => {
+  const respuesta = await api.post('/videos/solicitar-subida', datos, {
+    headers: {
+      'Content-Type': 'multipart/form-data',
+    },
+  });
   return respuesta.data;
 };
 
