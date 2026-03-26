@@ -6,6 +6,7 @@ import HomePage from '../pages/HomePage';
 import { CategoriasPage } from '../pages/admin/CategoriasPage';
 import { AdminVideosPage } from '../pages/admin/AdminVideosPage';
 import { NuevaCategoriaPage } from '../pages/admin/NuevaCategoriaPage';
+import { NuevoVideoPage } from '../pages/admin/NuevoVideoPage';
 
 export const AppRouter = () => {
   return (
@@ -22,6 +23,7 @@ export const AppRouter = () => {
         <Route path="/admin/categorias" element={<CategoriasPage/>}/>
         <Route path="categorias/nueva" element={<NuevaCategoriaPage />} />
         <Route path="/admin/videos" element={<AdminVideosPage/>}/>
+        <Route path="/admin/videos/nuevo" element={<NuevoVideoPage/>}/>
         </Route>
 
         {/* === FALLBACK (Ruta por defecto) === */}
