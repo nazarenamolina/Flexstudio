@@ -8,6 +8,7 @@ import { AdminVideosPage } from '../pages/admin/AdminVideosPage';
 import { NuevaCategoriaPage } from '../pages/admin/NuevaCategoriaPage';
 import HeaderComponent from '../components/headerComponent';
 import FooterComponent from '../components/footerComponent';
+import Categorias from '../pages/Categorias';
 
 const LayoutConNav = () => {
   return (
@@ -28,6 +29,7 @@ export const AppRouter = () => {
         {/* === RUTAS PÚBLICAS === */}
         <Route element={<LayoutConNav />}>
           <Route path='/' element={<HomePage />} />
+          <Route path='/categorias/:id' element={ <Categorias /> } />
         </Route>
         <Route path="/login" element={<LoginPage />} />
         <Route path='/registro' element={<RegistroPage/>}/>
