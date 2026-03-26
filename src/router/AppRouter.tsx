@@ -1,4 +1,4 @@
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Navigate, Outlet } from 'react-router-dom';
 import { LoginPage } from '../pages/auth/LoginPage';
 import { AdminLayout } from '../components/layout/AdminLayout';
 import { RegistroPage } from '../pages/auth/RegistroPage';
@@ -13,7 +13,9 @@ export const AppRouter = () => {
     <BrowserRouter>
       <Routes>
         {/* === RUTAS PÚBLICAS === */}
-        <Route path="/" element={<HomePage />} />
+        <Route element={<LayoutConNav />}>
+          <Route path='/' element={<HomePage />} />
+        </Route>
         <Route path="/login" element={<LoginPage />} />
         <Route path='/registro' element={<RegistroPage/>}/>
 

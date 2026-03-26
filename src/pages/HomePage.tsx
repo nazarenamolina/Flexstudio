@@ -48,10 +48,6 @@ const HomePage = () => {
     // FONDO BLANCO CON TEXTURA Y TEXTO OSCURO POR DEFECTO
     <main 
       className="min-h-screen font-sans text-[#161616] pb-20 bg-cover bg-center bg-no-repeat bg-fixed"
-      style={{ 
-        backgroundColor: '#ffffff',
-        backgroundImage: `url('https://res.cloudinary.com/dmp7mcwie/image/upload/v1774312699/fondo_hwrosv.png')` 
-      }}
     >
       
       {/* --- SECCIÓN: CARRUSEL --- */}
