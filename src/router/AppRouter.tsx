@@ -1,4 +1,4 @@
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Navigate, Outlet } from 'react-router-dom';
 import { LoginPage } from '../pages/auth/LoginPage';
 import { AdminLayout } from '../components/layout/AdminLayout';
 import { RegistroPage } from '../pages/auth/RegistroPage';
@@ -6,13 +6,29 @@ import HomePage from '../pages/HomePage';
 import { CategoriasPage } from '../pages/admin/CategoriasPage';
 import { AdminVideosPage } from '../pages/admin/AdminVideosPage';
 import { NuevaCategoriaPage } from '../pages/admin/NuevaCategoriaPage';
+import HeaderComponent from '../components/headerComponent';
+import FooterComponent from '../components/footerComponent';
+
+const LayoutConNav = () => {
+  return (
+    <div>
+      <HeaderComponent />
+      <div>
+        <Outlet/>
+      </div>
+      <FooterComponent />
+    </div>
+  );
+};
 
 export const AppRouter = () => {
   return (
     <BrowserRouter>
       <Routes>
         {/* === RUTAS PÚBLICAS === */}
-        <Route path="/" element={<HomePage />} />
+        <Route element={<LayoutConNav />}>
+          <Route path='/' element={<HomePage />} />
+        </Route>
         <Route path="/login" element={<LoginPage />} />
         <Route path='/registro' element={<RegistroPage/>}/>
 
