@@ -103,14 +103,14 @@ export const CategoriasPage = () => {
               <div className="absolute top-3 right-3 flex gap-2 z-10 opacity-100 lg:opacity-0 lg:group-hover:opacity-100 transition-opacity duration-200">
                 <button 
                   onClick={() => navigate(`/admin/categorias/editar/${cat.id}`)} 
-                  className="bg-white/10 backdrop-blur-md hover:bg-white border border-white/20 hover:border-white p-2 rounded-lg cursor-pointer transition-colors shadow-lg group/edit"
+                  className="bg-white/10 hover:bg-white border border-white/20 hover:border-white p-2 rounded-lg cursor-pointer transition-colors shadow-lg group/edit"
                   title="Editar"
                 >
                   <Edit2 size={16} className="text-white group-hover/edit:text-[#131313]" />
                 </button>
                 <button 
                   onClick={() => handleEliminar(cat.id)} 
-                  className="bg-red-500/80 backdrop-blur-md hover:bg-red-500 border border-red-500/20 p-2 rounded-lg cursor-pointer transition-colors shadow-lg"
+                  className="bg-red-500/80 hover:bg-red-500 border border-red-500/20 p-2 rounded-lg cursor-pointer transition-colors shadow-lg"
                   title="Eliminar"
                 >
                   <Trash2 size={16} className="text-white" />
