@@ -53,7 +53,10 @@ export const crearCategoriaRequest = async (
 };
 
 // Actualizar
-export const actualizarCategoriaRequest = async (id: string, datosCategoria: FormData): Promise<Categoria> => {
+export const actualizarCategoriaRequest = async (
+  id: string,
+  datosCategoria: FormData
+): Promise<{ categoria: Categoria; uploadUrl: string | null }> => {
   try {
     const respuesta = await api.patch(`/categorias/${id}`, datosCategoria, {
       headers: { 'Content-Type': 'multipart/form-data' },
