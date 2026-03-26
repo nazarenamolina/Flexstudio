@@ -1,4 +1,4 @@
-import { api } from './axios'; 
+import { api } from './axios';
 
 // 1. LA INTERFAZ CENTRALIZADA
 export interface Categoria {
@@ -37,8 +37,9 @@ export const obtenerCategoriaPorIdRequest = async (id: string): Promise<Categori
   }
 };
 
-// Crear (Ojo: FormData porque envías imágenes)
-export const crearCategoriaRequest = async (datosCategoria: FormData): Promise<Categoria> => {
+export const crearCategoriaRequest = async (
+  datosCategoria: FormData
+): Promise<{ categoria: Categoria; uploadUrl: string | null }> => { // 👈 ¡Cambiamos esto!
   try {
     const respuesta = await api.post('/categorias', datosCategoria, {
       headers: {
