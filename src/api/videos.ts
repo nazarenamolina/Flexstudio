@@ -44,7 +44,9 @@ export const eliminarVideoRequest = async (id: string): Promise<{ mensaje: strin
   return respuesta.data;
 };
 
-export const actualizarVideoRequest = async (id: string, datos: Partial<Video>): Promise<Video> => {
-  const respuesta = await api.patch(`/videos/${id}`, datos);
+export const actualizarVideoRequest = async (id: string, datos: FormData) => {
+  const respuesta = await api.patch(`/videos/${id}`, datos, {
+    headers: { 'Content-Type': 'multipart/form-data' }
+  });
   return respuesta.data;
 };

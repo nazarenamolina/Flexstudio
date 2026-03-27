@@ -56,20 +56,16 @@ export const NuevoVideoPage = () => {
 
     try {
       setEstadoSubida('PIDIENDO_URL');
-      
-      // 1. Usamos FormData porque ahora enviamos una imagen física al backend
       const formData = new FormData();
       formData.append('titulo', datos.titulo);
       formData.append('idCategoria', datos.idCategoria);
       formData.append('duracion', datos.duracion || '0');
       formData.append('orden', datos.orden || '1');
       if (archivos.imagen) {
-        formData.append('imagen', archivos.imagen); // 👈 La miniatura va al backend
+        formData.append('imagen', archivos.imagen);  
       }
 
       const { uploadUrl } = await solicitarUrlSubidaRequest(formData);
-
-      // 2. El video va directo a Mux con Upchunk
       setEstadoSubida('SUBIENDO');
       const upload = UpChunk.createUpload({
         endpoint: uploadUrl,
@@ -100,8 +96,6 @@ export const NuevoVideoPage = () => {
 
   const inputClass = "w-full bg-[#131313] border border-gray-800 focus:border-[#d7f250] focus:ring-1 focus:ring-[#d7f250]/50 rounded-xl px-4 py-3 text-white placeholder-gray-600 outline-none transition-all shadow-sm";
   const labelClass = "block text-sm font-bold text-gray-400 mb-2";
-
-  // PANTALLA DE PROGRESO DE SUBIDA
   if (estadoSubida === 'SUBIENDO' || estadoSubida === 'COMPLETADO') {
     return (
       <div className="w-full h-[80vh] flex flex-col items-center justify-center">
@@ -124,8 +118,6 @@ export const NuevoVideoPage = () => {
       </div>
     );
   }
-
-  // PANTALLA DEL FORMULARIO
   return (
     <div className="w-full h-full flex flex-col font-sans overflow-y-auto custom-scrollbar pr-2 pb-10">
       

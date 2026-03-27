@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Search, Plus, MoreVertical, Loader2, Edit2, Trash2, Image as ImageIcon } from 'lucide-react';
+import { Search, Plus, Loader2, Edit2, Trash2, Image as ImageIcon } from 'lucide-react';
 import toast, { Toaster } from 'react-hot-toast';
 import MuxPlayer from '@mux/mux-player-react';
 import { io } from 'socket.io-client';
@@ -17,7 +17,6 @@ export const AdminVideosPage = () => {
   const [cargando, setCargando] = useState(true);
   const [busqueda, setBusqueda] = useState('');
   const [filtroCategoria, setFiltroCategoria] = useState('Todos los Videos');
-  const [menuActivoId, setMenuActivoId] = useState<string | null>(null);
   useEffect(() => {
     cargarDatos();
   }, []);
@@ -103,8 +102,8 @@ export const AdminVideosPage = () => {
               key={cat}
               onClick={() => setFiltroCategoria(cat)}
               className={`px-5 py-2.5 rounded-full border text-sm font-bold whitespace-nowrap transition-all duration-200 ${filtroCategoria === cat
-                  ? 'bg-[#d7f250] border-[#d7f250] text-[#131313] shadow-md'
-                  : 'bg-[#131313] border-gray-800 text-gray-400 hover:border-gray-600 hover:text-white'
+                ? 'bg-[#d7f250] border-[#d7f250] text-[#131313] shadow-md'
+                : 'bg-[#131313] border-gray-800 text-gray-400 hover:border-gray-600 hover:text-white'
                 }`}
             >
               {cat}
@@ -155,39 +154,30 @@ export const AdminVideosPage = () => {
                   </span>
                 </div>
                 <div className="p-5 flex-1 flex flex-col">
-                  <div className="flex justify-between items-start gap-3 mb-2">
-                    <h3 className="text-white font-bold text-lg leading-tight line-clamp-2">{video.titulo}</h3>
-                    <div className="relative shrink-0">
-                      <button
-                        onClick={() => setMenuActivoId(menuActivoId === video.id ? null : video.id)}
-                        className="text-gray-500 hover:text-white transition-colors mt-1 p-1 rounded-md hover:bg-gray-800"
-                      >
-                        <MoreVertical size={18} />
-                      </button>
+                  {/* Título de la clase */}
+                  <h3 className="text-white font-bold text-lg leading-tight line-clamp-2 mb-4">
+                    {video.titulo}
+                  </h3>
 
-                      {/* Dropdown Menu */}
-                      {menuActivoId === video.id && (
-                        <>
-                          <div className="fixed inset-0 z-20" onClick={() => setMenuActivoId(null)}></div>
-                          <div className="absolute right-0 top-8 w-36 bg-[#1a1a1a] border border-gray-700 rounded-lg shadow-2xl z-30 overflow-hidden animate-in fade-in zoom-in-95">
-                            <button
-                              onClick={() => navigate(`/admin/videos/editar/${video.id}`)}
-                              className="w-full text-left px-4 py-3 text-sm text-gray-300 hover:bg-[#d7f250] hover:text-[#131313] flex items-center gap-2 transition-colors font-semibold"
-                            >
-                              <Edit2 size={16} /> Editar
-                            </button>
-                            <button
-                              onClick={() => { setMenuActivoId(null); handleEliminarVideo(video.id, video.titulo); }}
-                              className="w-full text-left px-4 py-3 text-sm text-red-500 hover:bg-red-500 hover:text-white flex items-center gap-2 transition-colors font-semibold border-t border-gray-800"
-                            >
-                              <Trash2 size={16} /> Eliminar
-                            </button>
-                          </div>
-                        </>
-                      )}
-                    </div>
+                  {/* Contenedor de botones empujado hacia abajo con mt-auto */}
+                  <div className="mt-auto flex items-center gap-3">
+                    {/* Botón Editar Principal */}
+                    <button
+                      onClick={() => navigate(`/admin/videos/editar/${video.id}`)}
+                      className="flex-1 bg-[#d7f250] hover:bg-[#c4dd46] text-[#131313] py-2.5 px-4 rounded-xl font-bold flex items-center justify-center gap-2 transition-transform duration-200 hover:-translate-y-1 text-sm shadow-md"
+                    >
+                      <Edit2 size={18} /> Editar
+                    </button>
+
+                    {/* Botón Eliminar Secundario */}
+                    <button
+                      onClick={() => handleEliminarVideo(video.id, video.titulo)}
+                      className="p-2.5 bg-[#1a1a1a] hover:bg-red-500 text-gray-400 hover:text-white border border-gray-700 hover:border-red-500 rounded-xl transition-all duration-200 hover:-translate-y-1 shadow-md"
+                      title="Eliminar Video"
+                    >
+                      <Trash2 size={18} />
+                    </button>
                   </div>
-                  <p className="text-gray-400 text-sm">Clase número {video.orden} del programa.</p>
                 </div>
 
               </div>

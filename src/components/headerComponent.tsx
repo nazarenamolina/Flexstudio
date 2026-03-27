@@ -56,7 +56,7 @@ export const HeaderComponent = () => {
               </button>
               
               {isClasesOpen && (
-                <div className="mt-2 flex flex-col rounded-md border border-gray-100 bg-white py-2 shadow-lg lg:absolute lg:left-0 lg:min-w-[200px]">
+                <div className="mt-2 flex flex-col rounded-md border border-gray-100 bg-[#28282871] py-2 shadow-lg lg:absolute lg:left-0 lg:min-w-[200px]">
                   <Link to="/deportistas" className="px-4 py-2 text-sm text-[#161616] hover:bg-gray-50 hover:text-[#d7f250]">Deportistas</Link>
                   <hr className="my-1 border-gray-100" />
                   <Link to="/progresivas" className="px-4 py-2 text-sm text-[#161616] hover:bg-gray-50 hover:text-[#d7f250]">Progresivas Generales</Link>
