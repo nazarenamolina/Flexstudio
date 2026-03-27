@@ -34,7 +34,7 @@ export const HeaderComponent = () => {
 
           <div
             className={`
-      fixed inset-0 z-40 bg-black/60 backdrop-blur-sm transition-opacity duration-500 lg:hidden
+      fixed inset-0 z-40 bg-black/60 transition-opacity duration-500 lg:hidden
       ${isMobileMenuOpen ? "opacity-100" : "opacity-0 pointer-events-none"}`}
             onClick={() => setIsMobileMenuOpen(false)}
             aria-hidden="true"
