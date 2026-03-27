@@ -11,6 +11,7 @@ import FooterComponent from '../components/footerComponent';
 import Categorias from '../pages/Categorias';
 import { NuevoVideoPage } from '../pages/admin/NuevoVideoPage';
 import { EditarCategoriaPage } from '../pages/admin/EditarCategoriaPage';
+import { EditarVideoPage } from '../pages/admin/EditarVideoPage';
 
 const LayoutConNav = () => {
   return (
@@ -44,6 +45,7 @@ export const AppRouter = () => {
         <Route path="/admin/videos" element={<AdminVideosPage/>}/>
         <Route path="/admin/videos/nuevo" element={<NuevoVideoPage/>}/>
         <Route path="/admin/categorias/editar/:id" element={<EditarCategoriaPage />} />
+        <Route path="/admin/videos/editar/:id" element={<EditarVideoPage/>}/>
         </Route>
 
         {/* === FALLBACK (Ruta por defecto) === */}

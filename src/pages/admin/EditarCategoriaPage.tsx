@@ -7,14 +7,12 @@ import { obtenerCategoriaPorIdRequest, actualizarCategoriaRequest } from '../../
 
 export const EditarCategoriaPage = () => {
   const navigate = useNavigate();
-  const { id } = useParams(); // Obtenemos el ID de la URL
+  const { id } = useParams(); 
   
   const [cargandoDatos, setCargandoDatos] = useState(true);
   const [guardando, setGuardando] = useState(false);
   const [estadoSubida, setEstadoSubida] = useState<'IDLE' | 'ACTUALIZANDO_CATEGORIA' | 'SUBIENDO_VIDEO' | 'COMPLETADO'>('IDLE');
   const [progreso, setProgreso] = useState(0);
-
-  // Estados de texto
   const [datos, setDatos] = useState({
     titulo: '',
     precio: '',
@@ -23,7 +21,6 @@ export const EditarCategoriaPage = () => {
     descripcionDetallada: '',
   });
 
-  // Archivos NUEVOS que sube Cande
   const [archivos, setArchivos] = useState({
     imagenTarjeta: null as File | null,
     imagenHero: null as File | null,
