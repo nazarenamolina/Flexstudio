@@ -1,10 +1,11 @@
 import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom'; 
+import { useNavigate } from 'react-router-dom';
 import { Plus, Edit2, Trash2, ChevronRight } from 'lucide-react';
 import toast from 'react-hot-toast';
-import { obtenerCategoriasRequest, eliminarCategoriaRequest, type Categoria } from '../../api/categoria';
+import { obtenerCategoriasRequest, eliminarCategoriaRequest, type Categoria } from '../../../api/categoria';
+import { ConfirmarEliminarModal } from '../../../components/ConfirmarEliminarModal';
 interface CategoriaConVideos extends Categoria {
-  videos?: any[]; 
+  videos?: any[];
 }
 
 export const CategoriasPage = () => {
@@ -12,6 +13,9 @@ export const CategoriasPage = () => {
   const [cargando, setCargando] = useState(true);
   const navigate = useNavigate();
   const colores = ['#1f2937', '#374151', '#111827', '#0f172a', '#1e293b'];
+  const [modalAbierto, setModalAbierto] = useState(false);
+  const [categoriaAEliminar, setCategoriaAEliminar] = useState<{ id: string, titulo: string } | null>(null);
+  const [estaEliminando, setEstaEliminando] = useState(false);
 
   const cargarCategorias = async () => {
     try {
@@ -26,22 +30,30 @@ export const CategoriasPage = () => {
     }
   };
 
-  useEffect(() => { cargarCategorias(); }, []);
-
-  const handleEliminar = async (id: string) => {
-    if (!window.confirm('¿Estás seguro de que deseas eliminar esta categoría? Se borrarán sus imágenes y videos de la base de datos.')) return;
-    
+  useEffect(() => { 
+    cargarCategorias(); 
+  }, []);
+  const abrirModalEliminacion = (id: string, titulo: string) => {
+    setCategoriaAEliminar({ id, titulo });
+    setModalAbierto(true);
+  };
+  const ejecutarEliminacion = async () => {
+    if (!categoriaAEliminar) return;
+    setEstaEliminando(true);
     try {
-      await eliminarCategoriaRequest(id);
-      setCategorias(categorias.filter(cat => cat.id !== id));
-      toast.success('Categoría eliminada exitosamente');
+      await eliminarCategoriaRequest(categoriaAEliminar.id);
+      setCategorias(categorias.filter(cat => cat.id !== categoriaAEliminar.id));
+      toast.success('Categoría eliminada exitosamente'); 
+      setModalAbierto(false);
     } catch (error) {
       toast.error('Ocurrió un error al eliminar la categoría');
+    } finally {
+      setEstaEliminando(false);
+      setTimeout(() => setCategoriaAEliminar(null), 300); 
     }
   };
 
   const totalVideosSubidos = categorias.reduce((total, cat) => total + (cat.videos?.length || 0), 0);
-
   if (cargando) {
     return (
       <div className="w-full h-full flex items-center justify-center">
@@ -51,16 +63,16 @@ export const CategoriasPage = () => {
   }
 
   return (
-    <div className="w-full h-full flex flex-col gap-8 font-sans overflow-y-auto [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:bg-gray-800 [&::-webkit-scrollbar-thumb]:rounded-full hover:[&::-webkit-scrollbar-thumb]:bg-[#d7f250]/50 pr-2">
-      
+    <div className="w-full h-full flex flex-col gap-8 font-sans overflow-y-auto [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:bg-gray-800 [&::-webkit-scrollbar-thumb]:rounded-full hover:[&::-webkit-scrollbar-thumb]:bg-[#d7f250]/50 pr-2 relative">
+
       {/* CABECERA PRINCIPAL */}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div>
           <h1 className="text-3xl md:text-4xl font-extrabold text-white mb-1 tracking-tight">Disciplinas Flex Studio</h1>
           <p className="text-gray-400 text-sm md:text-base">Administra las categorías de tu estudio.</p>
         </div>
-        
-        <button 
+
+        <button
           onClick={() => navigate('/admin/categorias/nueva')}
           className="bg-[#d7f250] hover:bg-[#c4dd46] text-[#131313] px-6 py-3 rounded-full font-bold flex items-center gap-2 transition-transform duration-200 hover:scale-105 shadow-lg"
         >
@@ -70,67 +82,55 @@ export const CategoriasPage = () => {
 
       {/* CUADRÍCULA RESUMEN */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-        
-        {/* Tarjeta Resumen 1 */}
         <div className="bg-[#131313] p-6 rounded-[20px] border border-gray-800 shadow-sm">
           <span className="text-gray-400 text-sm font-medium uppercase tracking-wider">Categorías Registradas</span>
           <h2 className="text-4xl font-extrabold text-white mt-2">{categorias.length}</h2>
         </div>
-        
-        {/* Tarjeta Resumen 2 */}
         <div className="bg-[#131313] p-6 rounded-[20px] border border-gray-800 shadow-sm">
           <span className="text-gray-400 text-sm font-medium uppercase tracking-wider">Total Videos Subidos</span>
           <h2 className="text-4xl font-extrabold text-white mt-2">{totalVideosSubidos}</h2>
         </div>
-
       </div>
 
-      {/* CUADRÍCULA TARJETAS (auto-fill minmax 220px aprox) */}
+      {/* CUADRÍCULA TARJETAS */}
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6 mt-2 pb-10">
-        
         {categorias.map((cat, index) => {
-          const tituloMostrar = cat.titulo.includes('|') 
-            ? cat.titulo.split('|')[0].trim() 
+          const tituloMostrar = cat.titulo.includes('|')
+            ? cat.titulo.split('|')[0].trim()
             : cat.titulo;
 
           return (
-            <div 
-              key={cat.id} 
+            <div
+              key={cat.id}
               className="bg-[#131313] rounded-[24px] overflow-hidden border border-gray-800 shadow-sm hover:shadow-xl transition-all duration-300 hover:-translate-y-1 cursor-pointer relative group flex flex-col"
             >
-              
-              {/* BOTONES FLOTANTES (Editar / Eliminar) */}
+              {/* BOTONES FLOTANTES */}
               <div className="absolute top-3 right-3 flex gap-2 z-10 opacity-100 lg:opacity-0 lg:group-hover:opacity-100 transition-opacity duration-200">
-                <button 
-                  onClick={() => navigate(`/admin/categorias/editar/${cat.id}`)} 
-                  className="bg-white/10 hover:bg-white border border-white/20 hover:border-white p-2 rounded-lg cursor-pointer transition-colors shadow-lg group/edit"
-                  title="Editar"
-                >
+                <button
+                  onClick={(e) => {e.stopPropagation(); navigate(`/admin/categorias/editar/${cat.id}`);}} className="bg-white/10 hover:bg-white border border-white/20 hover:border-white p-2 rounded-lg cursor-pointer transition-colors shadow-lg group/edit" title="Editar">
                   <Edit2 size={16} className="text-white group-hover/edit:text-[#131313]" />
                 </button>
-                <button 
-                  onClick={() => handleEliminar(cat.id)} 
-                  className="bg-red-500/80 hover:bg-red-500 border border-red-500/20 p-2 rounded-lg cursor-pointer transition-colors shadow-lg"
-                  title="Eliminar"
-                >
+                <button onClick={(e) => {e.stopPropagation(); abrirModalEliminacion(cat.id, tituloMostrar);}} className="bg-red-500/80 hover:bg-red-500 border border-red-500/20 p-2 rounded-lg cursor-pointer transition-colors shadow-lg" title="Eliminar">
                   <Trash2 size={16} className="text-white" />
                 </button>
               </div>
 
               {/* IMAGEN DE LA CATEGORÍA */}
-              <div 
-                className="h-[140px] w-full rounded-t-[24px] bg-cover bg-center" 
-                style={{ 
+              <div
+                className="h-[140px] w-full rounded-t-[24px] bg-cover bg-center"
+                style={{
                   backgroundImage: cat.imagenTarjeta ? `url(${cat.imagenTarjeta})` : 'none',
                   backgroundColor: cat.imagenTarjeta ? 'transparent' : colores[index % colores.length],
                 }}
               >
-                {/* Overlay oscuro para que los botones floten sobre cualquier imagen */}
                 <div className="w-full h-full bg-gradient-to-b from-black/50 to-transparent opacity-0 lg:group-hover:opacity-100 transition-opacity"></div>
               </div>
-              
+
               {/* INFO DE LA CATEGORÍA */}
-              <div className="p-5 flex justify-between items-center flex-1">
+              <div 
+                className="p-5 flex justify-between items-center flex-1"
+                onClick={() => navigate(`/admin/categorias/editar/${cat.id}`)}
+              >
                 <div>
                   <h4 className="m-0 text-lg font-bold text-white leading-tight">{tituloMostrar}</h4>
                   <span className="text-[13px] text-gray-400 mt-1 block font-medium">
@@ -139,11 +139,20 @@ export const CategoriasPage = () => {
                 </div>
                 <ChevronRight size={20} className="text-gray-500 group-hover:text-[#d7f250] transition-colors" />
               </div>
-
             </div>
           );
         })}
       </div>
+
+      {/* 👇 5. RENDERIZAMOS EL MODAL AQUÍ ABAJO */}
+      <ConfirmarEliminarModal 
+        isOpen={modalAbierto}
+        onClose={() => !estaEliminando && setModalAbierto(false)}
+        onConfirm={ejecutarEliminacion}
+        tituloItem={categoriaAEliminar?.titulo || ''}
+        estaEliminando={estaEliminando}
+      />
+
     </div>
   );
 };

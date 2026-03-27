@@ -1,0 +1,129 @@
+import { useState, useEffect } from 'react';
+import { useForm } from 'react-hook-form';
+import { useNavigate, useParams } from 'react-router-dom';
+import toast from 'react-hot-toast';
+import * as UpChunk from '@mux/upchunk';
+import { obtenerCategoriaPorIdRequest, actualizarCategoriaRequest } from '../api/categoria'; // Ajusta la ruta si es necesario
+
+export interface EditarCategoriaForm {
+  titulo: string;
+  precio: number | string;
+  descripcionCard: string;
+  descripcionBreve: string;
+  descripcionDetallada: string;
+}
+
+export const useEditarCategoria = () => {
+  const navigate = useNavigate();
+  const { id } = useParams();
+  
+  const { register, handleSubmit, reset, formState: { errors, isSubmitting } } = useForm<EditarCategoriaForm>();
+
+  const [cargandoDatos, setCargandoDatos] = useState(true);
+  const [estadoSubida, setEstadoSubida] = useState<'IDLE' | 'ACTUALIZANDO_CATEGORIA' | 'SUBIENDO_VIDEO' | 'COMPLETADO'>('IDLE');
+  const [progreso, setProgreso] = useState(0);
+
+  const [archivos, setArchivos] = useState({
+    imagenTarjeta: null as File | null,
+    imagenHero: null as File | null,
+    videoMuestra: null as File | null,
+  });
+
+  const [imagenesActuales, setImagenesActuales] = useState({
+    imagenTarjeta: '',
+    imagenHero: '',
+    tieneVideo: false,
+  });
+
+  // 1. CARGA INICIAL
+  useEffect(() => {
+    const cargarCategoria = async () => {
+      try {
+        if (!id) return;
+        const cat = await obtenerCategoriaPorIdRequest(id);
+        
+        // Le inyectamos los datos a React Hook Form mágicamente
+        reset({
+          titulo: cat.titulo || '',
+          precio: cat.precio || '',
+          descripcionCard: cat.descripcionCard || '',
+          descripcionBreve: cat.descripcionBreve || '',
+          descripcionDetallada: cat.descripcionDetallada || '',
+        });
+
+        // Guardamos las fotos actuales para mostrarlas
+        setImagenesActuales({
+          imagenTarjeta: cat.imagenTarjeta || '',
+          imagenHero: cat.imagenHero || '',
+          tieneVideo: !!cat.playbackIdMuestra,
+        });
+
+      } catch (error) {
+        toast.error('Error al cargar la categoría');
+        navigate('/admin/categorias');
+      } finally {
+        setCargandoDatos(false);
+      }
+    };
+    cargarCategoria();
+  }, [id, navigate, reset]);
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>, tipo: keyof typeof archivos) => {
+    if (e.target.files && e.target.files.length > 0) {
+      setArchivos({ ...archivos, [tipo]: e.target.files[0] });
+    }
+  };
+
+  // 2. FUNCIÓN DE ACTUALIZACIÓN
+  const onSubmit = async (data: EditarCategoriaForm) => {
+    if (!id) return;
+    setEstadoSubida('ACTUALIZANDO_CATEGORIA');
+    const loadingToast = toast.loading('Guardando cambios...');
+
+    try {
+      const formData = new FormData();
+      formData.append('titulo', data.titulo);
+      formData.append('precio', data.precio.toString());
+      if (data.descripcionCard) formData.append('descripcionCard', data.descripcionCard);
+      if (data.descripcionBreve) formData.append('descripcionBreve', data.descripcionBreve);
+      if (data.descripcionDetallada) formData.append('descripcionDetallada', data.descripcionDetallada);
+      
+      if (archivos.imagenTarjeta) formData.append('imagenTarjeta', archivos.imagenTarjeta);
+      if (archivos.imagenHero) formData.append('imagenHero', archivos.imagenHero);
+      if (archivos.videoMuestra) formData.append('necesitaVideoMuestra', 'true');
+
+      const respuestaBackend = await actualizarCategoriaRequest(id, formData);
+      const uploadUrl = respuestaBackend.uploadUrl;
+
+      toast.success('¡Textos y fotos actualizados!', { id: loadingToast });
+      if (archivos.videoMuestra && uploadUrl) {
+        setEstadoSubida('SUBIENDO_VIDEO');
+        const upload = UpChunk.createUpload({
+          endpoint: uploadUrl,
+          file: archivos.videoMuestra,
+          chunkSize: 5120, 
+        });
+        upload.on('progress', (e) => setProgreso(Math.floor(e.detail)));
+        upload.on('success', () => {
+          setEstadoSubida('COMPLETADO');
+          setProgreso(100);
+          toast.success('¡Video actualizado!');
+          setTimeout(() => navigate('/admin/categorias'), 2000);
+        });
+        upload.on('error', () => {
+          toast.error('Error al subir el nuevo video. Lo demás sí se guardó.');
+          navigate('/admin/categorias');
+        });
+        
+        return; 
+      }
+
+      navigate('/admin/categorias');
+    } catch (error: any) {
+      const mensaje = error.response?.data?.message || 'Error al actualizar';
+      toast.error(Array.isArray(mensaje) ? mensaje[0] : mensaje, { id: loadingToast });
+      setEstadoSubida('IDLE');
+    }
+  };
+  return {register, handleSubmit: handleSubmit(onSubmit), errors, isSubmitting, cargandoDatos, estadoSubida, progreso, archivos, imagenesActuales, handleFileChange, navigate};
+};

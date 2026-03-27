@@ -10,6 +10,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@headlessui/react": "^2.2.9",
     "@hookform/resolvers": "^5.2.2",
     "@mux/mux-player-react": "^3.11.6",
     "@mux/upchunk": "^3.5.0",
