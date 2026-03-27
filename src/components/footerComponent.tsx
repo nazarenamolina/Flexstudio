@@ -3,19 +3,19 @@ import { Instagram, Music2, Mail, MapPin } from "lucide-react";
 
 export const FooterComponent = () => {
   return (
-    <footer className="bg-[#161616] pt-4 text-[#cdcdcd]">
-      {/* Contenedor Principal con Tailwind Mobile-First */}
-      <div className="mx-auto flex w-full max-w-7xl flex-col items-center gap-10 px-4 md:flex-row md:items-start md:justify-between md:px-8">
+    <footer className="bg-[#161616] pt-15 text-[#cdcdcd]">
+
+      <div className="mx-auto flex w-full max-w-7xl flex-col items-center gap-20 px-5 md:flex-row md:items-start md:justify-between md:px-1">
         
         {/* Columna 1: Logo */}
         <article className="flex w-full flex-1 flex-col items-center md:w-auto md:items-start">
           {/* Reemplaza con tu imagen real */}
-          <img src="https://res.cloudinary.com/dmp7mcwie/image/upload/v1774490155/logofooter_u3j6cz.png" className="w-[70%] object-contain md:mx-[50px]" alt="Logo Flex Studio" />
+          <img src="https://res.cloudinary.com/dmp7mcwie/image/upload/v1774490155/logofooter_u3j6cz.png" className="w-[100%] object-contain" alt="Logo Flex Studio" />
         </article>
 
         {/* Columna 2: Redes Sociales */}
         <article className="flex w-full flex-1 flex-col items-center text-center md:w-auto md:items-start md:text-left">
-          <h3 className="mb-6 w-[70%] border-b-2 border-[#d7f250] pb-1 text-[1.1rem] font-semibold text-white">
+          <h3 className="mb-6 w-full border-b-2 border-[#d7f250] pb-1 text-[1.1rem] font-semibold text-white">
             Redes Sociales
           </h3>
           <div className="flex flex-col gap-[15px]">
@@ -25,7 +25,6 @@ export const FooterComponent = () => {
               rel="noopener noreferrer" 
               className="group flex items-center justify-center gap-[10px] text-[#cdcdcd] transition-colors duration-300 hover:text-[#d7f250] md:justify-start"
             >
-              {/* Aquí aplicamos el group-hover para que el círculo cambie cuando pasas el mouse por el texto */}
               <span className="flex h-[35px] w-[35px] items-center justify-center rounded-full bg-[#252525] text-white transition-colors duration-300 group-hover:bg-[#d7f250] group-hover:text-[#161616]">
                 <Instagram size={18} />
               </span> 
@@ -38,7 +37,6 @@ export const FooterComponent = () => {
               className="group flex items-center justify-center gap-[10px] text-[#cdcdcd] transition-colors duration-300 hover:text-[#d7f250] md:justify-start"
             >
               <span className="flex h-[35px] w-[35px] items-center justify-center rounded-full bg-[#252525] text-white transition-colors duration-300 group-hover:bg-[#d7f250] group-hover:text-[#161616]">
-                {/* Reemplazo temporal ya que Lucide no tiene logo de TikTok */}
                 <Music2 size={18} />
               </span> 
               Tiktok
@@ -48,7 +46,7 @@ export const FooterComponent = () => {
 
         {/* Columna 3: Información */}
         <article className="flex w-full flex-1 flex-col items-center text-center md:w-auto md:items-start md:text-left">
-          <h3 className="mb-6 w-[70%] border-b-2 border-[#d7f250] pb-1 text-[1.1rem] font-semibold text-white">
+          <h3 className="mb-6 w-full border-b-2 border-[#d7f250] pb-1 text-[1.1rem] font-semibold text-white">
             Información
           </h3>
           <ul className="flex flex-col gap-3">
@@ -62,7 +60,7 @@ export const FooterComponent = () => {
 
         {/* Columna 4: Contacto */}
         <article className="flex w-full flex-1 flex-col items-center text-center md:w-auto md:items-start md:text-left">
-          <h3 className="mb-6 w-[70%] border-b-2 border-[#d7f250] pb-1 text-[1.1rem] font-semibold text-white">
+          <h3 className="mb-6 w-full border-b-2 border-[#d7f250] pb-1 text-[1.1rem] font-semibold text-white">
             Contacto
           </h3>
           <div className="flex flex-col gap-5">
@@ -79,7 +77,6 @@ export const FooterComponent = () => {
 
       </div>
 
-      {/* Barra inferior de Copyright */}
       <div className="mt-8 w-full border-t border-[#333] py-6">
         <div className="mx-auto flex flex-col items-center justify-between gap-[15px] px-8 text-center text-[0.85rem] text-[#888] md:flex-row md:text-left">
           <p className="m-0">© {new Date().getFullYear()} Flex Studio. Todos los derechos reservados.</p>
