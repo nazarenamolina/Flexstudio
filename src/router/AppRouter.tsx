@@ -3,15 +3,15 @@ import { LoginPage } from '../pages/auth/LoginPage';
 import { AdminLayout } from '../components/layout/AdminLayout';
 import { RegistroPage } from '../pages/auth/RegistroPage';
 import HomePage from '../pages/HomePage';
-import { CategoriasPage } from '../pages/admin/CategoriasPage';
-import { AdminVideosPage } from '../pages/admin/AdminVideosPage';
-import { NuevaCategoriaPage } from '../pages/admin/NuevaCategoriaPage';
+import { CategoriasPage } from '../pages/admin/categorias/CategoriasPage';
+import { AdminVideosPage } from '../pages/admin/videos/AdminVideosPage';
+import { NuevaCategoriaPage } from '../pages/admin/categorias/NuevaCategoriaPage';
 import HeaderComponent from '../components/headerComponent';
 import FooterComponent from '../components/footerComponent';
 import Categorias from '../pages/Categorias';
-import { NuevoVideoPage } from '../pages/admin/NuevoVideoPage';
-import { EditarCategoriaPage } from '../pages/admin/EditarCategoriaPage';
-import { EditarVideoPage } from '../pages/admin/EditarVideoPage';
+import { NuevoVideoPage } from '../pages/admin/videos/NuevoVideoPage';
+import { EditarCategoriaPage } from '../pages/admin/categorias/EditarCategoriaPage';
+import { EditarVideoPage } from '../pages/admin/videos/EditarVideoPage';
 
 const LayoutConNav = () => {
   return (

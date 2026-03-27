@@ -5,8 +5,9 @@ import toast, { Toaster } from 'react-hot-toast';
 import MuxPlayer from '@mux/mux-player-react';
 import { io } from 'socket.io-client';
 
-import { obtenerTodosLosVideosRequest, eliminarVideoRequest, type Video } from '../../api/videos';
-import { obtenerCategoriasRequest, type Categoria } from '../../api/categoria';
+import { obtenerTodosLosVideosRequest, eliminarVideoRequest, type Video } from '../../../api/videos';
+import { obtenerCategoriasRequest, type Categoria } from '../../../api/categoria';
+import { ConfirmarEliminarModal } from '../../../components/ConfirmarEliminarModal'; // 👈 Importamos el Modal
 
 const SOCKET_URL = 'http://localhost:3000';
 
@@ -17,6 +18,12 @@ export const AdminVideosPage = () => {
   const [cargando, setCargando] = useState(true);
   const [busqueda, setBusqueda] = useState('');
   const [filtroCategoria, setFiltroCategoria] = useState('Todos los Videos');
+
+  // 👇 1. ESTADOS PARA EL MODAL
+  const [modalAbierto, setModalAbierto] = useState(false);
+  const [videoAEliminar, setVideoAEliminar] = useState<{ id: string, titulo: string } | null>(null);
+  const [estaEliminando, setEstaEliminando] = useState(false);
+
   useEffect(() => {
     cargarDatos();
   }, []);
@@ -46,16 +53,27 @@ export const AdminVideosPage = () => {
     return () => { socket.disconnect(); };
   }, []);
 
-  const handleEliminarVideo = async (id: string, titulo: string) => {
-    if (!window.confirm(`¿Estás seguro de eliminar "${titulo}"?\nSe borrará de tu panel y de los servidores de Mux.`)) return;
+  // 👇 2. FUNCIÓN PARA ABRIR EL MODAL
+  const abrirModalEliminacion = (id: string, titulo: string) => {
+    setVideoAEliminar({ id, titulo });
+    setModalAbierto(true);
+  };
 
-    const loadingToast = toast.loading('Eliminando clase...');
+  // 👇 3. FUNCIÓN PARA EJECUTAR EL BORRADO
+  const ejecutarEliminacion = async () => {
+    if (!videoAEliminar) return;
+
+    setEstaEliminando(true); // Activa el spinner
     try {
-      await eliminarVideoRequest(id);
-      setVideos(videos.filter(v => v.id !== id));
-      toast.success('Video eliminado permanentemente', { id: loadingToast });
+      await eliminarVideoRequest(videoAEliminar.id);
+      setVideos(videos.filter(v => v.id !== videoAEliminar.id));
+      toast.success('Video eliminado permanentemente');
+      setModalAbierto(false); // Cierra el modal
     } catch (error) {
-      toast.error('Ocurrió un error al eliminar', { id: loadingToast });
+      toast.error('Ocurrió un error al eliminar el video');
+    } finally {
+      setEstaEliminando(false);
+      setTimeout(() => setVideoAEliminar(null), 300); // Limpia el estado después de la animación
     }
   };
 
@@ -66,7 +84,7 @@ export const AdminVideosPage = () => {
   });
 
   return (
-    <div className="w-full h-full flex flex-col font-sans overflow-hidden">
+    <div className="w-full h-full flex flex-col font-sans overflow-hidden relative">
       <Toaster position="top-right" />
 
       {/* CABECERA */}
@@ -161,7 +179,6 @@ export const AdminVideosPage = () => {
 
                   {/* Contenedor de botones empujado hacia abajo con mt-auto */}
                   <div className="mt-auto flex items-center gap-3">
-                    {/* Botón Editar Principal */}
                     <button
                       onClick={() => navigate(`/admin/videos/editar/${video.id}`)}
                       className="flex-1 bg-[#d7f250] hover:bg-[#c4dd46] text-[#131313] py-2.5 px-4 rounded-xl font-bold flex items-center justify-center gap-2 transition-transform duration-200 hover:-translate-y-1 text-sm shadow-md"
@@ -169,9 +186,9 @@ export const AdminVideosPage = () => {
                       <Edit2 size={18} /> Editar
                     </button>
 
-                    {/* Botón Eliminar Secundario */}
+                    {/* 👇 4. BOTÓN ACTUALIZADO PARA ABRIR EL MODAL */}
                     <button
-                      onClick={() => handleEliminarVideo(video.id, video.titulo)}
+                      onClick={() => abrirModalEliminacion(video.id, video.titulo)}
                       className="p-2.5 bg-[#1a1a1a] hover:bg-red-500 text-gray-400 hover:text-white border border-gray-700 hover:border-red-500 rounded-xl transition-all duration-200 hover:-translate-y-1 shadow-md"
                       title="Eliminar Video"
                     >
@@ -185,6 +202,15 @@ export const AdminVideosPage = () => {
           </div>
         )}
       </div>
+
+      {/* 👇 5. RENDERIZAMOS EL MODAL AL FINAL DEL COMPONENTE */}
+      <ConfirmarEliminarModal
+        isOpen={modalAbierto}
+        onClose={() => !estaEliminando && setModalAbierto(false)}
+        onConfirm={ejecutarEliminacion}
+        tituloItem={videoAEliminar?.titulo || ''}
+        estaEliminando={estaEliminando}
+      />
     </div>
   );
 };

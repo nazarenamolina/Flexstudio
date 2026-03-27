@@ -3,8 +3,8 @@ import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, CloudUpload, Image as ImageIcon, Loader2, CheckCircle2 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import * as UpChunk from '@mux/upchunk';
-import { solicitarUrlSubidaRequest } from '../../api/videos'; 
-import { obtenerCategoriasRequest, type Categoria } from '../../api/categoria';
+import { solicitarUrlSubidaRequest } from '../../../api/videos'; 
+import { obtenerCategoriasRequest, type Categoria } from '../../../api/categoria';
 
 export const NuevoVideoPage = () => {
   const navigate = useNavigate();

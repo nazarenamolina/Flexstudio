@@ -2,8 +2,8 @@ import { useState, useEffect, type ChangeEvent, type FormEvent } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { ArrowLeft, Save, Image as ImageIcon, Loader2 } from 'lucide-react';
 import toast from 'react-hot-toast'
-import { obtenerTodosLosVideosRequest, actualizarVideoRequest } from '../../api/videos'; 
-import { obtenerCategoriasRequest, type Categoria } from '../../api/categoria';
+import { obtenerTodosLosVideosRequest, actualizarVideoRequest } from '../../../api/videos'; 
+import { obtenerCategoriasRequest, type Categoria } from '../../../api/categoria';
 
 export const EditarVideoPage = () => {
   const navigate = useNavigate();
