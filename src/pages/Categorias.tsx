@@ -53,24 +53,26 @@ const CategoriaDetailPage = () => {
   const segundaParte = tituloPartes.slice(Math.ceil(tituloPartes.length / 2)).join(" ");
 
   return (
-    <main className="min-h-screen w-full bg-[#131313] pb-20 text-white overflow-x-hidden">
-      <section className="relative flex min-h-[35em] w-full items-center overflow-hidden">
-        <div className="absolute inset-0 z-0">
+    <main className="min-h-screen w-full pb-20 text-[#131313] overflow-x-hidden">
+      <section className="relative flex min-h-[45em] w-full items-center overflow-hidden">
+        
+        <div className="absolute z-0">
           <img 
             src={categoria.imagenHero || "https://via.placeholder.com/1920x1080"} 
             alt={categoria.titulo} 
-            className="h-full w-full object-cover opacity-60"
+            className="h-full w-full object-cover brightness-60"
           />
-          <div className="absolute inset-0 bg-gradient-to-r from-[#131313] via-[#131313]/70 to-transparent"></div>
+          {/* no toy convencida*/}
+          <div className="absolute inset-0 bg-gradient-to-t from-[#343333] via-[#343333]/20 to-transparent"></div>
         </div>
 
-        <div className="relative z-10 mx-auto w-full max-w-[800px] px-6 lg:ml-24 xl:ml-32">
-          <span className="mb-4 inline-block tracking-[2px] text-neon-pink font-bold uppercase md:text-base">
+        <div className="relative z-10 mx-auto w-full px-6 lg:ml-24 xl:ml-32">
+          <span className="tracking-[2px] text-neon-pink font-bold uppercase md:text-base">
             ELITE TRAINING PROGRAM
           </span>
 
           <h1 className="flex flex-col items-start leading-none mb-10">
-            <span className="z-20 font-cursiva text-[2.5rem] font-semibold text-[#131313] md:text-[4rem] translate-y-[20px] translate-x-[10px] md:translate-y-[35px] md:translate-x-[15px]">
+            <span className="z-20 font-cursiva text-[2.5rem] font-semibold text-white md:text-[4rem] translate-y-[20px] translate-x-[10px] md:translate-y-[35px] md:translate-x-[15px]">
               {primeraParte}
             </span>
             <span className="z-10 font-principal text-[4rem] font-bold uppercase tracking-tighter text-neon-pink md:text-[8rem] drop-shadow-[4px_4px_15px_rgba(0,0,0,0.15)]">
@@ -78,8 +80,8 @@ const CategoriaDetailPage = () => {
             </span>
           </h1>
           
-          <p className="mb-10 max-w-[450px] text-[1.1rem] leading-[1.6] text-[#a1a1aa]">
-            {categoria.descripcionDetallada || "Descripción no disponible."}
+          <p className="mb-10 text-[1.1rem] leading-[1.6] text-[#a1a1aa]">
+            {categoria.descripcionDetallada || categoria.descripcionCard || "Descripción no disponible."}
           </p>
           
           <div className="flex flex-col gap-4 sm:flex-row">
