@@ -1,28 +1,29 @@
 import { useState, useEffect } from 'react';
-import { useForm } from 'react-hook-form';
+import { useForm, useFieldArray } from 'react-hook-form';  
 import { useNavigate, useParams } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import * as UpChunk from '@mux/upchunk';
-import { obtenerCategoriaPorIdRequest, actualizarCategoriaRequest } from '../api/categoria'; // Ajusta la ruta si es necesario
+import { obtenerCategoriaPorIdRequest, actualizarCategoriaRequest } from '../api/categoria';
 
+ 
 export interface EditarCategoriaForm {
   titulo: string;
   precio: number | string;
   descripcionCard: string;
   descripcionBreve: string;
   descripcionDetallada: string;
+  beneficios: { titulo: string; descripcion: string; icono?: string }[]; // 👈 Nuevo campo
 }
 
 export const useEditarCategoria = () => {
   const navigate = useNavigate();
   const { id } = useParams();
-  
-  const { register, handleSubmit, reset, formState: { errors, isSubmitting } } = useForm<EditarCategoriaForm>();
-
+  const { register, handleSubmit, reset, control, formState: { errors, isSubmitting } } = useForm<EditarCategoriaForm>({defaultValues: {beneficios: []}
+  });
+  const { fields: beneficiosFields, append: appendBeneficio, remove: removeBeneficio } = useFieldArray({control, name: "beneficios",});
   const [cargandoDatos, setCargandoDatos] = useState(true);
   const [estadoSubida, setEstadoSubida] = useState<'IDLE' | 'ACTUALIZANDO_CATEGORIA' | 'SUBIENDO_VIDEO' | 'COMPLETADO'>('IDLE');
   const [progreso, setProgreso] = useState(0);
-
   const [archivos, setArchivos] = useState({
     imagenTarjeta: null as File | null,
     imagenHero: null as File | null,
@@ -35,23 +36,20 @@ export const useEditarCategoria = () => {
     tieneVideo: false,
   });
 
-  // 1. CARGA INICIAL
   useEffect(() => {
     const cargarCategoria = async () => {
       try {
         if (!id) return;
         const cat = await obtenerCategoriaPorIdRequest(id);
-        
-        // Le inyectamos los datos a React Hook Form mágicamente
         reset({
           titulo: cat.titulo || '',
           precio: cat.precio || '',
           descripcionCard: cat.descripcionCard || '',
           descripcionBreve: cat.descripcionBreve || '',
           descripcionDetallada: cat.descripcionDetallada || '',
+          beneficios: cat.beneficios || [],
         });
 
-        // Guardamos las fotos actuales para mostrarlas
         setImagenesActuales({
           imagenTarjeta: cat.imagenTarjeta || '',
           imagenHero: cat.imagenHero || '',
@@ -73,8 +71,6 @@ export const useEditarCategoria = () => {
       setArchivos({ ...archivos, [tipo]: e.target.files[0] });
     }
   };
-
-  // 2. FUNCIÓN DE ACTUALIZACIÓN
   const onSubmit = async (data: EditarCategoriaForm) => {
     if (!id) return;
     setEstadoSubida('ACTUALIZANDO_CATEGORIA');
@@ -87,15 +83,22 @@ export const useEditarCategoria = () => {
       if (data.descripcionCard) formData.append('descripcionCard', data.descripcionCard);
       if (data.descripcionBreve) formData.append('descripcionBreve', data.descripcionBreve);
       if (data.descripcionDetallada) formData.append('descripcionDetallada', data.descripcionDetallada);
-      
+      if (data.beneficios && data.beneficios.length > 0) {
+        const beneficiosValidos = data.beneficios.filter(b => b.titulo.trim() !== '');
+        if (beneficiosValidos.length > 0) {
+          formData.append('beneficios', JSON.stringify(beneficiosValidos));
+        }
+      }
+
       if (archivos.imagenTarjeta) formData.append('imagenTarjeta', archivos.imagenTarjeta);
       if (archivos.imagenHero) formData.append('imagenHero', archivos.imagenHero);
       if (archivos.videoMuestra) formData.append('necesitaVideoMuestra', 'true');
 
       const respuestaBackend = await actualizarCategoriaRequest(id, formData);
-      const uploadUrl = respuestaBackend.uploadUrl;
+      const uploadUrl = respuestaBackend.uploadUrl; 
 
       toast.success('¡Textos y fotos actualizados!', { id: loadingToast });
+      
       if (archivos.videoMuestra && uploadUrl) {
         setEstadoSubida('SUBIENDO_VIDEO');
         const upload = UpChunk.createUpload({
@@ -125,5 +128,6 @@ export const useEditarCategoria = () => {
       setEstadoSubida('IDLE');
     }
   };
-  return {register, handleSubmit: handleSubmit(onSubmit), errors, isSubmitting, cargandoDatos, estadoSubida, progreso, archivos, imagenesActuales, handleFileChange, navigate};
+
+  return {register, handleSubmit: handleSubmit(onSubmit), errors, isSubmitting, cargandoDatos, estadoSubida, progreso, archivos, imagenesActuales,  handleFileChange, navigate, beneficiosFields, appendBeneficio, removeBeneficio, control};
 };

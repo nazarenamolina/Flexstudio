@@ -1,56 +1,72 @@
 import { BrowserRouter, Routes, Route, Navigate, Outlet } from 'react-router-dom';
-import { LoginPage } from '../pages/auth/LoginPage';
+import { ProtectedRoute } from './ProtectedRoute';
+import { useAuthStore } from '../store/authStore';
 import { AdminLayout } from '../components/layout/AdminLayout';
-import { RegistroPage } from '../pages/auth/RegistroPage';
-import HomePage from '../pages/HomePage';
-import { CategoriasPage } from '../pages/admin/categorias/CategoriasPage';
-import { AdminVideosPage } from '../pages/admin/videos/AdminVideosPage';
-import { NuevaCategoriaPage } from '../pages/admin/categorias/NuevaCategoriaPage';
 import HeaderComponent from '../components/headerComponent';
 import FooterComponent from '../components/footerComponent';
+import HomePage from '../pages/HomePage';
 import Categorias from '../pages/Categorias';
-import { NuevoVideoPage } from '../pages/admin/videos/NuevoVideoPage';
+import { LoginPage } from '../pages/auth/LoginPage';
+import { RegistroPage } from '../pages/auth/RegistroPage';
+import { CategoriasPage } from '../pages/admin/categorias/CategoriasPage';
+import { NuevaCategoriaPage } from '../pages/admin/categorias/NuevaCategoriaPage';
 import { EditarCategoriaPage } from '../pages/admin/categorias/EditarCategoriaPage';
+import { AdminVideosPage } from '../pages/admin/videos/AdminVideosPage';
+import { NuevoVideoPage } from '../pages/admin/videos/NuevoVideoPage';
 import { EditarVideoPage } from '../pages/admin/videos/EditarVideoPage';
 
 const LayoutConNav = () => {
   return (
-    <div>
+    <div className="flex flex-col min-h-screen">
       <HeaderComponent />
-      <div>
-        <Outlet/>
-      </div>
+      <main className="flex-grow">
+        <Outlet />
+      </main>
       <FooterComponent />
     </div>
   );
 };
 
 export const AppRouter = () => {
+  const usuario = useAuthStore((state) => state.usuario);
+  const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
+
   return (
     <BrowserRouter>
       <Routes>
-        {/* === RUTAS PÚBLICAS === */}
         <Route element={<LayoutConNav />}>
           <Route path='/' element={<HomePage />} />
-          <Route path='/categorias/:id' element={ <Categorias /> } />
+          <Route path='/categorias/:id' element={<Categorias />} />
         </Route>
-        <Route path="/login" element={<LoginPage />} />
-        <Route path='/registro' element={<RegistroPage/>}/>
-
-        {/* === RUTAS PRIVADAS (Panel de Control) === */}
-        {/* Todas las rutas que empiecen con /admin pasarán por el AdminLayout */}
-        <Route path="/admin" element={<AdminLayout />}>
-        <Route path="/admin/categorias" element={<CategoriasPage/>}/>
-        <Route path="categorias/nueva" element={<NuevaCategoriaPage />} />
-        <Route path="/admin/videos" element={<AdminVideosPage/>}/>
-        <Route path="/admin/videos/nuevo" element={<NuevoVideoPage/>}/>
-        <Route path="/admin/categorias/editar/:id" element={<EditarCategoriaPage />} />
-        <Route path="/admin/videos/editar/:id" element={<EditarVideoPage/>}/>
+        <Route element={
+          <ProtectedRoute
+            isAllowed={!isAuthenticated}
+            redirectTo={usuario?.rol === 'ADMIN' ? '/admin' : '/'}
+          />
+        }>
+          <Route path="/login" element={<LoginPage />} />
+          <Route path="/registro" element={<RegistroPage />} />
         </Route>
+        <Route
+          element={
+            <ProtectedRoute
+              isAllowed={isAuthenticated && usuario?.rol === 'ADMIN'}
+              redirectTo="/"
+            />
+          }
+        >
+          <Route path="/admin" element={<AdminLayout />}>
+            <Route path="categorias" element={<CategoriasPage />} />
+            <Route path="categorias/nueva" element={<NuevaCategoriaPage />} />
+            <Route path="categorias/editar/:id" element={<EditarCategoriaPage />} />
+            <Route path="videos" element={<AdminVideosPage />} />
+            <Route path="videos/nuevo" element={<NuevoVideoPage />} />
+            <Route path="videos/editar/:id" element={<EditarVideoPage />} />
+            <Route index element={<Navigate to="categorias" replace />} />
+          </Route>
+        </Route>
+        <Route path="*" element={<Navigate to="/" replace />} />
 
-        {/* === FALLBACK (Ruta por defecto) === */}
-        {/* Si alguien entra a la raíz "/" o a una ruta que no existe, lo mandamos al login */}
-        <Route path="*" element={<Navigate to="/login" replace />} />
       </Routes>
     </BrowserRouter>
   );
