@@ -1,14 +1,12 @@
-import { ArrowLeft, Save, Image as ImageIcon, Loader2, Film, CloudUpload, CheckCircle2, Plus, Trash2 } from 'lucide-react';
-import { useEditarCategoria } from '../../../hooks/useEditarCategoria';
-import { IconPicker } from '../../../components/IconPicker';
-import { Controller } from 'react-hook-form';
+import { ArrowLeft, Save, Image as ImageIcon, Loader2, Film, CloudUpload, CheckCircle2 } from 'lucide-react';
+import { useEditarCategoria } from '../../../hooks/useEditarCategoria'; 
 
 export const EditarCategoriaPage = () => {
-  const { register, handleSubmit, errors, isSubmitting, cargandoDatos, estadoSubida, progreso, archivos, imagenesActuales, handleFileChange, navigate,
-    beneficiosFields, appendBeneficio, removeBeneficio, control } = useEditarCategoria();
+  const {register, handleSubmit, errors, isSubmitting, cargandoDatos,estadoSubida, progreso, archivos, imagenesActuales, handleFileChange, navigate} = useEditarCategoria();
 
   const labelClass = "block text-sm font-bold text-gray-400 mb-2";
   const inputClass = "w-full bg-[#131313] border border-gray-800 focus:border-[#d7f250] focus:ring-1 focus:ring-[#d7f250]/50 rounded-xl px-4 py-3 text-white placeholder-gray-600 outline-none transition-all shadow-sm";
+
   if (cargandoDatos) {
     return <div className="w-full h-full flex items-center justify-center text-[#d7f250]"><Loader2 className="w-10 h-10 animate-spin" /></div>;
   }
@@ -26,115 +24,47 @@ export const EditarCategoriaPage = () => {
       </div>
     );
   }
+
+  // 4. Formulario Principal
   return (
     <div className="w-full h-full flex flex-col font-sans overflow-y-auto custom-scrollbar pr-2 pb-10">
       <div className="flex items-center gap-4 mb-8 shrink-0">
         <button onClick={() => navigate('/admin/categorias')} type="button" disabled={isSubmitting} className="p-2 bg-[#131313] hover:bg-gray-800 border border-gray-800 rounded-full text-white transition-colors disabled:opacity-50"><ArrowLeft size={24} /></button>
         <div>
           <h1 className="text-3xl font-extrabold text-white tracking-tight">Editar Disciplina</h1>
-          <p className="text-gray-400 text-sm">Modifica los datos y beneficios de la categoría.</p>
+          <p className="text-gray-400 text-sm">Modifica los datos de la categoría.</p>
         </div>
       </div>
 
       <form onSubmit={handleSubmit} className="flex flex-col xl:flex-row gap-8">
-
-        {/* COLUMNA IZQUIERDA: Textos y Beneficios */}
-        <div className="flex-1 space-y-6">
-
-          {/* SECCIÓN 1: BANNER */}
-          <div className="bg-[#131313] p-6 md:p-8 rounded-[24px] border border-gray-800 shadow-sm">
-            <h3 className="text-xl font-bold text-white mb-6 border-b border-gray-800 pb-4">Sección Banner</h3>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-              <div>
-                <label className={labelClass}>Título *</label>
-                <input type="text" {...register('titulo', { required: 'Obligatorio' })} className={inputClass} />
-                {errors.titulo && <p className="text-red-500 text-xs mt-1">{errors.titulo.message}</p>}
-              </div>
-              <div>
-                <label className={labelClass}>Precio ($) *</label>
-                <input type="number" step="0.01" {...register('precio', { required: 'Obligatorio' })} className={inputClass} />
-                {errors.precio && <p className="text-red-500 text-xs mt-1">{errors.precio.message}</p>}
-              </div>
-            </div>
-
-            <div className="mb-6">
-              <label className={labelClass}>Descripción Tarjeta (Miniatura)</label>
-              <textarea rows={2} {...register('descripcionCard')} placeholder="Breve descripción para la tarjeta..." className={`${inputClass} resize-none`} />
-            </div>
-
+        
+        {/* Textos */}
+        <div className="flex-1 space-y-6 bg-[#131313] p-6 md:p-8 rounded-[24px] border border-gray-800 shadow-sm">
+          <h3 className="text-xl font-bold text-white mb-4 border-b border-gray-800 pb-4">Información General</h3>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
-              <label className={labelClass}>Descripción Detallada (Banner Principal)</label>
-              <textarea rows={4} {...register('descripcionDetallada')} placeholder="Texto largo que acompaña al video hero..." className={`${inputClass} resize-none`} />
+              <label className={labelClass}>Título *</label>
+              <input type="text" {...register('titulo', { required: 'Obligatorio' })} className={inputClass} />
+              {errors.titulo && <p className="text-red-500 text-xs mt-1">{errors.titulo.message}</p>}
+            </div>
+            <div>
+              <label className={labelClass}>Precio ($) *</label>
+              <input type="number" step="0.01" {...register('precio', { required: 'Obligatorio' })} className={inputClass} />
+              {errors.precio && <p className="text-red-500 text-xs mt-1">{errors.precio.message}</p>}
             </div>
           </div>
-
-          {/* SECCIÓN 2: BENEFICIOS Y SUSCRIPCIÓN */}
-          <div className="bg-[#131313] p-6 md:p-8 rounded-[24px] border border-gray-800 shadow-sm">
-            <h3 className="text-xl font-bold text-white mb-6 border-b border-gray-800 pb-4">Sección Beneficios</h3>
-
-            <div className="mb-8">
-              <label className={labelClass}>Descripción de Suscripción</label>
-              <textarea rows={2} {...register('descripcionBreve')} placeholder="Ej: Únete a esta suscripción y obtén acceso a..." className={`${inputClass} resize-none`} />
-            </div>
-
-            <div className="space-y-4">
-              <label className={labelClass}>Lista de Beneficios</label>
-              {beneficiosFields.map((field, index) => (
-                <div key={field.id} className="relative p-5 bg-[#0a0a0a] border border-gray-800 rounded-xl flex flex-col md:flex-row gap-4 group">
-                  <div className="flex-1 space-y-4">
-                    <div>
-                      <label className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-2 block">
-                        Ícono del beneficio
-                      </label>
-                      <Controller
-                        control={control}
-                        name={`beneficios.${index}.icono`}
-                        defaultValue="CheckCircle"
-                        render={({ field }) => (
-                          <IconPicker value={field.value || 'CheckCircle'} onChange={field.onChange} />
-                        )}
-                      />
-                    </div>
-                    <div className="pt-2 border-t border-gray-800 mt-2">
-                      <input
-                        type="text"
-                        {...register(`beneficios.${index}.titulo`)}
-                        placeholder="Título del beneficio (Ej: Clases en vivo)"
-                        className={inputClass}
-                      />
-                    </div>
-
-                    {/* El textarea de la Descripción */}
-                    <div>
-                      <textarea
-                        rows={2}
-                        {...register(`beneficios.${index}.descripcion`)}
-                        placeholder="Descripción del beneficio..."
-                        className={`${inputClass} resize-none`}
-                      />
-                    </div>
-                  </div>
-
-                  {/* Botón para eliminar */}
-                  <button type="button" onClick={() => removeBeneficio(index)} className="md:self-start p-3 text-gray-500 hover:text-white hover:bg-red-500 rounded-xl transition-colors border border-gray-800 hover:border-red-500 bg-[#131313]" title="Eliminar beneficio">
-                    <Trash2 size={20} />
-                  </button>
-                </div>
-              ))}
-              <button type="button" onClick={() => appendBeneficio({ titulo: '', descripcion: '', icono: 'CheckCircle' })} className="w-full py-4 border-2 border-dashed border-gray-700 hover:border-[#d7f250] text-gray-400 hover:text-[#d7f250] rounded-xl font-bold flex items-center justify-center gap-2 transition-colors">
-                <Plus size={20} /> Agregar un Beneficio
-              </button>
-            </div>
-          </div>
-
+          
+          <div><label className={labelClass}>Descripción Tarjeta</label><textarea rows={2} {...register('descripcionCard')} className={`${inputClass} resize-none`} /></div>
+          <div><label className={labelClass}>Descripción Breve</label><textarea rows={2} {...register('descripcionBreve')} className={`${inputClass} resize-none`} /></div>
+          <div><label className={labelClass}>Descripción Detallada</label><textarea rows={5} {...register('descripcionDetallada')} className={`${inputClass} resize-none`} /></div>
         </div>
 
-        {/* COLUMNA DERECHA */}
+        {/* Archivos */}
         <div className="w-full xl:w-[400px] flex flex-col gap-6 shrink-0">
           <div className="bg-[#131313] p-6 rounded-[24px] border border-gray-800 shadow-sm flex flex-col gap-6">
             <h3 className="text-xl font-bold text-white border-b border-gray-800 pb-4">Archivos Multimedia</h3>
-
+            
             {/* Tarjeta */}
             <div>
               <label className={labelClass}>Imagen Tarjeta</label>

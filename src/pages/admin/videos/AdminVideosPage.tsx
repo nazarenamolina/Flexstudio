@@ -1,12 +1,87 @@
+import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Search, Plus, Loader2, Edit2, Trash2, Image as ImageIcon } from 'lucide-react';
-import { Toaster } from 'react-hot-toast';
+import toast, { Toaster } from 'react-hot-toast';
 import MuxPlayer from '@mux/mux-player-react';
-import { ConfirmarEliminarModal } from '../../../components/ConfirmarEliminarModal'; 
-import { useAdminVideos } from '../../../hooks/useAdminVideos'; 
+import { io } from 'socket.io-client';
+
+import { obtenerTodosLosVideosRequest, eliminarVideoRequest, type Video } from '../../../api/videos';
+import { obtenerCategoriasRequest, type Categoria } from '../../../api/categoria';
+import { ConfirmarEliminarModal } from '../../../components/ConfirmarEliminarModal'; // 👈 Importamos el Modal
+
+const SOCKET_URL = 'http://localhost:3000';
 
 export const AdminVideosPage = () => {
- 
-  const {navigate, cargando, categorias, busqueda, setBusqueda, filtroCategoria, setFiltroCategoria, videosFiltrados, modalAbierto, setModalAbierto, videoAEliminar, estaEliminando, abrirModalEliminacion, ejecutarEliminacion} = useAdminVideos();
+  const navigate = useNavigate();
+  const [videos, setVideos] = useState<Video[]>([]);
+  const [categorias, setCategorias] = useState<Categoria[]>([]);
+  const [cargando, setCargando] = useState(true);
+  const [busqueda, setBusqueda] = useState('');
+  const [filtroCategoria, setFiltroCategoria] = useState('Todos los Videos');
+
+  // 👇 1. ESTADOS PARA EL MODAL
+  const [modalAbierto, setModalAbierto] = useState(false);
+  const [videoAEliminar, setVideoAEliminar] = useState<{ id: string, titulo: string } | null>(null);
+  const [estaEliminando, setEstaEliminando] = useState(false);
+
+  useEffect(() => {
+    cargarDatos();
+  }, []);
+
+  const cargarDatos = async (silencioso = false) => {
+    if (!silencioso) setCargando(true);
+    try {
+      const resVideos = await obtenerTodosLosVideosRequest();
+      setVideos(Array.isArray(resVideos) ? resVideos : (resVideos as any).data || []);
+      const resCategorias = await obtenerCategoriasRequest();
+      setCategorias(Array.isArray(resCategorias) ? resCategorias : (resCategorias as any).categorias || []);
+    } catch (error) {
+      if (!silencioso) toast.error("Error al cargar la librería de videos");
+    } finally {
+      if (!silencioso) setCargando(false);
+    }
+  };
+
+  useEffect(() => {
+    const socket = io(SOCKET_URL);
+    socket.on('videoActualizado', (videoActualizado: Video) => {
+      setVideos((videosActuales) =>
+        videosActuales.map((v) => v.id === videoActualizado.id ? { ...v, ...videoActualizado } : v)
+      );
+      toast.success(`¡El video "${videoActualizado.titulo}" ya está listo!`);
+    });
+    return () => { socket.disconnect(); };
+  }, []);
+
+  // 👇 2. FUNCIÓN PARA ABRIR EL MODAL
+  const abrirModalEliminacion = (id: string, titulo: string) => {
+    setVideoAEliminar({ id, titulo });
+    setModalAbierto(true);
+  };
+
+  // 👇 3. FUNCIÓN PARA EJECUTAR EL BORRADO
+  const ejecutarEliminacion = async () => {
+    if (!videoAEliminar) return;
+
+    setEstaEliminando(true); // Activa el spinner
+    try {
+      await eliminarVideoRequest(videoAEliminar.id);
+      setVideos(videos.filter(v => v.id !== videoAEliminar.id));
+      toast.success('Video eliminado permanentemente');
+      setModalAbierto(false); // Cierra el modal
+    } catch (error) {
+      toast.error('Ocurrió un error al eliminar el video');
+    } finally {
+      setEstaEliminando(false);
+      setTimeout(() => setVideoAEliminar(null), 300); // Limpia el estado después de la animación
+    }
+  };
+
+  const videosFiltrados = videos.filter(video => {
+    const coincideBusqueda = video.titulo.toLowerCase().includes(busqueda.toLowerCase());
+    const coincideCategoria = filtroCategoria === 'Todos los Videos' || video.categoria?.titulo === filtroCategoria;
+    return coincideBusqueda && coincideCategoria;
+  });
 
   return (
     <div className="w-full h-full flex flex-col font-sans overflow-hidden relative">
@@ -102,7 +177,7 @@ export const AdminVideosPage = () => {
                     {video.titulo}
                   </h3>
 
-                  {/* Contenedor de botones */}
+                  {/* Contenedor de botones empujado hacia abajo con mt-auto */}
                   <div className="mt-auto flex items-center gap-3">
                     <button
                       onClick={() => navigate(`/admin/videos/editar/${video.id}`)}
@@ -110,6 +185,8 @@ export const AdminVideosPage = () => {
                     >
                       <Edit2 size={18} /> Editar
                     </button>
+
+                    {/* 👇 4. BOTÓN ACTUALIZADO PARA ABRIR EL MODAL */}
                     <button
                       onClick={() => abrirModalEliminacion(video.id, video.titulo)}
                       className="p-2.5 bg-[#1a1a1a] hover:bg-red-500 text-gray-400 hover:text-white border border-gray-700 hover:border-red-500 rounded-xl transition-all duration-200 hover:-translate-y-1 shadow-md"
@@ -125,8 +202,8 @@ export const AdminVideosPage = () => {
           </div>
         )}
       </div>
-      
- 
+
+      {/* 👇 5. RENDERIZAMOS EL MODAL AL FINAL DEL COMPONENTE */}
       <ConfirmarEliminarModal
         isOpen={modalAbierto}
         onClose={() => !estaEliminando && setModalAbierto(false)}
