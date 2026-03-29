@@ -80,7 +80,6 @@ export const CategoriasPage = () => {
         </button>
       </div>
 
-      {/* CUADRÍCULA RESUMEN */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
         <div className="bg-[#131313] p-6 rounded-[20px] border border-gray-800 shadow-sm">
           <span className="text-gray-400 text-sm font-medium uppercase tracking-wider">Categorías Registradas</span>
