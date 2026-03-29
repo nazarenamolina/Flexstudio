@@ -12,6 +12,7 @@ import Categorias from '../pages/Categorias';
 import { NuevoVideoPage } from '../pages/admin/videos/NuevoVideoPage';
 import { EditarCategoriaPage } from '../pages/admin/categorias/EditarCategoriaPage';
 import { EditarVideoPage } from '../pages/admin/videos/EditarVideoPage';
+import PaginaError from '../pages/PaginaError';
 
 const LayoutConNav = () => {
   return (
@@ -47,6 +48,7 @@ export const AppRouter = () => {
         <Route path="/admin/categorias/editar/:id" element={<EditarCategoriaPage />} />
         <Route path="/admin/videos/editar/:id" element={<EditarVideoPage/>}/>
         </Route>
+        <Route path="*" element={<PaginaError />} />
 
         {/* === FALLBACK (Ruta por defecto) === */}
         {/* Si alguien entra a la raíz "/" o a una ruta que no existe, lo mandamos al login */}

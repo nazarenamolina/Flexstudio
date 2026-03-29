@@ -234,13 +234,11 @@ const HomePage = () => {
                 className="w-full bg-white border border-[#dee2e6] focus:border-[#0d6efd] focus:ring-[3px] focus:ring-[#0d6efd]/15 rounded-lg p-3 text-[#161616] placeholder-[#adb5bd] outline-none transition-all resize-none"
               />
             </div>
-
-            <button
-              type="submit"
-              className="w-full bg-[#161616] hover:bg-[#d7f250] hover:text-[#161616] hover:-translate-y-[1px] text-white font-bold py-3 px-4 rounded-lg transition-all mt-2"
-            >
-              Enviar
-            </button>
+          
+          <Link to={`*`} className="w-full bg-[#161616] hover:bg-[#d7f250] hover:text-[#161616] hover:-translate-y-[1px] text-white font-bold py-3 px-4 rounded-lg transition-all mt-2">
+              <span>Enviar</span>
+          </Link>
+            
           </form>
         </article>
 
