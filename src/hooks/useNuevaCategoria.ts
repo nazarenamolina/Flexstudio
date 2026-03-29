@@ -1,30 +1,36 @@
 import { useState } from 'react';
-import { useForm } from 'react-hook-form';
+import { useForm, useFieldArray } from 'react-hook-form';
 import { useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import * as UpChunk from '@mux/upchunk';
-import { crearCategoriaRequest } from '../api/categoria'; // Ajusta la ruta si es necesario
-
-// 1. Definimos qué campos de texto tendrá el formulario
+import { crearCategoriaRequest } from '../api/categoria';
 export interface NuevaCategoriaForm {
   titulo: string;
   precio: number;
   descripcionCard: string;
   descripcionBreve: string;
   descripcionDetallada: string;
+  beneficios: { titulo: string; descripcion: string; icono?: string }[];
 }
 
 export const useNuevaCategoria = () => {
   const navigate = useNavigate();
   
-  // 2. Inicializamos React Hook Form
-  const { 
-    register, 
-    handleSubmit, 
-    formState: { errors, isSubmitting } 
-  } = useForm<NuevaCategoriaForm>();
+  const {register, handleSubmit,control,formState: { errors, isSubmitting } } = useForm<NuevaCategoriaForm>({
+    defaultValues: {
+      beneficios: []
+    }
+  });
 
-  // 3. Estados para archivos y progreso (esto sigue igual porque es para la UI)
+  const { 
+    fields: beneficiosFields, 
+    append: appendBeneficio, 
+    remove: removeBeneficio 
+  } = useFieldArray({
+    control,
+    name: "beneficios",
+  });
+
   const [estadoSubida, setEstadoSubida] = useState<'IDLE' | 'CREANDO_CATEGORIA' | 'SUBIENDO_VIDEO' | 'COMPLETADO'>('IDLE');
   const [progreso, setProgreso] = useState(0);
   const [archivos, setArchivos] = useState({
@@ -38,8 +44,6 @@ export const useNuevaCategoria = () => {
       setArchivos({ ...archivos, [tipo]: e.target.files[0] });
     }
   };
-
-  // 4. La función maestra que se ejecuta SOLO si todo es válido
   const onSubmit = async (data: NuevaCategoriaForm) => {
     setEstadoSubida('CREANDO_CATEGORIA');
     const loadingToast = toast.loading('Guardando datos y fotos...');
@@ -51,7 +55,12 @@ export const useNuevaCategoria = () => {
       if (data.descripcionCard) formData.append('descripcionCard', data.descripcionCard);
       if (data.descripcionBreve) formData.append('descripcionBreve', data.descripcionBreve);
       if (data.descripcionDetallada) formData.append('descripcionDetallada', data.descripcionDetallada);
-      
+      if (data.beneficios && data.beneficios.length > 0) {
+        const beneficiosValidos = data.beneficios.filter(b => b.titulo.trim() !== '');
+        if (beneficiosValidos.length > 0) {
+          formData.append('beneficios', JSON.stringify(beneficiosValidos));
+        }
+      }
       if (archivos.imagenTarjeta) formData.append('imagenTarjeta', archivos.imagenTarjeta);
       if (archivos.imagenHero) formData.append('imagenHero', archivos.imagenHero);
       if (archivos.videoMuestra) formData.append('necesitaVideoMuestra', 'true');
@@ -60,8 +69,6 @@ export const useNuevaCategoria = () => {
       const uploadUrl = respuestaBackend.uploadUrl;
 
       toast.success('¡Categoría base creada!', { id: loadingToast });
-
-      // Fase de Upchunk
       if (archivos.videoMuestra && uploadUrl) {
         setEstadoSubida('SUBIENDO_VIDEO');
         const upload = UpChunk.createUpload({
@@ -94,16 +101,6 @@ export const useNuevaCategoria = () => {
     }
   };
 
-  // 5. Devolvemos TODO lo que la UI necesita para pintarse
-  return {
-    register,
-    handleSubmit: handleSubmit(onSubmit), // Envolvemos nuestra función con la de RHF
-    errors,
-    isSubmitting,
-    estadoSubida,
-    progreso,
-    archivos,
-    handleFileChange,
-    navigate
-  };
+  return {register, handleSubmit: handleSubmit(onSubmit), errors, isSubmitting, estadoSubida, progreso, archivos, handleFileChange, navigate, beneficiosFields,
+    appendBeneficio, removeBeneficio, control};
 };
