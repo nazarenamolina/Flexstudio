@@ -22,15 +22,15 @@ const HomePage = () => {
 
   const handleTouchStart = (e: React.TouchEvent) => {
     if (e.targetTouches.length > 0) {
-        setTouchStart(e.targetTouches[0].clientX);
-  };
-}
+      setTouchStart(e.targetTouches[0].clientX);
+    };
+  }
 
   const handleTouchMove = (e: React.TouchEvent) => {
     if (e.targetTouches.length > 0) {
-        setTouchEnd(e.targetTouches[0].clientX);
-  };
-}
+      setTouchEnd(e.targetTouches[0].clientX);
+    };
+  }
 
   const handleTouchEnd = () => {
     if (!touchStart || !touchEnd) return;
@@ -77,7 +77,7 @@ const HomePage = () => {
   return (
     <main className="min-h-screen font-sans text-[#161616] pt-[72px]">
       <section
-        className="relative w-full h-[50vh] sm:h-[60vh] md:h-[70vh] lg:h-[80vh] overflow-hidden group"
+        className="relative w-full h-[50vh] sm:h-[60vh] md:h-[60vh] lg:h-[75vh] xl:h-[100vh] overflow-hidden group"
         onTouchStart={handleTouchStart}
         onTouchMove={handleTouchMove}
         onTouchEnd={handleTouchEnd}
@@ -87,7 +87,7 @@ const HomePage = () => {
           style={{ transform: `translateX(-${currentSlide * 100}%)` }}
         >
           {slides.map((slide, index) => (
-            <div key={index} className="w-full h-full shrink-0 relative bg-[#f8f9fa]">
+            <div key={index} className="w-full h-full shrink-0 relative bg-none">
               <img src={slide} alt={`Slide ${index}`} className="w-full h-full" />
             </div>
           ))}
@@ -132,23 +132,22 @@ const HomePage = () => {
               <p className="text-gray-400">Aún no hay categorías disponibles.</p>
             </div>
           ) : (
-           categorias.map((servicio) => (
-              <div 
-                key={servicio.id} 
+            categorias.map((servicio) => (
+              <div
+                key={servicio.id}
                 className="relative w-full max-w-[416px] h-[512px] group [perspective:1000px] cursor-pointer"
                 onClick={() => setFlippedCard(flippedCard === servicio.id ? null : servicio.id)}
               >
-                <div 
-                  className={`relative w-full h-full transition-transform duration-700 [transform-style:preserve-3d] rounded-[30px] shadow-[0_15px_35px_rgba(0,0,0,0.2)] lg:group-hover:[transform:rotateY(180deg)] ${
-                    flippedCard === servicio.id ? '[transform:rotateY(180deg)]' : ''
-                  }`}
+                <div
+                  className={`relative w-full h-full transition-transform duration-700 [transform-style:preserve-3d] rounded-[30px] shadow-[0_15px_35px_rgba(0,0,0,0.2)] lg:group-hover:[transform:rotateY(180deg)] ${flippedCard === servicio.id ? '[transform:rotateY(180deg)]' : ''
+                    }`}
                 >
                   <div className="absolute inset-0 w-full h-full [backface-visibility:hidden] rounded-[30px] overflow-hidden z-10">
-                    <div 
+                    <div
                       className="absolute inset-0 bg-cover bg-center"
                       style={{ backgroundImage: `url(${servicio.imagenTarjeta || 'https://placehold.co/400x500/1a1a1a/FFF?text=Flex+Studio'})` }}
                     />
-                    <div 
+                    <div
                       className="absolute inset-0"
                       style={{ background: 'linear-gradient(to top, rgba(215, 242, 80, 0.48) 0%, rgba(15, 23, 42, 0.6) 50%, rgba(15, 23, 42, 0.2) 100%)' }}
                     />
@@ -169,7 +168,7 @@ const HomePage = () => {
                   </div>
 
                   <div className="absolute inset-0 w-full h-full [backface-visibility:hidden] [transform:rotateY(180deg)_translateZ(1px)] z-20 rounded-[30px] overflow-hidden bg-[#161616] p-[32px] flex flex-col justify-center items-center text-center">
-                    
+
                     <h4 className="text-[#d7f250] text-3xl font-bold mb-6">
                       {servicio.titulo}
                     </h4>
@@ -187,9 +186,9 @@ const HomePage = () => {
                       <ArrowRight className="w-[18px] h-[18px]" />
                     </Link>
 
-                    </div>
                   </div>
                 </div>
+              </div>
 
             ))
           )}
