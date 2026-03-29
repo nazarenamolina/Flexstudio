@@ -14,6 +14,7 @@ import { EditarCategoriaPage } from '../pages/admin/categorias/EditarCategoriaPa
 import { AdminVideosPage } from '../pages/admin/videos/AdminVideosPage';
 import { NuevoVideoPage } from '../pages/admin/videos/NuevoVideoPage';
 import { EditarVideoPage } from '../pages/admin/videos/EditarVideoPage';
+import PaginaError from '../pages/PaginaError';
 
 const LayoutConNav = () => {
   return (
@@ -65,7 +66,7 @@ export const AppRouter = () => {
             <Route index element={<Navigate to="categorias" replace />} />
           </Route>
         </Route>
-        <Route path="*" element={<Navigate to="/" replace />} />
+        <Route path="*" element={<PaginaError />} />
 
       </Routes>
     </BrowserRouter>
