@@ -17,7 +17,7 @@ export const LoginPage = () => {
       {/* --- LADO IZQUIERDO: Imagen --- */}
       <div
         className="w-full lg:w-1/2 h-72 lg:h-auto lg:min-h-screen bg-cover bg-center grayscale shrink-0"
-        style={{ backgroundImage: `url('https://res.cloudinary.com/dmp7mcwie/image/upload/v1773958271/flex-studio/categorias/vobkeubvl47zuy4teaek.jpg')` }}
+        style={{ backgroundImage: `url('https://res.cloudinary.com/dmp7mcwie/image/upload/v1774998043/fondologin_iltsgx.jpg')` }}
       >
         <div className="w-full h-full bg-black/40 p-6 lg:p-8 flex flex-col justify-between">
           <Link to="/" className="text-white text-xs font-bold tracking-widest hover:text-[#d7f250] transition-colors">
