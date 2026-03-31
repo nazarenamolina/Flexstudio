@@ -75,9 +75,9 @@ const HomePage = () => {
   }, []);
 
   return (
-    <main className="min-h-screen font-sans text-[#161616] pt-[72px]">
+    <main className="min-h-screen font-sans text-[#161616] pt-[52px]">
       <section
-        className="relative w-full h-[50vh] sm:h-[60vh] md:h-[70vh] lg:h-[80vh] overflow-hidden group"
+        className="relative w-full h-[50vh] sm:h-[60vh] md:h-[70vh] lg:h-[80vh] xl:h-[100vh] overflow-hidden group"
         onTouchStart={handleTouchStart}
         onTouchMove={handleTouchMove}
         onTouchEnd={handleTouchEnd}
@@ -87,7 +87,7 @@ const HomePage = () => {
           style={{ transform: `translateX(-${currentSlide * 100}%)` }}
         >
           {slides.map((slide, index) => (
-            <div key={index} className="w-full h-full shrink-0 relative bg-[#f8f9fa]">
+            <div key={index} className="w-full h-full shrink-0 relative ">
               <img src={slide} alt={`Slide ${index}`} className="w-full h-full" />
             </div>
           ))}
@@ -234,13 +234,9 @@ const HomePage = () => {
                 className="w-full bg-white border border-[#dee2e6] focus:border-[#0d6efd] focus:ring-[3px] focus:ring-[#0d6efd]/15 rounded-lg p-3 text-[#161616] placeholder-[#adb5bd] outline-none transition-all resize-none"
               />
             </div>
-
-            <button
-              type="submit"
-              className="w-full bg-[#161616] hover:bg-[#d7f250] hover:text-[#161616] hover:-translate-y-[1px] text-white font-bold py-3 px-4 rounded-lg transition-all mt-2"
-            >
-              Enviar
-            </button>
+            <Link to={`*`} className="w-full bg-[#161616] hover:bg-[#d7f250] hover:text-[#161616] hover:-translate-y-[1px] text-white font-bold py-3 px-4 rounded-lg transition-all mt-2">
+                <span>Enviar</span>
+            </Link>
           </form>
         </article>
 

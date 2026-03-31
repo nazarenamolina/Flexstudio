@@ -1,4 +1,4 @@
-import { BrowserRouter, Routes, Route, Navigate, Outlet } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Outlet } from 'react-router-dom';
 import { LoginPage } from '../pages/auth/LoginPage';
 import { AdminLayout } from '../components/layout/AdminLayout';
 import { RegistroPage } from '../pages/auth/RegistroPage';
@@ -12,6 +12,7 @@ import Categorias from '../pages/Categorias';
 import { NuevoVideoPage } from '../pages/admin/videos/NuevoVideoPage';
 import { EditarCategoriaPage } from '../pages/admin/categorias/EditarCategoriaPage';
 import { EditarVideoPage } from '../pages/admin/videos/EditarVideoPage';
+import PaginaError from '../pages/PaginaError';
 
 const LayoutConNav = () => {
   return (
@@ -50,7 +51,7 @@ export const AppRouter = () => {
 
         {/* === FALLBACK (Ruta por defecto) === */}
         {/* Si alguien entra a la raíz "/" o a una ruta que no existe, lo mandamos al login */}
-        <Route path="*" element={<Navigate to="/login" replace />} />
+        <Route path="*" element={<PaginaError />} />
       </Routes>
     </BrowserRouter>
   );
