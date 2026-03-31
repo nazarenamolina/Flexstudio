@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuthStore } from "../store/authStore";
 import { ShoppingCart, CircleUser, Search, LogOut, Menu, X, ChevronDown } from "lucide-react";
+import { AvatarIniciales } from "./AvatarIniciales"; // 👈 IMPORTANTE: Ajusta esta ruta si lo guardaste en otra carpeta
 
 export const HeaderComponent = () => {
   const { usuario, isAuthenticated, logout } = useAuthStore();
@@ -43,11 +44,11 @@ export const HeaderComponent = () => {
           <div className={`fixed inset-y-0 right-0 z-50 flex h-screen w-80 flex-col gap-6 bg-white px-8 pt-16 pb-10 shadow-2xl transition-transform duration-500 ease-in-out
       lg:static lg:z-auto lg:h-auto lg:w-auto lg:flex-row lg:items-center lg:p-0 lg:shadow-none lg:translate-x-0
       ${isMobileMenuOpen
-          ? "translate-x-0"
-          : "translate-x-full"
-      }
+              ? "translate-x-0"
+              : "translate-x-full"
+            }
     `}
-  >
+          >
 
             <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:gap-8">
               <div 
@@ -96,7 +97,15 @@ export const HeaderComponent = () => {
                     onClick={() => setIsProfileOpen(!isProfileOpen)}
                     className="flex w-full items-center justify-between text-[0.95rem] font-medium text-[#161616] transition-colors hover:text-[#d7f250] lg:w-auto py-2"
                   >
-                    <span className="flex items-center cursor-pointer"><CircleUser size={23} className="mr-2" /> Hola, {usuario?.nombre}</span>
+                    <span className="flex items-center cursor-pointer">
+                      <AvatarIniciales 
+                        nombre={usuario?.nombre || ''} 
+                        apellido={usuario?.apellido || ''} 
+                        size="sm" 
+                        className="mr-2" 
+                      />
+                      Hola, {usuario?.nombre}
+                    </span>
                     <ChevronDown size={16} className={`ml-2 transition-transform duration-300 ${isProfileOpen ? 'rotate-180' : ''}`} />
                   </button>
 
