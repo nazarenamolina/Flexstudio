@@ -10,7 +10,7 @@ const PaginaError = () => {
               <span>Volver al inicio</span>
         </Link>
         <p className="text-gray-600 mt-4 text-center">
-          Lorem ipsum dolor sit amet, consectetur adipisicing elit. Quos sit numquam assumenda necessitatibus molestias explicabo ipsa, possimus in illo. Nulla amet veniam debitis odio? Et, voluptatem necessitatibus. Illo, minus impedit.Lorem ipsum dolor sit amet consectetur adipisicing elit. Vero, dolores. Eligendi atque animi fugit repellendus esse. Vel voluptatum possimus neque repellat dolores rerum omnis dolor aspernatur numquam. Ipsum, recusandae quia?Lorem ipsum dolor sit amet consectetur adipisicing elit. Ipsum in, omnis eveniet commodi similique blanditiis voluptatibus. Optio recusandae maiores non consectetur ullam est modi, id porro asperiores, dicta harum temporibus?Lorem ipsum dolor sit amet, consectetur adipisicing elit. Pariatur totam ipsum rem hic unde, nesciunt a excepturi nihil voluptatem et recusandae ullam cum corporis delectus assumenda obcaecati qui rerum dolore!
+          Página en construccion. Por favor, vuelve más tarde o regresa al inicio.
         </p>
     </div>
   );
