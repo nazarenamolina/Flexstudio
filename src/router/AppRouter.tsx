@@ -16,6 +16,7 @@ import { EditarCategoriaPage } from '../pages/admin/categorias/EditarCategoriaPa
 import { AdminVideosPage } from '../pages/admin/videos/AdminVideosPage';
 import { NuevoVideoPage } from '../pages/admin/videos/NuevoVideoPage';
 import { EditarVideoPage } from '../pages/admin/videos/EditarVideoPage';
+import PaginaError from '../pages/PaginaError';
 
 const LayoutConNav = () => {
   return (
@@ -60,7 +61,6 @@ export const AppRouter = () => {
           <Route path="/registro" element={<RegistroPage />} />
         </Route>
 
-
         <Route element={<ProtectedRoute isAllowed={isAuthenticated && usuario?.rol === 'ADMIN'} redirectTo="/" />}>
           <Route path="/admin" element={<AdminLayout />}>
             <Route path="categorias" element={<CategoriasPage />} />
@@ -72,6 +72,7 @@ export const AppRouter = () => {
             <Route index element={<Navigate to="categorias" replace />} />
           </Route>
         </Route>
+        
         <Route path="*" element={<PaginaError />} />
       </Routes>
     </BrowserRouter>
