@@ -16,7 +16,6 @@ import { EditarCategoriaPage } from '../pages/admin/categorias/EditarCategoriaPa
 import { AdminVideosPage } from '../pages/admin/videos/AdminVideosPage';
 import { NuevoVideoPage } from '../pages/admin/videos/NuevoVideoPage';
 import { EditarVideoPage } from '../pages/admin/videos/EditarVideoPage';
-import PaginaError from '../pages/PaginaError';
 
 const LayoutConNav = () => {
   return (
@@ -37,12 +36,7 @@ export const AppRouter = () => {
   return (
     <BrowserRouter>
       <Routes>
-        
-        {/* ==========================================
-            1. RUTAS DEL CLIENTE (Con Navbar y Footer)
-            ========================================== */}
         <Route element={<LayoutConNav />}>
-          {/* 1.1 Públicas (Cualquiera entra) */}
           <Route path='/' element={<HomePage />} />
           <Route path='/categorias/:id' element={<Categorias />} />
           <Route element={<ProtectedRoute isAllowed={isAuthenticated} redirectTo="/login" />}>
@@ -72,7 +66,6 @@ export const AppRouter = () => {
             <Route index element={<Navigate to="categorias" replace />} />
           </Route>
         </Route>
-        
         <Route path="*" element={<PaginaError />} />
       </Routes>
     </BrowserRouter>
