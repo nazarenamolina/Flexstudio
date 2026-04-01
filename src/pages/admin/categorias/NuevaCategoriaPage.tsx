@@ -4,10 +4,13 @@ import { Controller } from 'react-hook-form';
 import { IconPicker } from '../../../components/IconPicker';
 
 export const NuevaCategoriaPage = () => {
-  const { register, handleSubmit, errors, isSubmitting, estadoSubida, progreso, archivos, handleFileChange, navigate, beneficiosFields, appendBeneficio, removeBeneficio, control } = useNuevaCategoria();
+  const { register, handleSubmit, errors, isSubmitting, estadoSubida, progreso, archivos, handleFileChange, handleEliminarMultimedia, watch, navigate, beneficiosFields, appendBeneficio, removeBeneficio, control } = useNuevaCategoria();
 
   const labelClass = "block text-sm font-bold text-gray-400 mb-2";
   const inputClass = "w-full bg-[#131313] border border-gray-800 focus:border-[#d7f250] focus:ring-1 focus:ring-[#d7f250]/50 rounded-xl px-4 py-3 text-white placeholder-gray-600 outline-none transition-all shadow-sm";
+  const descCard = watch('descripcionCard') || '';
+  const descBreve = watch('descripcionBreve') || '';
+
   if (estadoSubida === 'SUBIENDO_VIDEO' || estadoSubida === 'COMPLETADO') {
     return (
       <div className="w-full h-[80vh] flex flex-col items-center justify-center">
@@ -55,7 +58,12 @@ export const NuevaCategoriaPage = () => {
 
             <div className="mb-6">
               <label className={labelClass}>Descripción Tarjeta (Miniatura)</label>
-              <textarea rows={2} {...register('descripcionCard')} placeholder="Breve descripción para la tarjeta principal..." className={`${inputClass} resize-none`} />
+              <textarea rows={2} maxLength={255} {...register('descripcionCard')} placeholder="Breve descripción para la tarjeta..." className={`${inputClass} resize-none`} />
+              <div className="text-right mt-1">
+                <span className={`text-xs font-bold ${descCard.length >= 255 ? 'text-red-500' : 'text-gray-500'}`}>
+                  {descCard.length} / 255
+                </span>
+              </div>
             </div>
 
             <div>
@@ -70,7 +78,13 @@ export const NuevaCategoriaPage = () => {
 
             <div className="mb-8">
               <label className={labelClass}>Descripción de Suscripción</label>
-              <textarea rows={2} {...register('descripcionBreve')} placeholder="Ej: Únete a esta suscripción y obtén acceso a..." className={`${inputClass} resize-none`} />
+              <textarea rows={2} maxLength={255} {...register('descripcionBreve')} placeholder="Ej: Únete a esta suscripción y obtén acceso a..."
+                className={`${inputClass} resize-none`} />
+              <div className="text-right mt-1">
+                <span className={`text-xs font-bold ${descBreve.length >= 255 ? 'text-red-500' : 'text-gray-500'}`}>
+                  {descBreve.length} / 255
+                </span>
+              </div>
             </div>
 
             <div className="space-y-4">
@@ -141,41 +155,78 @@ export const NuevaCategoriaPage = () => {
         {/* COLUMNA DERECHA */}
         <div className="w-full xl:w-[400px] flex flex-col gap-6 shrink-0">
           <div className="bg-[#131313] p-6 rounded-[24px] border border-gray-800 shadow-sm flex flex-col gap-6">
-            <h3 className="text-xl font-bold text-white border-b border-gray-800 pb-4">Multimedia</h3>
-
-            {/* Imagen Tarjeta */}
+            <h3 className="text-xl font-bold text-white border-b border-gray-800 pb-4">Archivos Multimedia</h3>
             <div>
               <label className={labelClass}>Imagen Tarjeta</label>
               <div className="relative w-full h-40 border-2 border-dashed border-gray-700 hover:border-[#d7f250] rounded-xl flex flex-col items-center justify-center transition-colors bg-[#0a0a0a] overflow-hidden group cursor-pointer">
-                <input type="file" accept="image/*" onChange={(e) => handleFileChange(e, 'imagenTarjeta')} className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-20" />
-                {archivos.imagenTarjeta && <img src={URL.createObjectURL(archivos.imagenTarjeta)} alt="Preview" className="absolute inset-0 w-full h-full object-cover opacity-60" />}
-                <div className="z-10 flex flex-col items-center pointer-events-none"><ImageIcon className="h-8 w-8 mb-2 text-white" /><span className="text-sm font-medium text-white">Subir Portada</span></div>
+                <input type="file" accept="image/*" onChange={(e) => handleFileChange(e, 'imagenTarjeta')} className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10" />
+
+                {archivos.imagenTarjeta && (
+                  <>
+                    <img src={URL.createObjectURL(archivos.imagenTarjeta)} alt="Preview" className="absolute inset-0 w-full h-full object-cover opacity-60" />
+                    <button
+                      type="button"
+                      onClick={(e) => { e.preventDefault(); e.stopPropagation(); handleEliminarMultimedia('tarjeta'); }}
+                      className="absolute top-2 right-2 z-30 p-2 bg-red-500/80 hover:bg-red-500 text-white rounded-lg opacity-0 group-hover:opacity-100 transition-opacity"
+                    >
+                      <Trash2 size={16} />
+                    </button>
+                  </>
+                )}
+                <div className="z-0 flex flex-col items-center pointer-events-none">
+                  <ImageIcon className="h-8 w-8 mb-2 text-white" />
+                  <span className="text-sm font-medium text-white shadow-black drop-shadow-md">Subir Imagen</span>
+                </div>
               </div>
             </div>
-
-            {/* Imagen Hero */}
             <div>
-              <label className={labelClass}>Imagen Banner</label>
+              <label className={labelClass}>Imagen Hero</label>
               <div className="relative w-full h-32 border-2 border-dashed border-gray-700 hover:border-[#d7f250] rounded-xl flex flex-col items-center justify-center transition-colors bg-[#0a0a0a] overflow-hidden group cursor-pointer">
-                <input type="file" accept="image/*" onChange={(e) => handleFileChange(e, 'imagenHero')} className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-20" />
-                {archivos.imagenHero && <img src={URL.createObjectURL(archivos.imagenHero)} alt="Preview" className="absolute inset-0 w-full h-full object-cover opacity-60" />}
-                <div className="z-10 flex flex-col items-center pointer-events-none"><ImageIcon className="h-8 w-8 mb-2 text-white" /><span className="text-sm font-medium text-white">Subir Banner</span></div>
+                <input type="file" accept="image/*" onChange={(e) => handleFileChange(e, 'imagenHero')} className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10" />
+
+                {archivos.imagenHero && (
+                  <>
+                    <img src={URL.createObjectURL(archivos.imagenHero)} alt="Preview" className="absolute inset-0 w-full h-full object-cover opacity-60" />
+                    <button
+                      type="button"
+                      onClick={(e) => { e.preventDefault(); e.stopPropagation(); handleEliminarMultimedia('hero'); }}
+                      className="absolute top-2 right-2 z-30 p-2 bg-red-500/80 hover:bg-red-500 text-white rounded-lg opacity-0 group-hover:opacity-100 transition-opacity"
+                    >
+                      <Trash2 size={16} />
+                    </button>
+                  </>
+                )}
+                <div className="z-0 flex flex-col items-center pointer-events-none">
+                  <ImageIcon className="h-8 w-8 mb-2 text-white" />
+                  <span className="text-sm font-medium text-white shadow-black drop-shadow-md">Subir Banner</span>
+                </div>
               </div>
             </div>
-
-            {/* Video */}
             <div className="border-t border-gray-800 pt-4">
               <label className={labelClass}>Video de Muestra</label>
               <div className="relative w-full h-24 border-2 border-dashed border-gray-700 hover:border-[#d7f250] rounded-xl flex flex-col items-center justify-center transition-colors bg-[#0a0a0a] group cursor-pointer">
-                <input type="file" accept="video/*" onChange={(e) => handleFileChange(e, 'videoMuestra')} className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-20" />
+                <input type="file" accept="video/*" onChange={(e) => handleFileChange(e, 'videoMuestra')} className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10" />
+
+                {archivos.videoMuestra && (
+                  <button
+                    type="button"
+                    onClick={(e) => { e.preventDefault(); e.stopPropagation(); handleEliminarMultimedia('video'); }}
+                    className="absolute top-2 right-2 z-30 p-2 bg-red-500/80 hover:bg-red-500 text-white rounded-lg opacity-0 group-hover:opacity-100 transition-opacity"
+                  >
+                    <Trash2 size={16} />
+                  </button>
+                )}
+
                 <Film className={`h-6 w-6 mb-2 ${archivos.videoMuestra ? 'text-[#d7f250]' : 'text-gray-500'}`} />
-                <span className={`text-sm font-medium px-4 truncate w-full text-center ${archivos.videoMuestra ? 'text-[#d7f250]' : 'text-gray-500'}`}>{archivos.videoMuestra ? archivos.videoMuestra.name : 'Video promocional'}</span>
+                <span className={`text-sm font-medium px-4 truncate w-full text-center ${archivos.videoMuestra ? 'text-[#d7f250]' : 'text-gray-500'}`}>
+                  {archivos.videoMuestra ? archivos.videoMuestra.name : 'Subir video (Opcional)'}
+                </span>
               </div>
             </div>
           </div>
 
-          <button type="submit" disabled={isSubmitting || estadoSubida !== 'IDLE'} className="w-full bg-[#d7f250] hover:bg-[#c4dd46] text-[#131313] p-4 rounded-xl font-black text-lg flex items-center justify-center gap-2 transition-transform shadow-lg disabled:opacity-70 uppercase tracking-widest">
-            {isSubmitting ? <><Loader2 className="w-6 h-6 animate-spin" /> Procesando...</> : <><Save className="w-6 h-6" /> Guardar Disciplina</>}
+          <button type="submit" disabled={isSubmitting || estadoSubida !== 'IDLE'} className="w-full bg-[#d7f250] hover:bg-[#c4dd46] text-[#131313] p-4 rounded-xl font-black text-lg flex items-center justify-center gap-2 transition-transform duration-200 hover:-translate-y-1 shadow-lg disabled:opacity-70 disabled:hover:translate-y-0 uppercase tracking-widest">
+            {isSubmitting ? <><Loader2 className="w-6 h-6 animate-spin" /> Creando...</> : <><Save className="w-6 h-6" /> Crear Categoría</>}
           </button>
         </div>
       </form>
