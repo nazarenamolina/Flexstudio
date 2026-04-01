@@ -1,20 +1,29 @@
+import { useState } from 'react';
 import { ArrowLeft, Save, Image as ImageIcon, Loader2, Film, CloudUpload, CheckCircle2, Plus, Trash2 } from 'lucide-react';
 import { useEditarCategoria } from '../../../hooks/useEditarCategoria';
 import { Controller } from 'react-hook-form';
 import { IconPicker } from '../../../components/IconPicker';
+import { ConfirmarEliminarModal } from '../../../components/ConfirmarEliminarModal';
 
 export const EditarCategoriaPage = () => {
-  const { register, handleSubmit, errors, isSubmitting, cargandoDatos, estadoSubida, progreso, archivos, imagenesActuales, handleFileChange, navigate, beneficiosFields, appendBeneficio, removeBeneficio, control } = useEditarCategoria();
+  const { register, handleSubmit, errors, isSubmitting, cargandoDatos, estadoSubida, progreso, archivos, imagenesActuales, handleFileChange, handleEliminarMultimedia, watch, navigate, beneficiosFields, appendBeneficio, removeBeneficio, control } = useEditarCategoria();
+
+  const [itemAEliminar, setItemAEliminar] = useState<{
+    tipo: 'hero' | 'tarjeta' | 'video' | 'beneficio' | null;
+    indexBeneficio?: number;
+    tituloMostrar: string;
+  } | null>(null);
 
   const labelClass = "block text-sm font-bold text-gray-400 mb-2";
   const inputClass = "w-full bg-[#131313] border border-gray-800 focus:border-[#d7f250] focus:ring-1 focus:ring-[#d7f250]/50 rounded-xl px-4 py-3 text-white placeholder-gray-600 outline-none transition-all shadow-sm";
-
-  // 1. Pantalla de carga inicial
+  
   if (cargandoDatos) {
     return <div className="w-full h-full flex items-center justify-center text-[#d7f250]"><Loader2 className="w-10 h-10 animate-spin" /></div>;
   }
+  
+  const descCard = watch('descripcionCard') || '';
+  const descBreve = watch('descripcionBreve') || '';
 
-  // 2. Pantalla de progreso de video
   if (estadoSubida === 'SUBIENDO_VIDEO' || estadoSubida === 'COMPLETADO') {
     return (
       <div className="w-full h-[80vh] flex flex-col items-center justify-center">
@@ -29,9 +38,36 @@ export const EditarCategoriaPage = () => {
     );
   }
 
-  // 3. Formulario Principal
+  // 👇 Aquí arreglamos el error de TypeScript asegurándonos de que 'tipo' exista
+  const confirmarEliminacion = () => {
+    if (!itemAEliminar || !itemAEliminar.tipo) {
+      setItemAEliminar(null);
+      return;
+    }
+
+    if (itemAEliminar.tipo === 'beneficio') {
+      if (itemAEliminar.indexBeneficio !== undefined) {
+        removeBeneficio(itemAEliminar.indexBeneficio);
+      }
+    } else {
+      // Como ya descartamos 'beneficio' y 'null', TS sabe que es hero, tarjeta o video
+      handleEliminarMultimedia(itemAEliminar.tipo);
+    }
+    
+    setItemAEliminar(null);
+  };
+
   return (
     <div className="w-full h-full flex flex-col font-sans overflow-y-auto custom-scrollbar pr-2 pb-10">
+      
+      <ConfirmarEliminarModal
+        isOpen={!!itemAEliminar}
+        onClose={() => setItemAEliminar(null)}
+        onConfirm={confirmarEliminacion}
+        tituloItem={itemAEliminar?.tituloMostrar || ''}
+        estaEliminando={false}
+      />
+
       <div className="flex items-center gap-4 mb-8 shrink-0">
         <button onClick={() => navigate('/admin/categorias')} type="button" disabled={isSubmitting} className="p-2 bg-[#131313] hover:bg-gray-800 border border-gray-800 rounded-full text-white transition-colors disabled:opacity-50"><ArrowLeft size={24} /></button>
         <div>
@@ -41,11 +77,8 @@ export const EditarCategoriaPage = () => {
       </div>
 
       <form onSubmit={handleSubmit} className="flex flex-col xl:flex-row gap-8">
-
-        {/* COLUMNA IZQUIERDA: Textos y Beneficios */}
         <div className="flex-1 space-y-6">
 
-          {/* SECCIÓN 1: BANNER */}
           <div className="bg-[#131313] p-6 md:p-8 rounded-[24px] border border-gray-800 shadow-sm">
             <h3 className="text-xl font-bold text-white mb-6 border-b border-gray-800 pb-4">Sección Banner</h3>
 
@@ -64,7 +97,12 @@ export const EditarCategoriaPage = () => {
 
             <div className="mb-6">
               <label className={labelClass}>Descripción Tarjeta (Miniatura)</label>
-              <textarea rows={2} {...register('descripcionCard')} placeholder="Breve descripción para la tarjeta..." className={`${inputClass} resize-none`} />
+              <textarea rows={2} maxLength={255} {...register('descripcionCard')} placeholder="Breve descripción para la tarjeta..." className={`${inputClass} resize-none`}/>
+              <div className="text-right mt-1">
+                <span className={`text-xs font-bold ${descCard.length >= 255 ? 'text-red-500' : 'text-gray-500'}`}>
+                  {descCard.length} / 255
+                </span>
+              </div>
             </div>
 
             <div>
@@ -73,13 +111,17 @@ export const EditarCategoriaPage = () => {
             </div>
           </div>
 
-          {/* SECCIÓN 2: BENEFICIOS Y SUSCRIPCIÓN */}
           <div className="bg-[#131313] p-6 md:p-8 rounded-[24px] border border-gray-800 shadow-sm">
             <h3 className="text-xl font-bold text-white mb-6 border-b border-gray-800 pb-4">Sección Beneficios</h3>
 
             <div className="mb-8">
               <label className={labelClass}>Descripción de Suscripción</label>
-              <textarea rows={2} {...register('descripcionBreve')} placeholder="Ej: Únete a esta suscripción y obtén acceso a..." className={`${inputClass} resize-none`} />
+              <textarea rows={2} maxLength={255} {...register('descripcionBreve')} placeholder="Ej: Únete a esta suscripción y obtén acceso a..." className={`${inputClass} resize-none`}/>
+               <div className="text-right mt-1">
+                <span className={`text-xs font-bold ${descBreve.length >= 255 ? 'text-red-500' : 'text-gray-500'}`}>
+                  {descBreve.length} / 255
+                </span>
+              </div>
             </div>
 
             <div className="space-y-4">
@@ -87,23 +129,20 @@ export const EditarCategoriaPage = () => {
               {beneficiosFields.map((field, index) => (
                 <div key={field.id} className="relative p-5 bg-[#0a0a0a] border border-gray-800 rounded-xl flex flex-col md:flex-row gap-4 group">
                   <div className="flex-1 space-y-4">
-
-                    {/* 👇 EL NUEVO SELECTOR DE ÍCONOS */}
                     <div>
                       <label className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-2 block">
                         Ícono del beneficio
                       </label>
                       <Controller
-                        control={control} // Usamos el control que extrajimos de nuestro Hook
+                        control={control} 
                         name={`beneficios.${index}.icono`}
-                        defaultValue="CheckCircle" // El ícono que aparece seleccionado por defecto
+                        defaultValue="CheckCircle"
                         render={({ field }) => (
                           <IconPicker value={field.value || 'CheckCircle'} onChange={field.onChange} />
                         )}
                       />
                     </div>
 
-                    {/* El input del Título (con una línea separadora arriba) */}
                     <div className="pt-2 border-t border-gray-800 mt-2">
                       <input
                         type="text"
@@ -113,7 +152,6 @@ export const EditarCategoriaPage = () => {
                       />
                     </div>
 
-                    {/* El textarea de la Descripción */}
                     <div>
                       <textarea
                         rows={2}
@@ -124,10 +162,9 @@ export const EditarCategoriaPage = () => {
                     </div>
                   </div>
 
-                  {/* Botón para eliminar */}
                   <button
                     type="button"
-                    onClick={() => removeBeneficio(index)}
+                    onClick={() => setItemAEliminar({ tipo: 'beneficio', indexBeneficio: index, tituloMostrar: 'este beneficio' })}
                     className="md:self-start p-3 text-gray-500 hover:text-white hover:bg-red-500 rounded-xl transition-colors border border-gray-800 hover:border-red-500 bg-[#131313]"
                     title="Eliminar beneficio"
                   >
@@ -141,52 +178,79 @@ export const EditarCategoriaPage = () => {
 
         </div>
 
-        {/* COLUMNA DERECHA */}
         <div className="w-full xl:w-[400px] flex flex-col gap-6 shrink-0">
           <div className="bg-[#131313] p-6 rounded-[24px] border border-gray-800 shadow-sm flex flex-col gap-6">
             <h3 className="text-xl font-bold text-white border-b border-gray-800 pb-4">Archivos Multimedia</h3>
 
-            {/* Tarjeta */}
             <div>
               <label className={labelClass}>Imagen Tarjeta</label>
               <div className="relative w-full h-40 border-2 border-dashed border-gray-700 hover:border-[#d7f250] rounded-xl flex flex-col items-center justify-center transition-colors bg-[#0a0a0a] overflow-hidden group cursor-pointer">
-                <input type="file" accept="image/*" onChange={(e) => handleFileChange(e, 'imagenTarjeta')} className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-20" />
+                <input type="file" accept="image/*" onChange={(e) => handleFileChange(e, 'imagenTarjeta')} className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10" />
+                
                 {(archivos.imagenTarjeta || imagenesActuales.imagenTarjeta) && (
-                  <img src={archivos.imagenTarjeta ? URL.createObjectURL(archivos.imagenTarjeta) : imagenesActuales.imagenTarjeta} alt="Preview" className="absolute inset-0 w-full h-full object-cover opacity-60" />
+                  <>
+                    <img src={archivos.imagenTarjeta ? URL.createObjectURL(archivos.imagenTarjeta) : imagenesActuales.imagenTarjeta} alt="Preview" className="absolute inset-0 w-full h-full object-cover opacity-60" />
+                    <button 
+                      type="button" 
+                      onClick={(e) => { e.preventDefault(); e.stopPropagation(); setItemAEliminar({ tipo: 'tarjeta', tituloMostrar: 'la Imagen de Tarjeta' }); }}
+                      className="absolute top-2 right-2 z-30 p-2 bg-red-500/80 hover:bg-red-500 text-white rounded-lg opacity-0 group-hover:opacity-100 transition-opacity"
+                    >
+                      <Trash2 size={16} />
+                    </button>
+                  </>
                 )}
-                <div className="z-10 flex flex-col items-center pointer-events-none">
+                <div className="z-0 flex flex-col items-center pointer-events-none">
                   <ImageIcon className="h-8 w-8 mb-2 text-white" />
                   <span className="text-sm font-medium text-white shadow-black drop-shadow-md">Cambiar Imagen</span>
                 </div>
               </div>
             </div>
 
-            {/* Hero */}
             <div>
               <label className={labelClass}>Imagen Hero</label>
               <div className="relative w-full h-32 border-2 border-dashed border-gray-700 hover:border-[#d7f250] rounded-xl flex flex-col items-center justify-center transition-colors bg-[#0a0a0a] overflow-hidden group cursor-pointer">
-                <input type="file" accept="image/*" onChange={(e) => handleFileChange(e, 'imagenHero')} className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-20" />
+                <input type="file" accept="image/*" onChange={(e) => handleFileChange(e, 'imagenHero')} className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10" />
+                
                 {(archivos.imagenHero || imagenesActuales.imagenHero) && (
-                  <img src={archivos.imagenHero ? URL.createObjectURL(archivos.imagenHero) : imagenesActuales.imagenHero} alt="Preview" className="absolute inset-0 w-full h-full object-cover opacity-60" />
+                  <>
+                    <img src={archivos.imagenHero ? URL.createObjectURL(archivos.imagenHero) : imagenesActuales.imagenHero} alt="Preview" className="absolute inset-0 w-full h-full object-cover opacity-60" />
+                    <button 
+                      type="button" 
+                      onClick={(e) => { e.preventDefault(); e.stopPropagation(); setItemAEliminar({ tipo: 'hero', tituloMostrar: 'la Imagen Hero' }); }}
+                      className="absolute top-2 right-2 z-30 p-2 bg-red-500/80 hover:bg-red-500 text-white rounded-lg opacity-0 group-hover:opacity-100 transition-opacity"
+                    >
+                      <Trash2 size={16} />
+                    </button>
+                  </>
                 )}
-                <div className="z-10 flex flex-col items-center pointer-events-none">
+                <div className="z-0 flex flex-col items-center pointer-events-none">
                   <ImageIcon className="h-8 w-8 mb-2 text-white" />
                   <span className="text-sm font-medium text-white shadow-black drop-shadow-md">Cambiar Banner</span>
                 </div>
               </div>
             </div>
 
-            {/* Video */}
             <div className="border-t border-gray-800 pt-4">
               <label className={labelClass}>Video de Muestra</label>
               {imagenesActuales.tieneVideo && !archivos.videoMuestra && (
-                <p className="text-xs text-[#d7f250] mb-2 font-bold">✓ Esta disciplina ya tiene un video. Sube otro para reemplazarlo.</p>
+                <p className="text-xs text-[#d7f250] mb-2 font-bold">✓ Esta disciplina ya tiene un video.</p>
               )}
               <div className="relative w-full h-24 border-2 border-dashed border-gray-700 hover:border-[#d7f250] rounded-xl flex flex-col items-center justify-center transition-colors bg-[#0a0a0a] group cursor-pointer">
-                <input type="file" accept="video/*" onChange={(e) => handleFileChange(e, 'videoMuestra')} className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-20" />
+                <input type="file" accept="video/*" onChange={(e) => handleFileChange(e, 'videoMuestra')} className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10" />
+                
+                {(imagenesActuales.tieneVideo || archivos.videoMuestra) && (
+                  <button 
+                      type="button" 
+                      onClick={(e) => { e.preventDefault(); e.stopPropagation(); setItemAEliminar({ tipo: 'video', tituloMostrar: 'el Video de Muestra' }); }}
+                      className="absolute top-2 right-2 z-30 p-2 bg-red-500/80 hover:bg-red-500 text-white rounded-lg opacity-0 group-hover:opacity-100 transition-opacity"
+                    >
+                      <Trash2 size={16} />
+                  </button>
+                )}
+
                 <Film className={`h-6 w-6 mb-2 ${archivos.videoMuestra ? 'text-[#d7f250]' : 'text-gray-500'}`} />
                 <span className={`text-sm font-medium px-4 truncate w-full text-center ${archivos.videoMuestra ? 'text-[#d7f250]' : 'text-gray-500'}`}>
-                  {archivos.videoMuestra ? archivos.videoMuestra.name : 'Reemplazar video (Opcional)'}
+                  {archivos.videoMuestra ? archivos.videoMuestra.name : 'Subir o reemplazar video'}
                 </span>
               </div>
             </div>
