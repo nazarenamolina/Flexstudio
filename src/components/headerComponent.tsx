@@ -95,9 +95,9 @@ export const HeaderComponent = () => {
                 >
                   <button
                     onClick={() => setIsProfileOpen(!isProfileOpen)}
-                    className="flex w-full items-center justify-between text-[0.95rem] font-medium text-[#161616] transition-colors hover:text-[#d7f250] lg:w-auto py-2"
+                    className="flex w-full items-center justify-between py-2 text-[0.95rem] font-medium text-[#161616] transition-colors hover:text-[#d7f250] lg:w-auto lg:px-3"
                   >
-                    <span className="flex items-center cursor-pointer">
+                    <span className="flex items-center cursor-pointer whitespace-nowrap">
                       <AvatarIniciales 
                         nombre={usuario?.nombre || ''} 
                         apellido={usuario?.apellido || ''} 
