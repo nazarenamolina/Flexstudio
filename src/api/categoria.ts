@@ -1,6 +1,5 @@
 import { api } from './axios';
 
-// 1. LA INTERFAZ CENTRALIZADA
 export interface Categoria {
   id: string;
   titulo: string;
@@ -15,9 +14,7 @@ export interface Categoria {
   fechaCreacion?: string | Date;
 }
 
-// 2. LAS PETICIONES TIPADAS
 
-// Obtener todas
 export const obtenerCategoriasRequest = async (): Promise<Categoria[]> => {
   try {
     const respuesta = await api.get('/categorias');
@@ -27,7 +24,6 @@ export const obtenerCategoriasRequest = async (): Promise<Categoria[]> => {
   }
 };
 
-// Obtener por ID
 export const obtenerCategoriaPorIdRequest = async (id: string): Promise<Categoria> => {
   try {
     const respuesta = await api.get(`/categorias/${id}`);
@@ -39,7 +35,7 @@ export const obtenerCategoriaPorIdRequest = async (id: string): Promise<Categori
 
 export const crearCategoriaRequest = async (
   datosCategoria: FormData
-): Promise<{ categoria: Categoria; uploadUrl: string | null }> => { // 👈 ¡Cambiamos esto!
+): Promise<{ categoria: Categoria; uploadUrl: string | null }> => {  
   try {
     const respuesta = await api.post('/categorias', datosCategoria, {
       headers: {
@@ -52,7 +48,6 @@ export const crearCategoriaRequest = async (
   }
 };
 
-// Actualizar
 export const actualizarCategoriaRequest = async (
   id: string,
   datosCategoria: FormData
@@ -67,7 +62,6 @@ export const actualizarCategoriaRequest = async (
   }
 };
 
-// Eliminar
 export const eliminarCategoriaRequest = async (id: string): Promise<{ mensaje: string }> => {
   try {
     const respuesta = await api.delete(`/categorias/${id}`);

@@ -17,22 +17,10 @@ export interface EditarCategoriaForm {
 export const useEditarCategoria = () => {
   const navigate = useNavigate();
   const { id } = useParams();
-  const {
-    register,
-    handleSubmit,
-    reset,
-    control,
-    formState: { errors, isSubmitting }
-  } = useForm<EditarCategoriaForm>({
-    defaultValues: {
-      beneficios: []
-    }
+  const {register, handleSubmit, reset, control, watch, formState: { errors, isSubmitting }} = useForm<EditarCategoriaForm>({defaultValues: { beneficios: [] }
   });
-  const {
-    fields: beneficiosFields,
-    append: appendBeneficio,
-    remove: removeBeneficio
-  } = useFieldArray({
+
+  const { fields: beneficiosFields, append: appendBeneficio, remove: removeBeneficio } = useFieldArray({
     control,
     name: "beneficios",
   });
@@ -46,12 +34,17 @@ export const useEditarCategoria = () => {
     imagenHero: null as File | null,
     videoMuestra: null as File | null,
   });
-
   const [imagenesActuales, setImagenesActuales] = useState({
     imagenTarjeta: '',
     imagenHero: '',
     tieneVideo: false,
   });
+  const [borrar, setBorrar] = useState({
+    hero: false,
+    tarjeta: false,
+    video: false
+  });
+
   useEffect(() => {
     const cargarCategoria = async () => {
       try {
@@ -85,14 +78,32 @@ export const useEditarCategoria = () => {
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>, tipo: keyof typeof archivos) => {
     if (e.target.files && e.target.files.length > 0) {
       setArchivos({ ...archivos, [tipo]: e.target.files[0] });
+      if (tipo === 'imagenHero') setBorrar(prev => ({ ...prev, hero: false }));
+      if (tipo === 'imagenTarjeta') setBorrar(prev => ({ ...prev, tarjeta: false }));
+      if (tipo === 'videoMuestra') setBorrar(prev => ({ ...prev, video: false }));
     }
   };
-
+  const handleEliminarMultimedia = (tipo: 'hero' | 'tarjeta' | 'video') => {
+    if (tipo === 'hero') {
+      setArchivos(prev => ({ ...prev, imagenHero: null }));
+      setImagenesActuales(prev => ({ ...prev, imagenHero: '' }));
+      setBorrar(prev => ({ ...prev, hero: true }));
+    }
+    if (tipo === 'tarjeta') {
+      setArchivos(prev => ({ ...prev, imagenTarjeta: null }));
+      setImagenesActuales(prev => ({ ...prev, imagenTarjeta: '' }));
+      setBorrar(prev => ({ ...prev, tarjeta: true }));
+    }
+    if (tipo === 'video') {
+      setArchivos(prev => ({ ...prev, videoMuestra: null }));
+      setImagenesActuales(prev => ({ ...prev, tieneVideo: false }));
+      setBorrar(prev => ({ ...prev, video: true }));
+    }
+  };
   const onSubmit = async (data: EditarCategoriaForm) => {
     if (!id) return;
     setEstadoSubida('ACTUALIZANDO_CATEGORIA');
     const loadingToast = toast.loading('Guardando cambios...');
-
     try {
       const formData = new FormData();
       formData.append('titulo', data.titulo);
@@ -106,16 +117,19 @@ export const useEditarCategoria = () => {
           formData.append('beneficios', JSON.stringify(beneficiosValidos));
         }
       }
-
       if (archivos.imagenTarjeta) formData.append('imagenTarjeta', archivos.imagenTarjeta);
       if (archivos.imagenHero) formData.append('imagenHero', archivos.imagenHero);
-      if (archivos.videoMuestra) formData.append('necesitaVideoMuestra', 'true');
-
+      if (borrar.hero && !archivos.imagenHero) formData.append('eliminarImagenHero', 'true');
+      if (borrar.tarjeta && !archivos.imagenTarjeta) formData.append('eliminarImagenTarjeta', 'true');
+      
+      if (archivos.videoMuestra) {
+        formData.append('necesitaVideoMuestra', 'true');
+      } else if (borrar.video) {
+        formData.append('necesitaVideoMuestra', 'false');
+      }
       const respuestaBackend = await actualizarCategoriaRequest(id, formData);
       const uploadUrl = respuestaBackend.uploadUrl;
-
       toast.success('¡Textos y fotos actualizados!', { id: loadingToast });
-
       if (archivos.videoMuestra && uploadUrl) {
         setEstadoSubida('SUBIENDO_VIDEO');
         const upload = UpChunk.createUpload({
@@ -134,7 +148,6 @@ export const useEditarCategoria = () => {
           toast.error('Error al subir el nuevo video. Lo demás sí se guardó.');
           navigate('/admin/categorias');
         });
-
         return;
       }
 
@@ -147,5 +160,5 @@ export const useEditarCategoria = () => {
   };
 
   return {register, handleSubmit: handleSubmit(onSubmit), errors, isSubmitting, cargandoDatos, estadoSubida, progreso, archivos, imagenesActuales,
-    handleFileChange, navigate, beneficiosFields, appendBeneficio, removeBeneficio, control};
+    handleFileChange, handleEliminarMultimedia, watch, navigate, beneficiosFields, appendBeneficio, removeBeneficio, control};
 };
