@@ -16,6 +16,7 @@ import { EditarCategoriaPage } from '../pages/admin/categorias/EditarCategoriaPa
 import { AdminVideosPage } from '../pages/admin/videos/AdminVideosPage';
 import { NuevoVideoPage } from '../pages/admin/videos/NuevoVideoPage';
 import { EditarVideoPage } from '../pages/admin/videos/EditarVideoPage';
+import VideosPage from '../pages/VideosPage';
 
 const LayoutConNav = () => {
   return (
@@ -41,6 +42,7 @@ export const AppRouter = () => {
           <Route path='/categorias/:id' element={<Categorias />} />
           <Route element={<ProtectedRoute isAllowed={isAuthenticated} redirectTo="/login" />}>
             <Route path='/mi-perfil' element={<MiPerfilPage />} />
+            <Route path='/videos' element={<VideosPage />} />
           </Route>
         </Route>
         <Route 
