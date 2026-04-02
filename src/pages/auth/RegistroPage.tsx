@@ -3,10 +3,9 @@ import { Link } from 'react-router-dom';
 import { Loader2, Eye, EyeOff } from 'lucide-react';
 import { useRegistro } from '../../hooks/useRegistro';
 import { Controller } from 'react-hook-form';
-import PhoneInputRaw from 'react-phone-input-2';
-import 'react-phone-input-2/lib/style.css';
+import PhoneInput from 'react-phone-number-input';
+import 'react-phone-number-input/style.css';
 import { Country, State } from 'country-state-city';
-const PhoneInput = (PhoneInputRaw as any).default || PhoneInputRaw;
 
 export const RegistroPage = () => {
   const [mostrarPass, setMostrarPass] = useState(false);
@@ -26,7 +25,9 @@ export const RegistroPage = () => {
   const labelClass = "block text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1";
   const inputClass = (error?: any) => `w-full bg-transparent border ${error ? 'border-red-500 focus:border-red-500 focus:ring-red-500/20' : 'border-[#d7f250] focus:border-white focus:ring-white/20'
     } rounded-md px-3 py-2 text-white placeholder-gray-600 focus:outline-none transition-all`;
-  const paisSeleccionado = watch('pais');
+
+  const paisSeleccionadoNombre = watch('pais');
+  const paisIsoCode = Country.getAllCountries().find(c => c.name === paisSeleccionadoNombre)?.isoCode;
 
   return (
     <div className="min-h-screen lg:h-screen lg:overflow-hidden flex flex-col lg:flex-row bg-bg-card font-sans">
@@ -104,66 +105,61 @@ export const RegistroPage = () => {
               <h3 className="text-white font-bold mb-4 border-b border-gray-800 pb-2">Datos de Contacto</h3>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {/* 👇 TELÉFONO INTERNACIONAL */}
+                {/* TELÉFONO INTERNACIONAL */}
                 <div>
                   <label className={labelClass}>Teléfono</label>
+
                   <Controller
-                    control={control}
                     name="telefono"
+                    control={control}
                     render={({ field: { onChange, value } }) => (
-                      <PhoneInput
-                        value={value}
-                        onChange={onChange}
-                        countryCodeEditable={false}
-                        masks={{ ar: '... .......' }}
-                        inputStyle={{
-                          width: '100%',
-                          height: '38px',
-                          background: 'transparent',
-                          border: errors.telefono ? '1px solid #ef4444' : '1px solid #d7f250',
-                          color: 'white',
-
-                        }}
-                        buttonStyle={{
-                          background: '#0a0a0a',
-                          border: '1px solid #d7f250',
-                          borderRight: '1px solid #d7f250',
-
-                        }}
-                        dropdownStyle={{
-                          background: '#131313',
-                          color: 'white',
-                          border: '1px solid #d7f250',
-                        }}
-                      />
+                      <div className="phone-wrapper">
+                        <PhoneInput
+                          international
+                          defaultCountry="AR"
+                          countryCallingCodeEditable={false}
+                          value={value}
+                          onChange={onChange}
+                          className="phone-input"
+                        />
+                      </div>
                     )}
                   />
-                </div>
 
+                  {errors.telefono && (
+                    <p className="text-xs text-red-500 mt-1">
+                      {errors.telefono?.message}
+                    </p>
+                  )}
+                </div>
                 <div>
                   <label className={labelClass}>Fecha de Nacimiento</label>
                   <input type="date" {...register('fechaNacimiento')} className={inputClass(errors.fechaNacimiento)} />
                 </div>
+
+                {/* 👇 SELECTOR DE PAÍS CON NOMBRE REAL */}
                 <div>
                   <label className={labelClass}>País</label>
                   <select {...register('pais')} className={inputClass(errors.pais)}>
                     <option value="" className="bg-[#131313]">Seleccione un país</option>
                     {Country.getAllCountries().map((country) => (
-                      <option key={country.isoCode} value={country.isoCode} className="bg-[#131313]">
+                      <option key={country.isoCode} value={country.name} className="bg-[#131313]">
                         {country.name}
                       </option>
                     ))}
                   </select>
                 </div>
+                
+                {/* 👇 SELECTOR DE PROVINCIA DEPENDIENTE DEL ISO CODE */}
                 <div>
                   <label className={labelClass}>Provincia / Estado</label>
                   <select
                     {...register('provincia')}
                     className={inputClass(errors.provincia)}
-                    disabled={!paisSeleccionado}
+                    disabled={!paisIsoCode}
                   >
                     <option value="" className="bg-[#131313]">Seleccione una provincia</option>
-                    {paisSeleccionado && State.getStatesOfCountry(paisSeleccionado).map((state) => (
+                    {paisIsoCode && State.getStatesOfCountry(paisIsoCode).map((state) => (
                       <option key={state.isoCode} value={state.name} className="bg-[#131313]">
                         {state.name}
                       </option>
