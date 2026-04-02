@@ -16,3 +16,53 @@ body {
   background-color: #ffff;
   background-image: url("https://res.cloudinary.com/dmp7mcwie/image/upload/v1774312699/fondo_hwrosv.png");
 }
+
+
+.react-tel-input .selected-flag:hover,
+.react-tel-input .selected-flag:focus,
+.react-tel-input .flag-dropdown.open .selected-flag {
+  background-color: transparent !important; 
+  border: 1px solid #d7f250;
+
+ 
+}
+
+.react-tel-input .flag-dropdown:hover,
+.react-tel-input .flag-dropdown:focus,
+.react-tel-input .flag-dropdown.open {
+  border-color: transparent !important;
+  border-right: 1px solid #333 !important; 
+}
+
+.react-tel-input .country-list .country:hover {
+  background-color: #2a2a2a !important;
+}
+.react-tel-input .country-list .country.highlight {
+  background-color: #333 !important;
+}
+
+.react-tel-input button,
+.react-tel-input .flag-dropdown,
+.react-tel-input .selected-flag,
+.react-tel-input .selected-flag:hover,
+.react-tel-input .selected-flag:focus,
+.react-tel-input .selected-flag:active,
+.react-tel-input .flag-dropdown.open .selected-flag {
+  transform: none !important;
+  translate: none !important;
+  scale: 1 !important;     
+  margin: 0 !important;
+  top: 0 !important;
+  outline: none !important; 
+  box-shadow: none !important;
+}
+
+.react-tel-input .flag-dropdown:focus,
+.react-tel-input .flag-dropdown:focus-within,
+.react-tel-input .selected-flag:focus,
+.react-tel-input .selected-flag:focus-visible,
+.react-tel-input .selected-flag:active,
+.react-tel-input .flag-dropdown.open .selected-flag {
+  outline: none !important;
+  box-shadow: none !important;
+}
