@@ -17,52 +17,38 @@ body {
   background-image: url("https://res.cloudinary.com/dmp7mcwie/image/upload/v1774312699/fondo_hwrosv.png");
 }
 
+/* CONTENEDOR GENERAL */
+.phone-wrapper {
+  @apply w-full;
+}
 
-.react-tel-input .selected-flag:hover,
-.react-tel-input .selected-flag:focus,
-.react-tel-input .flag-dropdown.open .selected-flag {
-  background-color: transparent !important; 
-  border: 1px solid #d7f250;
+/* INPUT COMPLETO (Contenedor padre) */
+/* 🔥 Aquí ponemos el borde principal para que envuelva todo sin romperse */
+.phone-input {
+  @apply flex items-center w-full bg-transparent border border-[#d7f250] rounded-md h-[38px] transition-all;
+}
+
+/* BOTÓN DE PAÍS (bandera + flechita) */
+.phone-input .PhoneInputCountry {
+  @apply flex items-center justify-center px-3 h-full border-r border-[#333] mr-0;
+}
 
  
+.phone-input .PhoneInputInput {
+  @apply flex-1 w-full bg-transparent px-3 py-2 text-white outline-none border-none shadow-none h-full rounded-r-md;
 }
 
-.react-tel-input .flag-dropdown:hover,
-.react-tel-input .flag-dropdown:focus,
-.react-tel-input .flag-dropdown.open {
-  border-color: transparent !important;
-  border-right: 1px solid #333 !important; 
+
+.phone-input:focus-within {
+  @apply border-white ring-1 ring-white/20 ;
 }
 
-.react-tel-input .country-list .country:hover {
-  background-color: #2a2a2a !important;
-}
-.react-tel-input .country-list .country.highlight {
-  background-color: #333 !important;
+/* DROPDOWN (Selector nativo de países) */
+.PhoneInputCountrySelect {
+  @apply bg-[#131313] text-white cursor-pointer;
 }
 
-.react-tel-input button,
-.react-tel-input .flag-dropdown,
-.react-tel-input .selected-flag,
-.react-tel-input .selected-flag:hover,
-.react-tel-input .selected-flag:focus,
-.react-tel-input .selected-flag:active,
-.react-tel-input .flag-dropdown.open .selected-flag {
-  transform: none !important;
-  translate: none !important;
-  scale: 1 !important;     
-  margin: 0 !important;
-  top: 0 !important;
-  outline: none !important; 
-  box-shadow: none !important;
-}
-
-.react-tel-input .flag-dropdown:focus,
-.react-tel-input .flag-dropdown:focus-within,
-.react-tel-input .selected-flag:focus,
-.react-tel-input .selected-flag:focus-visible,
-.react-tel-input .selected-flag:active,
-.react-tel-input .flag-dropdown.open .selected-flag {
-  outline: none !important;
-  box-shadow: none !important;
+/* Asegura que las opciones desplegables sean oscuras */
+.PhoneInputCountrySelect option {
+  @apply bg-[#131313] text-white;
 }
