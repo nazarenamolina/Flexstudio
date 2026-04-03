@@ -17,6 +17,7 @@ import { AdminVideosPage } from '../pages/admin/videos/AdminVideosPage';
 import { NuevoVideoPage } from '../pages/admin/videos/NuevoVideoPage';
 import { EditarVideoPage } from '../pages/admin/videos/EditarVideoPage';
 import VideosPage from '../pages/VideosPage';
+import { ScrollToTop } from '../components/ScrollToTop';
 
 const LayoutConNav = () => {
   return (
@@ -36,6 +37,7 @@ export const AppRouter = () => {
 
   return (
     <BrowserRouter>
+    <ScrollToTop />
       <Routes>
         <Route element={<LayoutConNav />}>
           <Route path='/' element={<HomePage />} />

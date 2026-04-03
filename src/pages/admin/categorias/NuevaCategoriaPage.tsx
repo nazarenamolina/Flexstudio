@@ -49,10 +49,24 @@ export const NuevaCategoriaPage = () => {
                 <input type="text" {...register('titulo', { required: 'El título es obligatorio' })} placeholder="Ej: Danza Inicial" className={inputClass} />
                 {errors.titulo && <p className="text-red-500 text-xs mt-1">{errors.titulo.message}</p>}
               </div>
+              {/* PRECIO ARGENTINA */}
               <div>
-                <label className={labelClass}>Precio ($) *</label>
-                <input type="number" step="0.01" {...register('precio', { required: 'El precio es obligatorio', min: { value: 0, message: 'Debe ser mayor a 0' } })} placeholder="Ej: 5000" className={inputClass} />
-                {errors.precio && <p className="text-red-500 text-xs mt-1">{errors.precio.message}</p>}
+                <label className="block text-xs font-bold text-gray-400 uppercase mb-1">Precio (ARS) *</label>
+                <input
+                  type="number"
+                  {...register('precioArs')}
+                  className="w-full bg-transparent border border-[#d7f250] rounded-md px-3 py-2 text-white"
+                />
+              </div>
+
+              {/* PRECIO INTERNACIONAL */}
+              <div>
+                <label className="block text-xs font-bold text-gray-400 uppercase mb-1">Precio (USD) *</label>
+                <input
+                  type="number"
+                  {...register('precioUsd')}
+                  className="w-full bg-transparent border border-[#d7f250] rounded-md px-3 py-2 text-white"
+                />
               </div>
             </div>
 

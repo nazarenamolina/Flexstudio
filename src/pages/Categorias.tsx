@@ -4,12 +4,21 @@ import { obtenerCategoriaPorIdRequest, type Categoria } from "../api/categoria";
 import { CheckCircle2 } from "lucide-react";
 import MuxPlayer from "@mux/mux-player-react";
 import { DynamicIcon } from "../components/IconPicker";
+import { useMoneda } from "../hooks/useMoneda"; // 👈 1. IMPORTAMOS EL HOOK
 
 const CategoriaDetailPage = () => {
   const { id } = useParams<{ id: string }>();
   const [categoria, setCategoria] = useState<Categoria | null>(null);
   const [cargando, setCargando] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
+
+  // 👈 2. LLAMAMOS AL HOOK
+  const { moneda, cargandoMoneda } = useMoneda();
+
+  // Forzar scroll arriba al entrar
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
 
   useEffect(() => {
     const cargarDetalle = async () => {
@@ -48,6 +57,10 @@ const CategoriaDetailPage = () => {
 
   if (!categoria) return null;
 
+  // 👈 3. LÓGICA DE PRECIOS: Elegimos el precio y el símbolo en base a la moneda
+  const precioAMostrar = moneda === 'ARS' ? categoria.precioArs : categoria.precioUsd;
+  const simbolo = moneda === 'ARS' ? '$' : 'U$D';
+
   const tituloPartes = categoria.titulo ? categoria.titulo.split(" ") : ["CLASE", "EXCLUSIVA"];
   const primeraParte = tituloPartes.slice(0, Math.ceil(tituloPartes.length / 2)).join(" ");
   const segundaParte = tituloPartes.slice(Math.ceil(tituloPartes.length / 2)).join(" ");
@@ -79,8 +92,9 @@ const CategoriaDetailPage = () => {
             {categoria.descripcionDetallada || "Descripción no disponible."}
           </p>
           <div className="flex flex-col gap-4 sm:flex-row">
+            {/* 👈 4. ACTUALIZAMOS EL BOTÓN DEL HERO */}
             <button className="mt-8 rounded-full bg-neon-pink px-8 py-4 font-principal text-xl font-bold text-[#131313] cursor-pointer transition hover:bg-[#ffffff] hover:text-[#131313] duration-700 hover:-translate-y-1">
-              COMPRAR AHORA ${categoria.precio}
+              {cargandoMoneda ? 'CALCULANDO PRECIO...' : `COMPRAR AHORA ${simbolo}${precioAMostrar}`}
             </button>
             {categoria.playbackIdMuestra && (
               <a href="#trailer" className="mt-8 rounded-full bg-neon-pink px-8 py-4 font-principal text-xl font-bold text-[#131313] cursor-pointer transition hover:bg-[#ffffff] hover:text-[#131313] duration-700 hover:-translate-y-1">
@@ -104,7 +118,6 @@ const CategoriaDetailPage = () => {
         </div>
 
         <div className="grid gap-6 sm:grid-cols-2 lg:w-2/3">
-          {/* Renderizado dinámico de beneficios */}
           {categoria.beneficios && categoria.beneficios.length > 0 ? (
             categoria.beneficios.map((beneficio, index) => (
               <div key={index} className="group rounded-xl bg-[#d7f250] p-6 transition-all duration-700 hover:bg-[#131313] hover:text-neon-pink active:bg-[#131313] active:text-neon-pink">
@@ -123,8 +136,8 @@ const CategoriaDetailPage = () => {
           )}
         </div>
       </section>
-      {/* SECCIÓN 3: PREVIEW (MUX PLAYER) */}
-      {/* Solo mostramos esta sección si realmente existe un video de muestra */}
+
+      {/* SECCIÓN 3: PREVIEW */}
       {categoria.playbackIdMuestra && (
         <section className="bg-[#131313] my-15 py-1">
           <div id="trailer" className="mx-auto my-10 flex max-w-5xl flex-col items-center px-6 text-center">
@@ -154,7 +167,10 @@ const CategoriaDetailPage = () => {
           <span className="mb-4 rounded-full bg-[#131313]/50 px-4 py-1 text-sm font-bold text-white">
             OFERTA DE LANZAMIENTO
           </span>
-          <div className="font-principal text-white text-4xl sm:text-5xl md:text-6xl font-bold w-full text-center tracking-tight">${categoria.precio}</div>
+          {/* 👈 5. ACTUALIZAMOS EL TEXTO DEL PRECIO GRANDE */}
+          <div className="font-principal text-white text-4xl sm:text-5xl md:text-6xl font-bold w-full text-center tracking-tight">
+            {cargandoMoneda ? '...' : `${simbolo}${precioAMostrar}`}
+          </div>
           <button className="mt-8 w-full rounded-full bg-neon-pink px-4 sm:px-8 py-3 sm:py-4 font-principal text-lg sm:text-xl font-bold text-[#131313] cursor-pointer transition hover:bg-[#ffffff] hover:text-[#131313] duration-700 hover:-translate-y-1">
             COMPRAR AHORA
           </button>
@@ -171,4 +187,4 @@ const CategoriaDetailPage = () => {
   );
 };
 
-export default CategoriaDetailPage;
+export default CategoriaDetailPage; 

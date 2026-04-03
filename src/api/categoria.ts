@@ -6,7 +6,8 @@ export interface Categoria {
   descripcionCard?: string;
   descripcionBreve?: string;
   descripcionDetallada?: string;
-  precio: number;
+  precioArs:number;
+  precioUsd: number;
   playbackIdMuestra?: string;
   imagenHero?: string;
   imagenTarjeta?: string;

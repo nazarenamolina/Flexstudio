@@ -11,6 +11,7 @@ export interface Usuario {
   apellido: string;
   correo: string;
   rol: string;
+  pais?:string;
 }
 
 export interface LoginResponse {

@@ -7,7 +7,8 @@ import { crearCategoriaRequest } from '../api/categoria';
 
 export interface NuevaCategoriaForm {
   titulo: string;
-  precio: number;
+  precioArs: number;
+  precioUsd:number;
   descripcionCard: string;
   descripcionBreve: string;
   descripcionDetallada: string;
@@ -48,7 +49,8 @@ export const useNuevaCategoria = () => {
     try {
       const formData = new FormData();
       formData.append('titulo', data.titulo);
-      formData.append('precio', data.precio.toString());
+      formData.append('precioArs', data.precioArs.toString());
+      formData.append('precioUsd', data.precioUsd.toString());
       if (data.descripcionCard) formData.append('descripcionCard', data.descripcionCard);
       if (data.descripcionBreve) formData.append('descripcionBreve', data.descripcionBreve);
       if (data.descripcionDetallada) formData.append('descripcionDetallada', data.descripcionDetallada);

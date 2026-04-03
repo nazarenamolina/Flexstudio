@@ -7,7 +7,8 @@ import { obtenerCategoriaPorIdRequest, actualizarCategoriaRequest } from '../api
 
 export interface EditarCategoriaForm {
   titulo: string;
-  precio: number | string;
+  precioArs: number | string;
+  precioUsd: number | string;
   descripcionCard: string;
   descripcionBreve: string;
   descripcionDetallada: string;
@@ -52,7 +53,8 @@ export const useEditarCategoria = () => {
         const cat = await obtenerCategoriaPorIdRequest(id);
         reset({
           titulo: cat.titulo || '',
-          precio: cat.precio || '',
+          precioArs: cat.precioArs || '',
+          precioUsd: cat.precioUsd || '',
           descripcionCard: cat.descripcionCard || '',
           descripcionBreve: cat.descripcionBreve || '',
           descripcionDetallada: cat.descripcionDetallada || '',
@@ -107,7 +109,8 @@ export const useEditarCategoria = () => {
     try {
       const formData = new FormData();
       formData.append('titulo', data.titulo);
-      formData.append('precio', data.precio.toString());
+      formData.append('precioArs', data.precioArs.toString());
+      formData.append('precioUsd', data.precioUsd.toString());
       if (data.descripcionCard) formData.append('descripcionCard', data.descripcionCard);
       if (data.descripcionBreve) formData.append('descripcionBreve', data.descripcionBreve);
       if (data.descripcionDetallada) formData.append('descripcionDetallada', data.descripcionDetallada);
