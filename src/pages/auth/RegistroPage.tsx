@@ -2,9 +2,9 @@ import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Loader2, Eye, EyeOff } from 'lucide-react';
 import { useRegistro } from '../../hooks/useRegistro';
-import { Controller } from 'react-hook-form';
-import PhoneInput from 'react-phone-number-input';
+import PhoneInput, { isValidPhoneNumber } from 'react-phone-number-input';
 import 'react-phone-number-input/style.css';
+import { Controller } from 'react-hook-form';
 import { Country, State } from 'country-state-city';
 
 export const RegistroPage = () => {
@@ -112,6 +112,8 @@ export const RegistroPage = () => {
                   <Controller
                     name="telefono"
                     control={control}
+                    rules={{required: 'El teléfono es obligatorio', validate: (value) => {if (!value) return true;
+                        return isValidPhoneNumber(value) || 'El número no es válido para el país seleccionado';}}}
                     render={({ field: { onChange, value } }) => (
                       <div className="phone-wrapper">
                         <PhoneInput
@@ -149,7 +151,7 @@ export const RegistroPage = () => {
                     ))}
                   </select>
                 </div>
-                
+
                 {/* 👇 SELECTOR DE PROVINCIA DEPENDIENTE DEL ISO CODE */}
                 <div>
                   <label className={labelClass}>Provincia / Estado</label>

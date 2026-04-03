@@ -16,11 +16,11 @@ export const EditarCategoriaPage = () => {
 
   const labelClass = "block text-sm font-bold text-gray-400 mb-2";
   const inputClass = "w-full bg-[#131313] border border-gray-800 focus:border-[#d7f250] focus:ring-1 focus:ring-[#d7f250]/50 rounded-xl px-4 py-3 text-white placeholder-gray-600 outline-none transition-all shadow-sm";
-  
+
   if (cargandoDatos) {
     return <div className="w-full h-full flex items-center justify-center text-[#d7f250]"><Loader2 className="w-10 h-10 animate-spin" /></div>;
   }
-  
+
   const descCard = watch('descripcionCard') || '';
   const descBreve = watch('descripcionBreve') || '';
 
@@ -53,13 +53,13 @@ export const EditarCategoriaPage = () => {
       // Como ya descartamos 'beneficio' y 'null', TS sabe que es hero, tarjeta o video
       handleEliminarMultimedia(itemAEliminar.tipo);
     }
-    
+
     setItemAEliminar(null);
   };
 
   return (
     <div className="w-full h-full flex flex-col font-sans overflow-y-auto custom-scrollbar pr-2 pb-10">
-      
+
       <ConfirmarEliminarModal
         isOpen={!!itemAEliminar}
         onClose={() => setItemAEliminar(null)}
@@ -88,16 +88,30 @@ export const EditarCategoriaPage = () => {
                 <input type="text" {...register('titulo', { required: 'Obligatorio' })} className={inputClass} />
                 {errors.titulo && <p className="text-red-500 text-xs mt-1">{errors.titulo.message}</p>}
               </div>
+              {/* PRECIO ARGENTINA */}
               <div>
-                <label className={labelClass}>Precio ($) *</label>
-                <input type="number" step="0.01" {...register('precio', { required: 'Obligatorio' })} className={inputClass} />
-                {errors.precio && <p className="text-red-500 text-xs mt-1">{errors.precio.message}</p>}
+                <label className="block text-xs font-bold text-gray-400 uppercase mb-1">Precio (ARS) *</label>
+                <input
+                  type="number"
+                  {...register('precioArs')}
+                  className="w-full bg-transparent border border-[#d7f250] rounded-md px-3 py-2 text-white"
+                />
+              </div>
+
+              {/* PRECIO INTERNACIONAL */}
+              <div>
+                <label className="block text-xs font-bold text-gray-400 uppercase mb-1">Precio (USD) *</label>
+                <input
+                  type="number"
+                  {...register('precioUsd')}
+                  className="w-full bg-transparent border border-[#d7f250] rounded-md px-3 py-2 text-white"
+                />
               </div>
             </div>
 
             <div className="mb-6">
               <label className={labelClass}>Descripción Tarjeta (Miniatura)</label>
-              <textarea rows={2} maxLength={255} {...register('descripcionCard')} placeholder="Breve descripción para la tarjeta..." className={`${inputClass} resize-none`}/>
+              <textarea rows={2} maxLength={255} {...register('descripcionCard')} placeholder="Breve descripción para la tarjeta..." className={`${inputClass} resize-none`} />
               <div className="text-right mt-1">
                 <span className={`text-xs font-bold ${descCard.length >= 255 ? 'text-red-500' : 'text-gray-500'}`}>
                   {descCard.length} / 255
@@ -116,8 +130,8 @@ export const EditarCategoriaPage = () => {
 
             <div className="mb-8">
               <label className={labelClass}>Descripción de Suscripción</label>
-              <textarea rows={2} maxLength={255} {...register('descripcionBreve')} placeholder="Ej: Únete a esta suscripción y obtén acceso a..." className={`${inputClass} resize-none`}/>
-               <div className="text-right mt-1">
+              <textarea rows={2} maxLength={255} {...register('descripcionBreve')} placeholder="Ej: Únete a esta suscripción y obtén acceso a..." className={`${inputClass} resize-none`} />
+              <div className="text-right mt-1">
                 <span className={`text-xs font-bold ${descBreve.length >= 255 ? 'text-red-500' : 'text-gray-500'}`}>
                   {descBreve.length} / 255
                 </span>
@@ -134,7 +148,7 @@ export const EditarCategoriaPage = () => {
                         Ícono del beneficio
                       </label>
                       <Controller
-                        control={control} 
+                        control={control}
                         name={`beneficios.${index}.icono`}
                         defaultValue="CheckCircle"
                         render={({ field }) => (
@@ -186,12 +200,12 @@ export const EditarCategoriaPage = () => {
               <label className={labelClass}>Imagen Tarjeta</label>
               <div className="relative w-full h-40 border-2 border-dashed border-gray-700 hover:border-[#d7f250] rounded-xl flex flex-col items-center justify-center transition-colors bg-[#0a0a0a] overflow-hidden group cursor-pointer">
                 <input type="file" accept="image/*" onChange={(e) => handleFileChange(e, 'imagenTarjeta')} className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10" />
-                
+
                 {(archivos.imagenTarjeta || imagenesActuales.imagenTarjeta) && (
                   <>
                     <img src={archivos.imagenTarjeta ? URL.createObjectURL(archivos.imagenTarjeta) : imagenesActuales.imagenTarjeta} alt="Preview" className="absolute inset-0 w-full h-full object-cover opacity-60" />
-                    <button 
-                      type="button" 
+                    <button
+                      type="button"
                       onClick={(e) => { e.preventDefault(); e.stopPropagation(); setItemAEliminar({ tipo: 'tarjeta', tituloMostrar: 'la Imagen de Tarjeta' }); }}
                       className="absolute top-2 right-2 z-30 p-2 bg-red-500/80 hover:bg-red-500 text-white rounded-lg opacity-0 group-hover:opacity-100 transition-opacity"
                     >
@@ -210,12 +224,12 @@ export const EditarCategoriaPage = () => {
               <label className={labelClass}>Imagen Hero</label>
               <div className="relative w-full h-32 border-2 border-dashed border-gray-700 hover:border-[#d7f250] rounded-xl flex flex-col items-center justify-center transition-colors bg-[#0a0a0a] overflow-hidden group cursor-pointer">
                 <input type="file" accept="image/*" onChange={(e) => handleFileChange(e, 'imagenHero')} className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10" />
-                
+
                 {(archivos.imagenHero || imagenesActuales.imagenHero) && (
                   <>
                     <img src={archivos.imagenHero ? URL.createObjectURL(archivos.imagenHero) : imagenesActuales.imagenHero} alt="Preview" className="absolute inset-0 w-full h-full object-cover opacity-60" />
-                    <button 
-                      type="button" 
+                    <button
+                      type="button"
                       onClick={(e) => { e.preventDefault(); e.stopPropagation(); setItemAEliminar({ tipo: 'hero', tituloMostrar: 'la Imagen Hero' }); }}
                       className="absolute top-2 right-2 z-30 p-2 bg-red-500/80 hover:bg-red-500 text-white rounded-lg opacity-0 group-hover:opacity-100 transition-opacity"
                     >
@@ -237,14 +251,14 @@ export const EditarCategoriaPage = () => {
               )}
               <div className="relative w-full h-24 border-2 border-dashed border-gray-700 hover:border-[#d7f250] rounded-xl flex flex-col items-center justify-center transition-colors bg-[#0a0a0a] group cursor-pointer">
                 <input type="file" accept="video/*" onChange={(e) => handleFileChange(e, 'videoMuestra')} className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10" />
-                
+
                 {(imagenesActuales.tieneVideo || archivos.videoMuestra) && (
-                  <button 
-                      type="button" 
-                      onClick={(e) => { e.preventDefault(); e.stopPropagation(); setItemAEliminar({ tipo: 'video', tituloMostrar: 'el Video de Muestra' }); }}
-                      className="absolute top-2 right-2 z-30 p-2 bg-red-500/80 hover:bg-red-500 text-white rounded-lg opacity-0 group-hover:opacity-100 transition-opacity"
-                    >
-                      <Trash2 size={16} />
+                  <button
+                    type="button"
+                    onClick={(e) => { e.preventDefault(); e.stopPropagation(); setItemAEliminar({ tipo: 'video', tituloMostrar: 'el Video de Muestra' }); }}
+                    className="absolute top-2 right-2 z-30 p-2 bg-red-500/80 hover:bg-red-500 text-white rounded-lg opacity-0 group-hover:opacity-100 transition-opacity"
+                  >
+                    <Trash2 size={16} />
                   </button>
                 )}
 
