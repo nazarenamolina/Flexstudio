@@ -139,7 +139,8 @@ export const HeaderComponent = () => {
                   </Link>
                 </div>
               )}
-
+              
+              <Link to="/carritoMP" className="flex items-center py-2 text-[0.95rem] font-medium text-[#161616] transition-colors hover:text-[#d7f250]">
               <Link to="/checkout" className="flex items-center py-2 text-[0.95rem] font-medium text-[#161616] transition-colors hover:text-[#d7f250]">
               <ShoppingCart size={20} className="mr-2" />
                 Carrito
