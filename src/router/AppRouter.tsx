@@ -19,6 +19,7 @@ import { EditarVideoPage } from '../pages/admin/videos/EditarVideoPage';
 import VideosPage from '../pages/VideosPage';
 import { ScrollToTop } from '../components/ScrollToTop';
 import CarritoMP from '../pages/CarritoMP';
+import { CheckoutPage } from '../pages/CheckoutPage';
 
 const LayoutConNav = () => {
   return (
@@ -47,6 +48,7 @@ export const AppRouter = () => {
             <Route path='/mi-perfil' element={<MiPerfilPage />} />
             <Route path='/videos' element={<VideosPage />} />
             <Route path='/carritoMP' element={<CarritoMP />} />
+            <Route path='/checkout' element={<CheckoutPage />} />
           </Route>
         </Route>
         <Route 
