@@ -4,7 +4,7 @@ import { obtenerCategoriaPorIdRequest, type Categoria } from "../api/categoria";
 import { CheckCircle2 } from "lucide-react";
 import MuxPlayer from "@mux/mux-player-react";
 import { DynamicIcon } from "../components/IconPicker";
-import { useMoneda } from "../hooks/useMoneda"; // 👈 1. IMPORTAMOS EL HOOK
+import { useMoneda } from "../hooks/useMoneda";
 
 const CategoriaDetailPage = () => {
   const { id } = useParams<{ id: string }>();
@@ -12,10 +12,8 @@ const CategoriaDetailPage = () => {
   const [cargando, setCargando] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
 
-  // 👈 2. LLAMAMOS AL HOOK
   const { moneda, cargandoMoneda } = useMoneda();
 
-  // Forzar scroll arriba al entrar
   useEffect(() => {
     window.scrollTo(0, 0);
   }, []);
