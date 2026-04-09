@@ -1,6 +1,6 @@
 import { BrowserRouter, Routes, Route, Navigate, Outlet } from 'react-router-dom';
 import { useAuthStore } from '../store/authStore';
-import { ProtectedRoute } from '../router/ProtectedRoute'
+import { ProtectedRoute } from '../router/ProtectedRoute';
 import { AdminLayout } from '../components/layout/AdminLayout';
 import HeaderComponent from '../components/headerComponent';
 import FooterComponent from '../components/footerComponent';
@@ -16,17 +16,19 @@ import { EditarCategoriaPage } from '../pages/admin/categorias/EditarCategoriaPa
 import { AdminVideosPage } from '../pages/admin/videos/AdminVideosPage';
 import { NuevoVideoPage } from '../pages/admin/videos/NuevoVideoPage';
 import { EditarVideoPage } from '../pages/admin/videos/EditarVideoPage';
-import VideosPage from '../pages/VideosPage';
+import { VideosPage } from '../pages/VideosPage';
 import { ScrollToTop } from '../components/ScrollToTop';
 import CarritoMP from '../pages/CarritoMP';
-import { CheckoutPage } from '../pages/CheckoutPage';
+import { CheckoutExitoPage } from '../pages/CheckoutExitoPage';
+import { MisClasesPage } from '../pages/MisClasesPage';
+
 
 const LayoutConNav = () => {
   return (
     <div className="flex flex-col min-h-screen">
       <HeaderComponent />
       <main className="flex-grow">
-        <Outlet/>
+        <Outlet />
       </main>
       <FooterComponent />
     </div>
@@ -39,23 +41,29 @@ export const AppRouter = () => {
 
   return (
     <BrowserRouter>
-    <ScrollToTop />
+      <ScrollToTop />
       <Routes>
+        {/* RUTAS PÚBLICAS Y PRIVADAS CON NAVEGACIÓN */}
         <Route element={<LayoutConNav />}>
           <Route path='/' element={<HomePage />} />
           <Route path='/categorias/:id' element={<Categorias />} />
+
+          {/* RUTAS PRIVADAS DEL CLIENTE */}
           <Route element={<ProtectedRoute isAllowed={isAuthenticated} redirectTo="/login" />}>
             <Route path='/mi-perfil' element={<MiPerfilPage />} />
-            <Route path='/videos' element={<VideosPage />} />
+            <Route path='/mis-clases' element={<MisClasesPage />} />
+            <Route path='/mis-clases/:id' element={<VideosPage />} />
             <Route path='/carritoMP' element={<CarritoMP />} />
-            <Route path='/checkout' element={<CheckoutPage />} />
+            <Route path='/checkout/exito' element={<CheckoutExitoPage />} />
           </Route>
         </Route>
-        <Route 
+
+        {/* RUTAS DE AUTENTICACIÓN (Solo si NO está logueado) */}
+        <Route
           element={
-            <ProtectedRoute 
-              isAllowed={!isAuthenticated} 
-              redirectTo={usuario?.rol === 'ADMIN' ? '/admin/categorias' : '/mi-perfil'} 
+            <ProtectedRoute
+              isAllowed={!isAuthenticated}
+              redirectTo={usuario?.rol === 'ADMIN' ? '/admin/categorias' : '/'}
             />
           }
         >
@@ -63,6 +71,7 @@ export const AppRouter = () => {
           <Route path="/registro" element={<RegistroPage />} />
         </Route>
 
+        {/* RUTAS DE ADMINISTRADOR */}
         <Route element={<ProtectedRoute isAllowed={isAuthenticated && usuario?.rol === 'ADMIN'} redirectTo="/" />}>
           <Route path="/admin" element={<AdminLayout />}>
             <Route path="categorias" element={<CategoriasPage />} />
@@ -74,6 +83,7 @@ export const AppRouter = () => {
             <Route index element={<Navigate to="categorias" replace />} />
           </Route>
         </Route>
+
         <Route path="*" element={<PaginaError />} />
       </Routes>
     </BrowserRouter>

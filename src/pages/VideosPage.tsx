@@ -1,239 +1,194 @@
-import { Play, Share2, Bookmark, CheckCircle, Lock, Download, ArrowRight, Pause, Volume2, Settings, Maximize } from 'lucide-react';
+import { useState, useEffect } from "react";
+import { useParams } from "react-router-dom";
+import { useClaseDetalle } from "../hooks/useClaseDetalle";
+import { Share2, Bookmark, Download, Play } from "lucide-react";
+import MuxPlayer from "@mux/mux-player-react";
 
-const VideosPage = () => {
+export const VideosPage = () => {
+  const { id } = useParams<{ id: string }>();
+  const { clase, cargando, error } = useClaseDetalle(id);
+  const [videoActivo, setVideoActivo] = useState<any>(null);
+
+ 
+  useEffect(() => {
+ 
+    if (clase?.videos && clase.videos.length > 0 && !videoActivo) {
+      const videosOrdenados = [...clase.videos].sort((a, b) => a.orden - b.orden);
+      setVideoActivo(videosOrdenados[0]);
+    }
+  }, [clase, videoActivo]);
+
+  if (cargando) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-[#131313] text-white">
+        <span className="animate-pulse text-xl font-principal tracking-widest text-[#d7f250]">
+          Cargando tu masterclass...
+        </span>
+      </div>
+    );
+  }
+
+  if (error || !clase) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-[#131313]">
+        <div className="rounded-lg border border-red-500 bg-red-500/10 p-6 text-red-500">
+          Error al cargar la clase. Por favor, intenta nuevamente.
+        </div>
+      </div>
+    );
+  }
+
+  const videosCompletados = 0; 
+  const totalVideos = clase.videos?.length || 1;
+  const progresoPorcentaje = Math.round((videosCompletados / totalVideos) * 100);
+
   return (
-    <div className="min-h-screen text-[#131313] pt-25 px-5 md:pt-25">
-      
-      {/* GRID SUPERIOR: Video y Detalles vs Sidebar */}
+    <div className="min-h-screen bg-[#0a0a0a] text-[#131313] pt-25 px-5 md:pt-30 pb-20">
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 max-w-7xl mx-auto">
         
-        {/* COLUMNA IZQUIERDA: Reproductor y Detalles (Ocupa 2 de 3 columnas) */}
+        {/* COLUMNA IZQUIERDA: Reproductor MUX y Detalles */}
         <div className="lg:col-span-2 flex flex-col gap-6">
           
-          {/* Reproductor de Video Dummy */}
-          <div className="w-full aspect-video bg-[#131313] rounded-xl overflow-hidden relative group">
-            {/* Simulando el video con un gradiente/imagen estática */}
-            <div className="absolute inset-0 bg-gradient-to-br from-neutral-800 to-black flex items-center justify-center opacity-50">
-              <div className="w-full h-full rounded-full border-[20px] border-neutral-700/30 scale-150 blur-xl"></div>
-            </div>
-            
-            {/* Controles del reproductor */}
-            <div className="absolute bottom-0 inset-x-0 p-4 bg-gradient-to-t from-black/80 to-transparent flex items-center gap-4">
-              <Pause className="w-5 h-5 text-[#ffffff] cursor-pointer" />
-              <Volume2 className="w-5 h-5 text-[#ffffff] cursor-pointer" />
-              <span className="text-xs text-[#ffffff] font-medium tracking-wide">03:54 / 08:19</span>
-              
-              {/* Barra de progreso de video */}
-              <div className="flex-1 h-1.5 bg-white/20 rounded-full relative cursor-pointer ml-2">
-                <div className="absolute top-0 left-0 h-full bg-[#d7f250] rounded-full w-[45%]"></div>
-                {/* Thumb/Handle de la barra */}
-                <div className="absolute top-1/2 left-[45%] -translate-y-1/2 w-3 h-3 bg-[#ffffff] rounded-full shadow-lg"></div>
+          {/* REPRODUCTOR MUX */}
+          <div className="w-full aspect-video bg-black rounded-xl overflow-hidden relative shadow-[0_0_30px_rgba(215,242,80,0.15)] transition-shadow duration-500 hover:shadow-[0_0_40px_rgba(215,242,80,0.3)]">
+            {videoActivo && videoActivo.playbackId ? (
+              <MuxPlayer
+                streamType="on-demand"
+                playbackId={videoActivo.playbackId}
+                metadataVideoTitle={videoActivo.titulo || clase.titulo}
+                primaryColor="#ffffff"
+                accentColor="#d7f250"
+                style={{ 
+                  width: '100%', 
+                  height: '100%',
+                  aspectRatio: '16/9', 
+                  ['--mux-player-control-bar-base-color' as any]: 'rgba(19, 19, 19, 0.85)' 
+                }}
+              />
+            ) : (
+              // Fallback si el video no tiene Playback ID (ej. está "PROCESANDO")
+              <div className="absolute inset-0 flex flex-col items-center justify-center bg-[#131313] text-[#a1a1aa]">
+                {videoActivo?.estado === 'PROCESANDO' ? (
+                  <>
+                    <div className="h-12 w-12 animate-spin rounded-full border-4 border-[#d7f250] border-t-transparent mb-4"></div>
+                    <p className="font-principal tracking-wider">PROCESANDO VIDEO...</p>
+                  </>
+                ) : (
+                  <p>Selecciona un video del temario.</p>
+                )}
               </div>
-              
-              <Settings className="w-5 h-5 text-[#ffffff] cursor-pointer ml-2" />
-              <Maximize className="w-5 h-5 text-[#ffffff] cursor-pointer" />
-            </div>
+            )}
           </div>
 
-          {/* Tarjeta de Detalles del Video */}
-          <div className="bg-[#131313] rounded-xl p-6 md:p-8">
+          {/* TARJETA DE DETALLES DEL VIDEO ACTIVO */}
+          <div className="bg-[#131313] rounded-xl p-6 md:p-8 shadow-lg">
             <div className="flex flex-col md:flex-row md:items-start justify-between gap-4 mb-6">
               <div>
-                <h1 className="text-3xl md:text-4xl font-bold mb-3 tracking-tight">Apertura de cadera avanzado</h1>
+                <h1 className="text-2xl md:text-3xl font-bold mb-3 tracking-tight text-white font-principal uppercase">
+                  {videoActivo?.titulo || clase.titulo}
+                </h1>
                 <div className="flex items-center gap-4 text-sm font-medium">
-                  <span className="flex items-center gap-1 text-[#d7f250] uppercase tracking-wider">
-                    <span className="w-2 h-2 rounded-full bg-[#d7f250]"></span> Nivel Élite
+                  <span className="flex items-center gap-2 text-[#d7f250] uppercase tracking-wider font-bold">
+                    <span className="w-2 h-2 rounded-full bg-[#d7f250] animate-pulse"></span> 
+                    {clase.titulo}
                   </span>
-                  <span className="text-[#a1a1aa]">&bull; 8:19 Duración</span>
                 </div>
               </div>
               
-              <div className="flex items-center gap-3">
-                <button className="flex items-center gap-2 px-4 py-2 bg-white/5 hover:bg-white/10 transition-colors rounded-md text-sm font-semibold">
-                  <Share2 className="w-4 h-4" /> Compartir
+              <div className="flex items-center gap-3 text-white">
+                <button className="flex items-center gap-2 px-4 py-2 bg-white/5 hover:bg-[#d7f250] hover:text-black transition-all duration-300 rounded-md text-sm font-semibold group">
+                  <Share2 className="w-4 h-4 transition-transform group-hover:scale-110" /> Compartir
                 </button>
-                <button className="flex items-center gap-2 px-4 py-2 bg-white/5 hover:bg-white/10 transition-colors rounded-md text-sm font-semibold">
-                  <Bookmark className="w-4 h-4" /> Guardar
+                <button className="flex items-center gap-2 px-4 py-2 bg-white/5 hover:bg-[#d7f250] hover:text-black transition-all duration-300 rounded-md text-sm font-semibold group">
+                  <Bookmark className="w-4 h-4 transition-transform group-hover:scale-110" /> Guardar
                 </button>
               </div>
             </div>
 
-            <div className="flex items-center gap-4 mb-6 py-4 border-y border-white/10">
-              <div className="w-12 h-12 bg-neutral-700 rounded-full overflow-hidden">
-                <img src="/api/placeholder/48/48" alt="Instructor" className="w-full h-full object-cover" />
-              </div>
-              <div>
-                <p className="text-xs text-[#a1a1aa] uppercase tracking-widest font-semibold mb-1">Instructor</p>
-                <p className="text-[#ffffff] font-bold">Marco Valerio</p>
-              </div>
-            </div>
-
-            <p className="text-[#a1a1aa] leading-relaxed mb-8">
-              En esta sesión avanzada, nos enfocaremos en la descompresión articular de la cadera utilizando técnicas de PNF (Facilitación Neuromuscular Propioceptiva). Diseñado para atletas que buscan maximizar su rango de movimiento y profundidad en splits laterales y frontales.
+            <p className="text-[#a1a1aa] leading-relaxed mb-6 text-sm md:text-base">
+              {clase.descripcionDetallada || 'Disfruta de esta clase exclusiva del Elite Training Program.'}
             </p>
-
-            <div className="flex flex-wrap gap-3">
-              {['Biomecánica', 'Movilidad Activa', 'Recuperación'].map((tag) => (
-                <span key={tag} className="px-3 py-1 bg-white/5 text-[#a1a1aa] text-xs font-semibold rounded uppercase tracking-wider">
-                  {tag}
-                </span>
-              ))}
-            </div>
           </div>
         </div>
 
         {/* COLUMNA DERECHA: Temario y Progreso */}
         <div className="lg:col-span-1 flex flex-col gap-6">
           
-          {/* Temario del Curso */}
-          <div className="bg-[#131313] rounded-xl p-6">
-            <h2 className="text-lg font-bold mb-6 flex items-center gap-2">
-              <span className="w-4 h-1 bg-[#d7f250] block rounded-sm"></span>
-              Contenido del Curso
-            </h2>
-
-            <div className="space-y-6">
-              {/* Módulo 1 */}
-              <div>
-                <p className="text-xs text-[#a1a1aa] uppercase tracking-widest font-semibold mb-4">Módulo 1: Introducción</p>
-                <div className="flex gap-4 items-center opacity-60">
-                  <div className="relative w-24 aspect-video bg-neutral-800 rounded flex-shrink-0">
-                    <div className="absolute bottom-1 right-1 bg-black/80 px-1 text-[10px] rounded">4:20</div>
-                  </div>
-                  <div className="flex-1">
-                    <p className="text-sm font-semibold text-[#ffffff]">Bases de la flexibilidad</p>
-                    <p className="text-xs text-[#a1a1aa] flex items-center gap-1 mt-1">
-                      <CheckCircle className="w-3 h-3" /> Completado
-                    </p>
-                  </div>
-                </div>
-              </div>
-
-              {/* Módulo 2 */}
-              <div>
-                <p className="text-xs text-[#a1a1aa] uppercase tracking-widest font-semibold mb-4">Módulo 2: Estiramientos Dinámicos</p>
-                <div className="space-y-4 relative border-l-2 border-white/10 pl-4">
-                  {/* Item Activo */}
-                  <div className="absolute -left-[2px] top-0 bottom-1/2 border-l-2 border-[#d7f250]"></div>
-                  
-                  <div className="flex gap-4 items-center">
-                    <div className="relative w-24 aspect-video bg-neutral-800 rounded flex-shrink-0 border border-[#d7f250]/50">
-                      <div className="absolute inset-0 flex items-center justify-center bg-black/40">
-                        <Play className="w-6 h-6 text-[#d7f250] fill-[#d7f250]" />
-                      </div>
-                    </div>
-                    <div className="flex-1">
-                      <p className="text-sm font-bold text-[#d7f250]">Apertura de cadera avanzado</p>
-                      <p className="text-xs text-[#a1a1aa] mt-1">Reproduciendo ahora</p>
-                    </div>
-                  </div>
-
-                  {/* Siguiente Item */}
-                  <div className="flex gap-4 items-center mt-4">
-                    <div className="relative w-24 aspect-video bg-neutral-800 rounded flex-shrink-0">
-                      <div className="absolute bottom-1 right-1 bg-black/80 px-1 text-[10px] rounded">12:45</div>
-                    </div>
-                    <div className="flex-1">
-                      <p className="text-sm font-semibold text-[#ffffff]">Dinámicas de pierna</p>
-                      <p className="text-xs text-[#a1a1aa] mt-1">Siguiente video</p>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              {/* Módulo 3 */}
-              <div>
-                <p className="text-xs text-[#a1a1aa] uppercase tracking-widest font-semibold mb-4">Módulo 3: Flexibilidad Estática</p>
-                <div className="flex gap-4 items-center opacity-40">
-                  <div className="relative w-24 aspect-video bg-neutral-800 rounded flex-shrink-0">
-                    <div className="absolute bottom-1 right-1 bg-black/80 px-1 text-[10px] rounded">18:15</div>
-                  </div>
-                  <div className="flex-1 flex justify-between items-center">
-                    <div>
-                      <p className="text-sm font-semibold text-[#ffffff]">Isometría profunda</p>
-                      <p className="text-xs text-[#a1a1aa] mt-1">Bloqueado</p>
-                    </div>
-                    <Lock className="w-4 h-4 text-[#a1a1aa]" />
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Tarjeta de Progreso */}
-          <div className="bg-[#131313] rounded-xl p-6">
+          {/* TARJETA DE PROGRESO */}
+          <div className="bg-[#131313] rounded-xl p-6 shadow-lg">
             <div className="flex justify-between items-end mb-3">
               <h3 className="text-xs text-[#a1a1aa] uppercase tracking-widest font-semibold">Tu Progreso</h3>
-              <span className="text-lg font-bold text-[#d7f250]">64%</span>
+              <span className="text-lg font-bold text-[#d7f250] font-principal">{progresoPorcentaje}%</span>
             </div>
-            <div className="w-full h-1.5 bg-white/10 rounded-full mb-6">
-              <div className="h-full bg-[#d7f250] rounded-full w-[64%] shadow-[0_0_10px_rgba(215,242,80,0.5)]"></div>
+            <div className="w-full h-1.5 bg-white/10 rounded-full mb-6 overflow-hidden">
+              <div 
+                className="h-full bg-[#d7f250] rounded-full shadow-[0_0_10px_rgba(215,242,80,0.5)] transition-all duration-1000" 
+                style={{ width: `${progresoPorcentaje}%` }}
+              ></div>
             </div>
             
-            <button className="w-full py-4 bg-[#d7f250] text-black font-bold uppercase tracking-widest text-xs rounded hover:bg-[#c4e03b] transition-colors flex items-center justify-center gap-2">
-              <Download className="w-4 h-4" /> Descargar Guía PDF
+            <button className="w-full py-4 bg-[#d7f250] text-black font-bold uppercase tracking-widest text-xs rounded hover:bg-white transition-colors flex items-center justify-center gap-2 font-principal">
+              <Download className="w-4 h-4" /> Material Adicional
             </button>
           </div>
-        </div>
-      </div>
 
-      {/* SECCIÓN INFERIOR: Cursos Recomendados */}
-      <div className="max-w-7xl mx-auto mt-16 pb-12">
-        <h2 className="text-2xl font-bold mb-8">Cursos Recomendados</h2>
-        
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          {/* Card Grande Izquierda */}
-          <div className="bg-[#131313] rounded-xl p-8 flex flex-col justify-end min-h-[400px] relative overflow-hidden group cursor-pointer">
-            <div className="absolute inset-0 bg-gradient-to-t from-[#131313] via-[#131313]/80 to-transparent z-10"></div>
-            {/* Aquí iría la imagen de fondo con opacidad */}
-            <div className="relative z-20">
-              <span className="inline-block px-3 py-1 bg-[#d7f250] text-black text-xs font-bold uppercase tracking-wider mb-4 rounded-sm">Masterclass</span>
-              <h3 className="text-3xl font-bold mb-3">Columna de Acero</h3>
-              <p className="text-[#a1a1aa] text-sm mb-6 max-w-md">
-                Domina la movilidad de la columna torácica con técnicas de fisioterapia deportiva.
-              </p>
-              <span className="flex items-center gap-2 text-[#d7f250] font-semibold text-sm group-hover:gap-3 transition-all">
-                Ver curso <ArrowRight className="w-4 h-4" />
-              </span>
+          {/* TEMARIO DEL CURSO */}
+          <div className="bg-[#131313] rounded-xl p-6 shadow-lg flex-1">
+            <h2 className="text-lg font-bold mb-6 flex items-center gap-2 text-white font-principal uppercase">
+              <span className="w-4 h-1 bg-[#d7f250] block rounded-sm"></span>
+              Contenido
+            </h2>
+
+            <div className="space-y-3">
+              {clase.videos && clase.videos.length > 0 ? (
+                // Ordenamos los videos para asegurar que salgan en orden 1, 2, 3...
+                [...clase.videos]
+                  .sort((a, b) => a.orden - b.orden)
+                  .map((video: any, index: number) => {
+                  
+                  const isActivo = videoActivo?.id === video.id;
+
+                  return (
+                    <div 
+                      key={video.id} 
+                      onClick={() => setVideoActivo(video)}
+                      className={`flex gap-4 items-center p-3 rounded-xl cursor-pointer transition-all duration-300 ${
+                        isActivo 
+                          ? 'bg-white/10 border-l-4 border-[#d7f250] shadow-md' 
+                          : 'hover:bg-white/5 opacity-70 hover:opacity-100 border-l-4 border-transparent'
+                      }`}
+                    >
+                      <div className={`relative w-16 md:w-20 aspect-video bg-[#0a0a0a] rounded flex-shrink-0 flex items-center justify-center overflow-hidden ${isActivo ? 'border border-[#d7f250]/50' : ''}`}>
+                         {/* Si el video tiene miniatura, la mostramos sutilmente de fondo */}
+                        {video.imagenUrl && (
+                           <img src={video.imagenUrl} alt="" className="absolute inset-0 w-full h-full object-cover opacity-30" />
+                        )}
+                        <Play className={`w-5 h-5 relative z-10 ${isActivo ? 'text-[#d7f250] fill-[#d7f250]' : 'text-white/50 fill-white/50'}`} />
+                      </div>
+                      
+                      <div className="flex-1 overflow-hidden">
+                        <p className={`text-sm font-bold truncate ${isActivo ? 'text-[#d7f250]' : 'text-[#ffffff]'}`}>
+                          {index + 1}. {video.titulo}
+                        </p>
+                        <p className="text-xs text-[#a1a1aa] mt-1 flex items-center gap-1">
+                          {isActivo ? (
+                            <span className="animate-pulse">Reproduciendo ahora</span>
+                          ) : (
+                            video.duracion ? `${Math.floor(video.duracion / 60)} min` : 'Clase'
+                          )}
+                        </p>
+                      </div>
+                    </div>
+                  );
+                })
+              ) : (
+                <p className="text-center text-[#a1a1aa] py-4 text-sm">Esta clase aún no tiene videos disponibles.</p>
+              )}
             </div>
           </div>
 
-          {/* Grid Derecha (2 chicas arriba, 1 ancha abajo) */}
-          <div className="flex flex-col gap-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 flex-1">
-              
-              {/* Card Hombros Pro */}
-              <div className="bg-[#131313] rounded-xl p-6 flex flex-col justify-end min-h-[180px] relative cursor-pointer">
-                 <h4 className="text-xl font-bold mb-1">Hombros Pro</h4>
-                 <p className="text-[#a1a1aa] text-xs mb-4">Salud articular extrema.</p>
-                 <Play className="w-6 h-6 text-[#d7f250] fill-[#d7f250]" />
-              </div>
-
-              {/* Card Power Core */}
-              <div className="bg-[#131313] rounded-xl p-6 flex flex-col justify-end min-h-[180px] relative cursor-pointer">
-                 <h4 className="text-xl font-bold mb-1">Power Core</h4>
-                 <p className="text-[#a1a1aa] text-xs mb-4">Estabilidad a otro nivel.</p>
-                 <Play className="w-6 h-6 text-[#d7f250] fill-[#d7f250]" />
-              </div>
-
-            </div>
-
-            {/* Card Nutrición & Recovery */}
-            <div className="bg-[#131313] rounded-xl p-6 flex flex-col md:flex-row md:items-center justify-between gap-4">
-              <div>
-                <h4 className="text-xl font-bold mb-1">Nutrición & Recovery</h4>
-                <p className="text-[#a1a1aa] text-xs">El 50% de tu progreso está aquí.</p>
-              </div>
-              <button className="px-6 py-3 bg-white/5 hover:bg-white/10 text-sm font-semibold rounded transition-colors whitespace-nowrap border border-white/10">
-                Explorar Guías
-              </button>
-            </div>
-          </div>
         </div>
       </div>
-      
     </div>
   );
 };
-
-export default VideosPage;
