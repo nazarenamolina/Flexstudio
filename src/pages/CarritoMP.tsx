@@ -1,39 +1,18 @@
-import { useState } from 'react';
-import { Trash2, Lock, ShieldCheck, Shield, ArrowRight } from 'lucide-react';
+import { Lock, ShieldCheck, Shield, ArrowRight, Trash2, Loader2 } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { useCartStore } from '../store/cartStore'; 
+import { useCheckout } from '../hooks/useCheckout';
 
 const CarritoMP = () => {
-// Interfaz para el tipado de los cursos en el carrito
-interface CartItem {
-  id: string;
-  titulo: string;
-  tipoAcceso: string;
-  precio: number;
-  imagenUrl?: string;
-}
-  // Estado local simulado con los cursos agregados
-  const [cartItems, setCartItems] = useState<CartItem[]>([
-    {
-      id: 'curso-1',
-      titulo: 'FLEXIBILIDAD ÉLITE: MÁXIMO RENDIMIENTO',
-      tipoAcceso: 'Acceso Vitalicio',
-      precio: 49.99,
-    },
-    {
-      id: 'curso-2',
-      titulo: 'COLUMNA DE ACERO: MASTERCLASS',
-      tipoAcceso: 'Acceso Vitalicio',
-      precio: 29.99,
-    }
-  ]);
-
-  // Función para eliminar ítems del carrito
-  const handleRemoveItem = (idToRemove: string) => {
-    setCartItems(prevItems => prevItems.filter(item => item.id !== idToRemove));
+ 
+  const cartItems = useCartStore((state) => state.cartItems);
+  const removeFromCart = useCartStore((state) => state.removeFromCart);
+  const { iniciarPagoMP, cargando, error } = useCheckout();
+  const handleProcederAlPago = () => {
+    const idsParaPagar = cartItems.map(item => item.id);
+    iniciarPagoMP(idsParaPagar);
   };
-
-  // Cálculos derivados (se actualizan solos si cartItems cambia)
-  const subtotal = cartItems.reduce((acc, item) => acc + item.precio, 0);
+  const subtotal = cartItems.reduce((acc, item) => acc + Number(item.precioArs || 0), 0);
   const impuestos = 0.00;
   const total = subtotal + impuestos;
 
@@ -47,7 +26,7 @@ interface CartItem {
           
           {/* COLUMNA IZQUIERDA: Lista de Clases Seleccionadas */}
           <div className="lg:col-span-7 flex flex-col pt-8 gap-3">
-            <h2 className="mb-4 rounded-full bg-[#131313]/80 px-4 py-1 text-sm font-bold text-neon-pink uppercase">
+            <h2 className="mb-4 rounded-full bg-[#131313]/80 px-4 py-1 text-sm font-bold text-[#d7f250] uppercase w-fit">
               Clases Seleccionadas ( {cartItems.length} )
             </h2>
 
@@ -55,18 +34,18 @@ interface CartItem {
               <div className="py-20 text-center rounded-xl bg-[#b6b5b9bb]">
                 <p className="text-[#131313]/60 text-sm mb-10">Tu carrito está vacío.</p>
                 <Link
-                      to={`/`}
-                      className="w-full rounded-full bg-neon-pink px-4 sm:px-8 py-3 sm:py-4 font-principal text-lg sm:text-xl font-bold text-[#131313] cursor-pointer transition hover:bg-[#131313] hover:text-white duration-700 hover:-translate-y-1"
-                    >
-                      <span>Explorar Clases</span>
-                    </Link>
+                  to={`/`}
+                  className="w-full rounded-full bg-[#d7f250] px-4 sm:px-8 py-3 sm:py-4 font-principal text-lg sm:text-xl font-bold text-[#131313] cursor-pointer transition hover:bg-[#c4e03b] duration-700 hover:-translate-y-1 inline-block"
+                >
+                  <span>Explorar Clases</span>
+                </Link>
               </div>
             ) : (
               <div className="space-y-4">
                 {cartItems.map((item) => (
                   <div 
                     key={item.id} 
-                    className="flex flex-col sm:flex-row gap-6 p-5  rounded-xl border border-transparent hover:border-[#d7f250]/30 transition-all group relative"
+                    className="flex flex-col sm:flex-row gap-6 p-5 rounded-xl border border-transparent hover:border-[#d7f250]/30 bg-[#1a1a1a] transition-all group relative"
                   >
                     {/* Imagen del Curso */}
                     <div className="w-full sm:w-40 aspect-video sm:aspect-square bg-neutral-800 rounded-lg overflow-hidden flex-shrink-0 relative">
@@ -76,19 +55,19 @@ interface CartItem {
                     {/* Info del Curso */}
                     <div className="flex flex-col justify-center flex-1">
                       <span className="text-[10px] text-[#d7f250] font-bold uppercase tracking-widest mb-2 block">
-                        {item.tipoAcceso}
+                        {item.tipoAcceso || 'Acceso Vitalicio'}
                       </span>
-                      <h3 className="text-lg font-bold leading-tight mb-2 pr-8">
+                      <h3 className="text-lg font-bold leading-tight mb-2 pr-8 text-white">
                         {item.titulo}
                       </h3>
                       <span className="text-xl font-bold text-[#ffffff] mt-auto">
-                        ${item.precio.toFixed(2)}
+                        ${Number(item.precioArs || 0).toFixed(2)}
                       </span>
                     </div>
 
                     {/* Botón Eliminar */}
                     <button
-                      onClick={() => handleRemoveItem(item.id)}
+                      onClick={() => removeFromCart(item.id)}
                       className="absolute top-5 right-5 p-2 text-[#a1a1aa] hover:text-red-500 hover:bg-red-500/10 rounded-md transition-all sm:opacity-0 sm:group-hover:opacity-100"
                       title="Eliminar del carrito"
                     >
@@ -102,7 +81,7 @@ interface CartItem {
 
           {/* COLUMNA DERECHA: Resumen de Orden y Botón de Pago */}
           <aside className="lg:col-span-5">
-            <div className="bg-[#131313] rounded-xl p-8 sticky top-8">
+            <div className="bg-[#131313] rounded-xl p-8 sticky top-8 text-white">
               <h3 className="text-xs text-[#d7f250] font-bold tracking-widest uppercase mb-8">
                 Resumen de Orden
               </h3>
@@ -141,12 +120,24 @@ interface CartItem {
                 <span className="text-4xl font-bold text-[#d7f250]">${total.toFixed(2)}</span>
               </div>
 
+              {/* Mensaje de Error del Backend / MP */}
+              {error && (
+                <div className="bg-red-500/10 border border-red-500 text-red-500 text-xs p-3 rounded mb-6 text-center">
+                  {error}
+                </div>
+              )}
+
               {/* Botón para avanzar a métodos de pago */}
               <button 
-                disabled={cartItems.length === 0}
+                onClick={handleProcederAlPago}
+                disabled={cartItems.length === 0 || cargando}
                 className="w-full bg-[#d7f250] hover:bg-[#c4e03b] text-black font-bold uppercase tracking-widest text-sm py-5 rounded transition-all duration-200 flex justify-center items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                Continuar al Pago <ArrowRight className="w-4 h-4" />
+                {cargando ? (
+                  <><Loader2 className="animate-spin w-5 h-5" /> PROCESANDO...</>
+                ) : (
+                  <>Continuar al Pago <ArrowRight className="w-4 h-4" /></>
+                )}
               </button>
 
               {/* Badges de Seguridad */}

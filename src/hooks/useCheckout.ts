@@ -5,17 +5,16 @@ export const useCheckout = () => {
   const [cargando, setCargando] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const iniciarPagoMP = async (idCategoria: string) => {
+  const iniciarPagoMP = async (idsCategorias: string[]) => {
     setCargando(true);
     setError(null);
 
     try {
- 
-      const { data } = await api.post('/compras/iniciar', { idCategoria });
-      if (data && data.urlPago) {
-        window.location.href = data.urlPago;
+      const { data } = await api.post('/compras/iniciar', { idsCategorias });
+      if (data && data.url) {  
+        window.location.href = data.url;
       } else {
-        throw new Error('No se recibió el enlace de pago de Mercado Pago');
+        throw new Error('No se recibió el enlace de pago de la pasarela');
       }
     } catch (err: any) {
       console.error('Error al iniciar checkout:', err);
@@ -29,3 +28,5 @@ export const useCheckout = () => {
 
   return { iniciarPagoMP, cargando, error };
 };
+
+ 

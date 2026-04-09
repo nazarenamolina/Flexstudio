@@ -1,18 +1,22 @@
 import { useState, useEffect } from "react";
-import { useParams } from "react-router-dom";
+import { useParams } from "react-router-dom"; 
 import { obtenerCategoriaPorIdRequest, type Categoria } from "../api/categoria";
-import { CheckCircle2 } from "lucide-react";
+import { CheckCircle2, ShoppingCart, Check } from "lucide-react";  
 import MuxPlayer from "@mux/mux-player-react";
 import { DynamicIcon } from "../components/IconPicker";
 import { useMoneda } from "../hooks/useMoneda";
+import toast from "react-hot-toast"; 
+import { useCartStore } from "../store/cartStore";  
 
 const CategoriaDetailPage = () => {
   const { id } = useParams<{ id: string }>();
+ 
   const [categoria, setCategoria] = useState<Categoria | null>(null);
   const [cargando, setCargando] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
-
   const { moneda, cargandoMoneda } = useMoneda();
+  const addToCart = useCartStore((state) => state.addToCart);
+  const cartItems = useCartStore((state) => state.cartItems);
 
   useEffect(() => {
     window.scrollTo(0, 0);
@@ -55,13 +59,30 @@ const CategoriaDetailPage = () => {
 
   if (!categoria) return null;
 
-  // 👈 3. LÓGICA DE PRECIOS: Elegimos el precio y el símbolo en base a la moneda
   const precioAMostrar = moneda === 'ARS' ? categoria.precioArs : categoria.precioUsd;
   const simbolo = moneda === 'ARS' ? '$' : 'U$D';
-
   const tituloPartes = categoria.titulo ? categoria.titulo.split(" ") : ["CLASE", "EXCLUSIVA"];
   const primeraParte = tituloPartes.slice(0, Math.ceil(tituloPartes.length / 2)).join(" ");
   const segundaParte = tituloPartes.slice(Math.ceil(tituloPartes.length / 2)).join(" ");
+  const estaEnCarrito = cartItems.some(item => item.id === categoria.id);
+  const handleAgregarAlCarrito = () => {
+    if (!categoria) return;
+    
+    addToCart({
+      id: categoria.id,
+      titulo: categoria.titulo,
+      precioArs: categoria.precioArs,
+      tipoAcceso: 'Acceso Vitalicio',
+    });
+
+    toast.success('¡Agregado al carrito exitosamente!', {
+      style: {
+        background: '#d7f250',
+        color: '#131313',
+        fontWeight: 'bold'
+      },
+    });
+  };
 
   return (
     <main className="min-h-screen w-full overflow-x-hidden">
@@ -90,12 +111,28 @@ const CategoriaDetailPage = () => {
             {categoria.descripcionDetallada || "Descripción no disponible."}
           </p>
           <div className="flex flex-col gap-4 sm:flex-row">
-            {/* 👈 4. ACTUALIZAMOS EL BOTÓN DEL HERO */}
-            <button className="mt-8 rounded-full bg-neon-pink px-8 py-4 font-principal text-xl font-bold text-[#131313] cursor-pointer transition hover:bg-[#ffffff] hover:text-[#131313] duration-700 hover:-translate-y-1">
-              {cargandoMoneda ? 'CALCULANDO PRECIO...' : `COMPRAR AHORA ${simbolo}${precioAMostrar}`}
+            
+            {/* 👇 BOTÓN HERO CONECTADO AL CARRITO 👇 */}
+            <button 
+              onClick={handleAgregarAlCarrito}
+              disabled={estaEnCarrito || cargandoMoneda}
+              className={`mt-8 flex items-center justify-center gap-2 rounded-full px-8 py-4 font-principal text-xl font-bold cursor-pointer transition duration-700 hover:-translate-y-1 ${
+                estaEnCarrito 
+                  ? 'bg-[#ffffff] text-[#131313] cursor-not-allowed opacity-80' 
+                  : 'bg-neon-pink text-[#131313] hover:bg-[#ffffff] hover:text-[#131313]'
+              }`}
+            >
+              {cargandoMoneda ? 'CALCULANDO PRECIO...' : (
+                estaEnCarrito ? (
+                  <><Check size={20} /> YA ESTÁ EN TU CARRITO</>
+                ) : (
+                  <><ShoppingCart size={20} /> COMPRAR AHORA {simbolo}{precioAMostrar}</>
+                )
+              )}
             </button>
+            
             {categoria.playbackIdMuestra && (
-              <a href="#trailer" className="mt-8 rounded-full bg-neon-pink px-8 py-4 font-principal text-xl font-bold text-[#131313] cursor-pointer transition hover:bg-[#ffffff] hover:text-[#131313] duration-700 hover:-translate-y-1">
+              <a href="#trailer" className="mt-8 rounded-full bg-neon-pink px-8 py-4 font-principal text-xl font-bold text-[#131313] cursor-pointer transition hover:bg-[#ffffff] hover:text-[#131313] duration-700 hover:-translate-y-1 text-center">
                 PREVIEW
               </a>
             )}
@@ -165,12 +202,28 @@ const CategoriaDetailPage = () => {
           <span className="mb-4 rounded-full bg-[#131313]/50 px-4 py-1 text-sm font-bold text-white">
             OFERTA DE LANZAMIENTO
           </span>
-          {/* 👈 5. ACTUALIZAMOS EL TEXTO DEL PRECIO GRANDE */}
+          
           <div className="font-principal text-white text-4xl sm:text-5xl md:text-6xl font-bold w-full text-center tracking-tight">
             {cargandoMoneda ? '...' : `${simbolo}${precioAMostrar}`}
           </div>
-          <button className="mt-8 w-full rounded-full bg-neon-pink px-4 sm:px-8 py-3 sm:py-4 font-principal text-lg sm:text-xl font-bold text-[#131313] cursor-pointer transition hover:bg-[#ffffff] hover:text-[#131313] duration-700 hover:-translate-y-1">
-            COMPRAR AHORA
+          
+          {/* 👇 BOTÓN CTA CONECTADO AL CARRITO 👇 */}
+          <button 
+            onClick={handleAgregarAlCarrito}
+            disabled={estaEnCarrito || cargandoMoneda}
+            className={`mt-8 w-full flex items-center justify-center gap-2 rounded-full px-4 sm:px-8 py-3 sm:py-4 font-principal text-lg sm:text-xl font-bold cursor-pointer transition duration-700 hover:-translate-y-1 ${
+              estaEnCarrito 
+                ? 'bg-[#ffffff] text-[#131313] cursor-not-allowed opacity-80' 
+                : 'bg-neon-pink text-[#131313] hover:bg-[#ffffff] hover:text-[#131313]'
+            }`}
+          >
+             {cargandoMoneda ? 'CALCULANDO...' : (
+                estaEnCarrito ? (
+                  <><Check size={20} /> YA ESTÁ EN TU CARRITO</>
+                ) : (
+                  <><ShoppingCart size={20} /> COMPRAR AHORA</>
+                )
+              )}
           </button>
         </div>
 
@@ -185,4 +238,4 @@ const CategoriaDetailPage = () => {
   );
 };
 
-export default CategoriaDetailPage; 
+export default CategoriaDetailPage;
