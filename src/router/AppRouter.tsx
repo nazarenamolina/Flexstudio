@@ -21,6 +21,7 @@ import { ScrollToTop } from '../components/ScrollToTop';
 import CarritoMP from '../pages/CarritoMP';
 import { CheckoutExitoPage } from '../pages/CheckoutExitoPage';
 import { MisClasesPage } from '../pages/MisClasesPage';
+import { FloatingCart } from '../components/FloatingCart';
 
 
 const LayoutConNav = () => {
@@ -30,6 +31,7 @@ const LayoutConNav = () => {
       <main className="flex-grow">
         <Outlet />
       </main>
+      <FloatingCart />
       <FooterComponent />
     </div>
   );
