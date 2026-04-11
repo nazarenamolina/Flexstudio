@@ -11,6 +11,10 @@ export interface ClaseComprada {
   imagenHero?: string | null;
 }
 
+export interface DatosCompra {
+  idsCategorias: string[];
+}
+
 export const obtenerMisClasesCompradas = async (): Promise<ClaseComprada[]> => {
  
   const respuesta = await api.get('/compras/mis-clases');
@@ -19,5 +23,10 @@ export const obtenerMisClasesCompradas = async (): Promise<ClaseComprada[]> => {
 
 export const obtenerDetalleClase = async (id: string) => {
   const respuesta = await api.get(`/compras/mis-clases/${id}`);
+  return respuesta.data;
+};
+
+export const iniciarCompraRequest = async (datos: DatosCompra) => {
+  const respuesta = await api.post('/compras/iniciar', datos);
   return respuesta.data;
 };

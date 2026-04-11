@@ -14,6 +14,7 @@
     "@hookform/resolvers": "^5.2.2",
     "@mux/mux-player-react": "^3.11.6",
     "@mux/upchunk": "^3.5.0",
+    "@paypal/react-paypal-js": "^9.1.1",
     "axios": "^1.13.6",
     "clsx": "^2.1.1",
     "country-state-city": "^3.2.1",
