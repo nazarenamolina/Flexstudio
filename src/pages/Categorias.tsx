@@ -1,22 +1,24 @@
 import { useState, useEffect } from "react";
-import { useParams } from "react-router-dom"; 
+import { useParams, useNavigate } from "react-router-dom";
 import { obtenerCategoriaPorIdRequest, type Categoria } from "../api/categoria";
-import { CheckCircle2, ShoppingCart, Check } from "lucide-react";  
+import { CheckCircle2, ShoppingCart, Check, PlayCircle } from "lucide-react";
 import MuxPlayer from "@mux/mux-player-react";
 import { DynamicIcon } from "../components/IconPicker";
 import { useMoneda } from "../hooks/useMoneda";
-import toast from "react-hot-toast"; 
-import { useCartStore } from "../store/cartStore";  
+import { useCartStore } from "../store/cartStore"; 
+import { useMisClases } from "../hooks/useMisClases"; 
 
 const CategoriaDetailPage = () => {
   const { id } = useParams<{ id: string }>();
- 
+  const navigate = useNavigate();
+
   const [categoria, setCategoria] = useState<Categoria | null>(null);
   const [cargando, setCargando] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
   const { moneda, cargandoMoneda } = useMoneda();
   const addToCart = useCartStore((state) => state.addToCart);
   const cartItems = useCartStore((state) => state.cartItems);
+  const { clases: misClases, cargando: cargandoMisClases } = useMisClases();
 
   useEffect(() => {
     window.scrollTo(0, 0);
@@ -65,6 +67,8 @@ const CategoriaDetailPage = () => {
   const primeraParte = tituloPartes.slice(0, Math.ceil(tituloPartes.length / 2)).join(" ");
   const segundaParte = tituloPartes.slice(Math.ceil(tituloPartes.length / 2)).join(" ");
   const estaEnCarrito = cartItems.some(item => item.id === categoria.id);
+  const yaComprado = misClases.some((c) => c.id === categoria.id);
+
   const handleAgregarAlCarrito = () => {
     if (!categoria) return;
     
@@ -73,14 +77,6 @@ const CategoriaDetailPage = () => {
       titulo: categoria.titulo,
       precioArs: categoria.precioArs,
       tipoAcceso: 'Acceso Vitalicio',
-    });
-
-    toast.success('¡Agregado al carrito exitosamente!', {
-      style: {
-        background: '#d7f250',
-        color: '#131313',
-        fontWeight: 'bold'
-      },
     });
   };
 
@@ -112,24 +108,33 @@ const CategoriaDetailPage = () => {
           </p>
           <div className="flex flex-col gap-4 sm:flex-row">
             
-            {/* 👇 BOTÓN HERO CONECTADO AL CARRITO 👇 */}
-            <button 
-              onClick={handleAgregarAlCarrito}
-              disabled={estaEnCarrito || cargandoMoneda}
-              className={`mt-8 flex items-center justify-center gap-2 rounded-full px-8 py-4 font-principal text-xl font-bold cursor-pointer transition duration-700 hover:-translate-y-1 ${
-                estaEnCarrito 
-                  ? 'bg-[#ffffff] text-[#131313] cursor-not-allowed opacity-80' 
-                  : 'bg-neon-pink text-[#131313] hover:bg-[#ffffff] hover:text-[#131313]'
-              }`}
-            >
-              {cargandoMoneda ? 'CALCULANDO PRECIO...' : (
-                estaEnCarrito ? (
-                  <><Check size={20} /> YA ESTÁ EN TU CARRITO</>
-                ) : (
-                  <><ShoppingCart size={20} /> COMPRAR AHORA {simbolo}{precioAMostrar}</>
-                )
-              )}
-            </button>
+            {/* 👇 NUEVO: BOTÓN INTELIGENTE (HERO) 👇 */}
+            {yaComprado ? (
+              <button 
+                onClick={() => navigate(`/mis-clases/${categoria.id}`)}
+                className="mt-8 flex items-center justify-center gap-2 rounded-full bg-[#ffffff] px-8 py-4 font-principal text-xl font-bold text-[#131313] shadow-[0_0_20px_rgba(255,255,255,0.3)] transition duration-700 hover:-translate-y-1 hover:bg-[#d7f250] cursor-pointer"
+              >
+                <PlayCircle size={22} /> VER MASTERCLASS
+              </button>
+            ) : (
+              <button 
+                onClick={handleAgregarAlCarrito}
+                disabled={estaEnCarrito || cargandoMoneda || cargandoMisClases}
+                className={`mt-8 flex items-center justify-center gap-2 rounded-full px-8 py-4 font-principal text-xl font-bold cursor-pointer transition duration-700 hover:-translate-y-1 ${
+                  estaEnCarrito 
+                    ? 'bg-[#ffffff] text-[#131313] cursor-not-allowed opacity-80' 
+                    : 'bg-neon-pink text-[#131313] hover:bg-[#ffffff] hover:text-[#131313]'
+                }`}
+              >
+                {cargandoMoneda ? 'CALCULANDO PRECIO...' : (
+                  estaEnCarrito ? (
+                    <><Check size={20} /> YA ESTÁ EN TU CARRITO</>
+                  ) : (
+                    <><ShoppingCart size={20} /> COMPRAR AHORA {simbolo}{precioAMostrar}</>
+                  )
+                )}
+              </button>
+            )}
             
             {categoria.playbackIdMuestra && (
               <a href="#trailer" className="mt-8 rounded-full bg-neon-pink px-8 py-4 font-principal text-xl font-bold text-[#131313] cursor-pointer transition hover:bg-[#ffffff] hover:text-[#131313] duration-700 hover:-translate-y-1 text-center">
@@ -207,24 +212,33 @@ const CategoriaDetailPage = () => {
             {cargandoMoneda ? '...' : `${simbolo}${precioAMostrar}`}
           </div>
           
-          {/* 👇 BOTÓN CTA CONECTADO AL CARRITO 👇 */}
-          <button 
-            onClick={handleAgregarAlCarrito}
-            disabled={estaEnCarrito || cargandoMoneda}
-            className={`mt-8 w-full flex items-center justify-center gap-2 rounded-full px-4 sm:px-8 py-3 sm:py-4 font-principal text-lg sm:text-xl font-bold cursor-pointer transition duration-700 hover:-translate-y-1 ${
-              estaEnCarrito 
-                ? 'bg-[#ffffff] text-[#131313] cursor-not-allowed opacity-80' 
-                : 'bg-neon-pink text-[#131313] hover:bg-[#ffffff] hover:text-[#131313]'
-            }`}
-          >
-             {cargandoMoneda ? 'CALCULANDO...' : (
-                estaEnCarrito ? (
-                  <><Check size={20} /> YA ESTÁ EN TU CARRITO</>
-                ) : (
-                  <><ShoppingCart size={20} /> COMPRAR AHORA</>
-                )
-              )}
-          </button>
+          {/* 👇 NUEVO: BOTÓN INTELIGENTE (CTA INFERIOR) 👇 */}
+          {yaComprado ? (
+            <button 
+              onClick={() => navigate(`/mis-clases/${categoria.id}`)}
+              className="mt-8 w-full flex items-center justify-center gap-2 rounded-full bg-[#ffffff] px-4 sm:px-8 py-3 sm:py-4 font-principal text-lg sm:text-xl font-bold text-[#131313] shadow-[0_0_20px_rgba(255,255,255,0.3)] transition duration-700 hover:-translate-y-1 hover:bg-[#d7f250] cursor-pointer"
+            >
+              <PlayCircle size={22} /> YA TIENES ESTA CLASE - VER AHORA
+            </button>
+          ) : (
+            <button 
+              onClick={handleAgregarAlCarrito}
+              disabled={estaEnCarrito || cargandoMoneda || cargandoMisClases}
+              className={`mt-8 w-full flex items-center justify-center gap-2 rounded-full px-4 sm:px-8 py-3 sm:py-4 font-principal text-lg sm:text-xl font-bold cursor-pointer transition duration-700 hover:-translate-y-1 ${
+                estaEnCarrito 
+                  ? 'bg-[#ffffff] text-[#131313] cursor-not-allowed opacity-80' 
+                  : 'bg-neon-pink text-[#131313] hover:bg-[#ffffff] hover:text-[#131313]'
+              }`}
+            >
+               {cargandoMoneda ? 'CALCULANDO...' : (
+                 estaEnCarrito ? (
+                   <><Check size={20} /> YA ESTÁ EN TU CARRITO</>
+                 ) : (
+                   <><ShoppingCart size={20} /> COMPRAR AHORA</>
+                 )
+               )}
+            </button>
+          )}
         </div>
 
         <div className="flex flex-col flex-wrap justify-center gap-4 text-sm font-medium text-[#a1a1aa] md:flex-row md:gap-8">
