@@ -3,20 +3,27 @@ import { Transition } from '@headlessui/react';
 import { ShoppingCart, X, ChevronRight } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useCartStore } from '../store/cartStore';
+import { useMoneda } from '../hooks/useMoneda';
 
 export const FloatingCart = () => {
   const navigate = useNavigate();
   const cartItems = useCartStore((state) => state.cartItems);
   const removeFromCart = useCartStore((state) => state.removeFromCart);
-  
+  const { moneda } = useMoneda(); // 👈 Ya lo tienes importado
   const [minimizado, setMinimizado] = useState(false);
 
   if (cartItems.length === 0) return null;
 
-  const totalArs = cartItems.reduce((acc, item) => acc + Number(item.precioArs || 0), 0);
+  // 👇 1. Cálculo dinámico del total según la moneda
+  const total = cartItems.reduce((acc, item) => {
+    const precio = moneda === 'ARS' ? item.precioArs : item.precioUsd;
+    return acc + Number(precio || 0);
+  }, 0);
 
-  return (
-    // 👇 Cambiamos bottom-6 por bottom-0 para anclarlo al ras de la pantalla
+  // 👇 2. Definición del símbolo (U$D para internacional, $ para Argentina)
+  const simbolo = moneda === 'ARS' ? '$' : 'U$D ';
+
+  return (  
     <div className="fixed bottom-0 right-4 md:right-5 z-[100] flex flex-col items-end">
       <Transition show={!minimizado} as={Fragment} enter="transform transition ease-out duration-300" enterFrom="translate-y-full opacity-0" enterTo="translate-y-0 opacity-100" leave="transform transition ease-in duration-200" leaveFrom="translate-y-0 opacity-100" leaveTo="translate-y-full opacity-0">
  
@@ -35,7 +42,6 @@ export const FloatingCart = () => {
             </button>
           </div>
 
-          {/* 👇 max-h-[50vh] le da hasta el 50% del alto de la pantalla para listar items */}
           <div className="max-h-[50vh] overflow-y-auto p-5 flex flex-col gap-4 custom-scrollbar">
             {cartItems.map((item) => (
               <div key={item.id} className="flex justify-between items-start gap-3">
@@ -44,7 +50,10 @@ export const FloatingCart = () => {
                   <p className="text-xs text-[#a1a1aa] mt-1">{item.tipoAcceso}</p>
                 </div>
                 <div className="text-right flex flex-col items-end flex-shrink-0">
-                  <p className="text-sm font-bold text-[#d7f250]">${item.precioArs}</p>
+                  {/* 👇 3. Precio individual dinámico */}
+                  <p className="text-sm font-bold text-[#d7f250]">
+                    {simbolo}{moneda === 'ARS' ? item.precioArs : item.precioUsd}
+                  </p>
                   <button 
                     onClick={() => removeFromCart(item.id)}
                     className="text-[10px] text-red-400 hover:text-red-300 mt-1.5 uppercase font-bold tracking-wide transition-colors"
@@ -59,10 +68,13 @@ export const FloatingCart = () => {
           <div className="bg-[#131313] p-5 border-t border-white/5">
             <div className="flex justify-between items-center mb-4">
               <span className="text-sm text-[#a1a1aa]">Total estimado:</span>
-              <span className="text-xl font-principal font-bold text-white">${totalArs}</span>
+              {/* 👇 4. Total dinámico */}
+              <span className="text-xl font-principal font-bold text-white">
+                {simbolo}{total.toFixed(2)}
+              </span>
             </div>
             <button
-              onClick={() => navigate('/carritoMP')}
+              onClick={() => navigate('/carrito')}
               className="w-full flex justify-center items-center gap-2 rounded-full bg-[#d7f250] py-3 text-sm font-bold text-black font-principal hover:bg-white transition-colors"
             >
               FINALIZAR COMPRA <ChevronRight size={18} />
@@ -71,7 +83,6 @@ export const FloatingCart = () => {
         </div>
       </Transition>
 
-      {/* PESTAÑA MINIMIZADA (Anclada al borde) */}
       <Transition
         show={minimizado}
         as={Fragment}
@@ -82,7 +93,6 @@ export const FloatingCart = () => {
         leaveFrom="translate-y-0 opacity-100"
         leaveTo="translate-y-full opacity-0"
       >
-        {/* 👇 Ahora es una pestaña rectangular anclada abajo, no un círculo flotante */}
         <button
           onClick={() => setMinimizado(false)}
           className="flex h-12 items-center justify-center gap-2 rounded-t-xl px-6 bg-[#d7f250] text-black shadow-[0_-5px_20px_rgba(215,242,80,0.2)] hover:bg-white transition-colors border-t border-l border-r border-[#d7f250]/50"

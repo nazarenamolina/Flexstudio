@@ -18,11 +18,10 @@ import { NuevoVideoPage } from '../pages/admin/videos/NuevoVideoPage';
 import { EditarVideoPage } from '../pages/admin/videos/EditarVideoPage';
 import { VideosPage } from '../pages/VideosPage';
 import { ScrollToTop } from '../components/ScrollToTop';
-import CarritoMP from '../pages/CarritoMP';
 import { CheckoutExitoPage } from '../pages/CheckoutExitoPage';
 import { MisClasesPage } from '../pages/MisClasesPage';
 import { FloatingCart } from '../components/FloatingCart';
-
+import CarritoPage from '../pages/CarritoPage';
 
 const LayoutConNav = () => {
   return (
@@ -55,7 +54,7 @@ export const AppRouter = () => {
             <Route path='/mi-perfil' element={<MiPerfilPage />} />
             <Route path='/mis-clases' element={<MisClasesPage />} />
             <Route path='/mis-clases/:id' element={<VideosPage />} />
-            <Route path='/carritoMP' element={<CarritoMP />} />
+            <Route path='/carrito' element={<CarritoPage />} />
             <Route path='/checkout/exito' element={<CheckoutExitoPage />} />
           </Route>
         </Route>
@@ -90,4 +89,4 @@ export const AppRouter = () => {
       </Routes>
     </BrowserRouter>
   );
-};
+};  

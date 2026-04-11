@@ -79,6 +79,14 @@ export const useNuevoVideo = () => {
         setEstadoSubida('IDLE');
       });
 
+      upload.on('offline', () => {
+        toast.error('Se cortó el internet. La subida está pausada...', { duration: 5000 });
+      });
+
+      upload.on('online', () => {
+        toast.success('Internet recuperado. Retomando subida...');
+      });
+
     } catch (error) {
       toast.error('Error al contactar con el servidor');
       setEstadoSubida('IDLE');
