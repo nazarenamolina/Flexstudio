@@ -5,7 +5,7 @@ import { Link } from 'react-router-dom';
 export const MisClasesPage = () => {
   const { clases, cargando, error } = useMisClases();
 
-  // Estado 1: Cargando (Puedes cambiar esto por un Skeleton más adelante)
+  // Estado 1: Cargando
   if (cargando) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-gray-50">
@@ -27,7 +27,7 @@ export const MisClasesPage = () => {
 
   // Estado 3: Renderizado exitoso
   return (
-    <main className="min-h-screen bg-gray-50 px-4 py-12 sm:px-6 lg:px-8">
+    <main className="px-4 md:px-8 pb-10 pt-25">
       <div className="mx-auto max-w-7xl">
         
         {/* Cabecera */}

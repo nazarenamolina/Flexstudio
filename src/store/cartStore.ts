@@ -5,7 +5,7 @@ export interface CategoriaReal {
   id: string;
   titulo: string;
   precioArs: string | number; 
-  tipoAcceso?: string;
+  imagenTarjeta?: string;
 }
 
 interface CartState {
