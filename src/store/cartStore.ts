@@ -5,6 +5,7 @@ export interface CategoriaReal {
   id: string;
   titulo: string;
   precioArs: string | number; 
+  imagenTarjeta?: string;
   precioUsd: string | number; 
   tipoAcceso?: string;
 }
