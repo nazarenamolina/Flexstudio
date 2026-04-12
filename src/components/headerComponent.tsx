@@ -168,7 +168,7 @@ export const HeaderComponent = () => {
               )}
 
               {/* 👇 LINK DEL CARRITO CON BADGE DE NOTIFICACIÓN 👇 */}
-              <Link to="/carritoMP" className="flex items-center py-2 text-[0.95rem] font-medium text-[#161616] transition-colors hover:text-[#d7f250]">
+              <Link to="/carrito" className="flex items-center py-2 text-[0.95rem] font-medium text-[#161616] transition-colors hover:text-[#d7f250]">
                 <div className="relative mr-2 flex items-center justify-center">
                   <ShoppingCart size={20} />
                   {/* El badge solo aparece si hay items */}

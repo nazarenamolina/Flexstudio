@@ -6,6 +6,8 @@ export interface CategoriaReal {
   titulo: string;
   precioArs: string | number; 
   imagenTarjeta?: string;
+  precioUsd: string | number; 
+  tipoAcceso?: string;
 }
 
 interface CartState {
