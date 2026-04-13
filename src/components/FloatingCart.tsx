@@ -9,18 +9,14 @@ export const FloatingCart = () => {
   const navigate = useNavigate();
   const cartItems = useCartStore((state) => state.cartItems);
   const removeFromCart = useCartStore((state) => state.removeFromCart);
-  const { moneda } = useMoneda(); // 👈 Ya lo tienes importado
-  const [minimizado, setMinimizado] = useState(false);
+  const { moneda } = useMoneda(); 
+  const [minimizado, setMinimizado] = useState(true);
 
   if (cartItems.length === 0) return null;
-
-  // 👇 1. Cálculo dinámico del total según la moneda
   const total = cartItems.reduce((acc, item) => {
     const precio = moneda === 'ARS' ? item.precioArs : item.precioUsd;
     return acc + Number(precio || 0);
   }, 0);
-
-  // 👇 2. Definición del símbolo (U$D para internacional, $ para Argentina)
   const simbolo = moneda === 'ARS' ? '$' : 'U$D ';
 
   return (  
@@ -50,7 +46,6 @@ export const FloatingCart = () => {
                   <p className="text-xs text-[#a1a1aa] mt-1">{item.tipoAcceso}</p>
                 </div>
                 <div className="text-right flex flex-col items-end flex-shrink-0">
-                  {/* 👇 3. Precio individual dinámico */}
                   <p className="text-sm font-bold text-[#d7f250]">
                     {simbolo}{moneda === 'ARS' ? item.precioArs : item.precioUsd}
                   </p>
