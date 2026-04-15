@@ -4,6 +4,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import toast from 'react-hot-toast';
 import { registroRequest, type RegistroData } from '../api/auth';
+
 const registroSchema = z.object({
   nombre: z.string().min(1, 'El nombre es obligatorio'),
   apellido: z.string().min(1, 'El apellido es obligatorio'),
@@ -26,6 +27,7 @@ const registroSchema = z.object({
 });
 
 export type RegistroFormValues = z.infer<typeof registroSchema>;
+
 export const useRegistro = () => {
   const navigate = useNavigate();
   const form = useForm<RegistroFormValues>({
@@ -36,8 +38,9 @@ export const useRegistro = () => {
     try {
       const { confirmarContrasena, ...datosParaBackend } = data;
       await registroRequest(datosParaBackend as RegistroData);
-      toast.success('¡Cuenta creada con éxito! Por favor inicia sesión.');
-      navigate('/login');
+      toast.success('¡Registro casi listo! Te enviamos un código a tu correo.');
+      navigate('/verificar-email', { state: { correo: data.correo } });
+      
     } catch (error: any) {
       const mensaje = error.response?.data?.message || 'Error al crear la cuenta';
       toast.error(typeof mensaje === 'string' ? mensaje : mensaje[0]);

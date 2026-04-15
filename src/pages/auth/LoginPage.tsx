@@ -1,11 +1,23 @@
-import { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { useState, useEffect, useRef } from 'react';
+import { Link, useLocation, useNavigate } from 'react-router-dom'; 
 import { Mail, Lock, Loader2, Eye, EyeOff } from 'lucide-react';
-import { useLogin } from '../../hooks/useLogin'; // 👈 Importamos el Hook
+import toast from 'react-hot-toast';
+import { useLogin } from '../../hooks/useLogin';
 
 export const LoginPage = () => {
   const [mostrarPass, setMostrarPass] = useState(false);
   const { form: { register, formState: { errors, isSubmitting } }, errorServidor, onSubmit } = useLogin();
+  const location = useLocation();
+  const navigate = useNavigate();
+  const toastMostrado = useRef(false);
+
+  useEffect(() => {
+    if (location.state?.mensaje && !toastMostrado.current) {
+      toast.success(location.state.mensaje, { duration: 5000 });
+      toastMostrado.current = true;
+      navigate(location.pathname, { replace: true, state: {} });
+    }
+  }, [location, navigate]);
 
   const labelClass = "block text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1";
   const inputClass = (error?: any) => `w-full pl-10 pr-10 py-3 bg-transparent border ${error ? 'border-red-500 focus:border-red-500 focus:ring-red-500/20' : 'border-[#d7f250] focus:border-white focus:ring-white/20'
@@ -89,8 +101,6 @@ export const LoginPage = () => {
             {/* Extras: Checkbox y Olvidaste contraseña */}
             <div className="flex items-center justify-between pt-2">
               <label className="flex items-center cursor-pointer group">
-                {/* Nota: Para personalizar completamente el checkbox en Tailwind puro hace falta el plugin @tailwindcss/forms, 
-                    pero esto simula el estilo base. */}
                 <input type="checkbox" className="w-4 h-4 accent-[#d7f250] cursor-pointer" />
                 <span className="ml-2 text-[10px] font-bold text-white tracking-widest uppercase group-hover:text-[#d7f250] transition-colors">
                   RECORDARME

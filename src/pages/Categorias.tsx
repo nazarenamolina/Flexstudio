@@ -76,7 +76,7 @@ const CategoriaDetailPage = () => {
       id: categoria.id,
       titulo: categoria.titulo,
       precioArs: categoria.precioArs,
-      imagenTarjeta: categoria.imagenTarjeta
+      imagenTarjeta: categoria.imagenTarjeta,
       precioUsd:categoria.precioUsd,
       tipoAcceso: 'Acceso Vitalicio',
     });
