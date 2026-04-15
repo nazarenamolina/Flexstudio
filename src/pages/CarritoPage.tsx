@@ -1,5 +1,5 @@
 import { Navigate } from 'react-router-dom';
-import CarritoMP from './CarritoMP';
+import CarritoMP from './carrito/CarritoMP';
 import CarritoPP from './CarritoPP';
 import { useAuthStore } from '../store/authStore'; 
 

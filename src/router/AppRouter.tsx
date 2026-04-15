@@ -22,6 +22,8 @@ import { CheckoutExitoPage } from '../pages/CheckoutExitoPage';
 import { MisClasesPage } from '../pages/MisClasesPage';
 import { FloatingCart } from '../components/FloatingCart';
 import CarritoPage from '../pages/CarritoPage';
+import { ClientesPage } from '../pages/admin/clientes/ClientesPage';
+import { VerificarEmailPage } from '../pages/auth/VerificarEmailPage'
 
 const LayoutConNav = () => {
   return (
@@ -70,11 +72,13 @@ export const AppRouter = () => {
         >
           <Route path="/login" element={<LoginPage />} />
           <Route path="/registro" element={<RegistroPage />} />
+          <Route path="/verificar-email" element={<VerificarEmailPage />} />
         </Route>
 
         {/* RUTAS DE ADMINISTRADOR */}
         <Route element={<ProtectedRoute isAllowed={isAuthenticated && usuario?.rol === 'ADMIN'} redirectTo="/" />}>
           <Route path="/admin" element={<AdminLayout />}>
+            <Route path='clientes' element={<ClientesPage />} />
             <Route path="categorias" element={<CategoriasPage />} />
             <Route path="categorias/nueva" element={<NuevaCategoriaPage />} />
             <Route path="categorias/editar/:id" element={<EditarCategoriaPage />} />

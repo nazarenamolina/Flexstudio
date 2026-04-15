@@ -28,7 +28,7 @@ export const AdminLayout = () => {
   // 3. MENÚ DE NAVEGACIÓN
   const menuItems = [
     { name: 'Dashboard', path: '/admin', icon: LayoutDashboard },
-    { name: 'Clientes', path: '#', icon: Tags },
+    { name: 'Clientes', path: '/admin/clientes', icon: Tags },
     { name: 'categorias', path: '/admin/categorias', icon: Tags },
     { name: 'videos', path: '/admin/videos', icon: Video },
   ];

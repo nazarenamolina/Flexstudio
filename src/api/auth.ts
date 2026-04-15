@@ -5,6 +5,11 @@ export interface LoginCredentials {
   contrasena: string;
 }
 
+export interface VerificarOtpData {
+  correo: string;
+  codigo: string;
+}
+
 export interface Usuario {
   id: string;
   nombre: string;
@@ -38,6 +43,10 @@ export const registroRequest = async (datos: RegistroData) => {
   return response.data;
 };
 
+export const verificarEmailRequest = async (datos: VerificarOtpData) => {
+  const response = await api.post('/auth/verificar-email', datos);
+  return response.data;
+};
 
 export const loginRequest = async (credentials: LoginCredentials): Promise<LoginResponse> => {
   const response = await api.post<LoginResponse>('/auth/login', credentials);
