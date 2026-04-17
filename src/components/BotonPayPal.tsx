@@ -57,8 +57,7 @@ export const BotonPayPal = () => {
                             label: "pay"
                         }}
 
-                        createOrder={async () => {
-                            if (cargando) return "";
+                        createOrder={async (_data) => {
                             setCargando(true);
                             setMetodoSeleccionado(true);
                             try {
@@ -90,7 +89,6 @@ export const BotonPayPal = () => {
 
                         onCancel={() => {
                             setCargando(false);
-                            // Si cancelan el popup flotante, reseteamos el estado visual
                             setMetodoSeleccionado(false);
                         }}
 

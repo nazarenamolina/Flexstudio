@@ -24,6 +24,7 @@ import { FloatingCart } from '../components/FloatingCart';
 import CarritoPage from '../pages/CarritoPage';
 import { ClientesPage } from '../pages/admin/clientes/ClientesPage';
 import { VerificarEmailPage } from '../pages/auth/VerificarEmailPage'
+import { AdminDashboard } from '../pages/admin/dasboard/AdminDashboard';
 
 const LayoutConNav = () => {
   return (
@@ -78,6 +79,7 @@ export const AppRouter = () => {
         {/* RUTAS DE ADMINISTRADOR */}
         <Route element={<ProtectedRoute isAllowed={isAuthenticated && usuario?.rol === 'ADMIN'} redirectTo="/" />}>
           <Route path="/admin" element={<AdminLayout />}>
+            <Route index element={<AdminDashboard />} />  
             <Route path='clientes' element={<ClientesPage />} />
             <Route path="categorias" element={<CategoriasPage />} />
             <Route path="categorias/nueva" element={<NuevaCategoriaPage />} />

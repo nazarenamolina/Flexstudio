@@ -1,30 +1,52 @@
-// src/pages/.../carrito/components/Paso3Resumen.tsx
-import { CheckCircle2, Circle, Loader2 } from 'lucide-react';
+import { CheckCircle2, Loader2 } from 'lucide-react';
 import { useCartStore } from '../../../store/cartStore'; 
 import { useCheckout } from '../../../hooks/useCheckout'; 
 import { type CheckoutPerfilData } from '../../../api/usuario';
+import { useGoogleReCaptcha } from 'react-google-recaptcha-v3'; 
+import toast from 'react-hot-toast';
 
 interface Props {
   formData: CheckoutPerfilData;
   usuario: any;
-  metodoPago: string;
+  metodoPago: string; // Ya no lo usaremos para cambiar estado, pero lo dejamos por si la interfaz lo requiere
   setMetodoPago: (metodo: string) => void;
   onPrev: () => void;
 }
 
-const Paso3Resumen = ({ formData, usuario, metodoPago, setMetodoPago, onPrev }: Props) => {
+const Paso3Resumen = ({ formData, usuario, onPrev }: Props) => {
   const cartItems = useCartStore((state) => state.cartItems);
   const { procesarCheckout, cargando, error } = useCheckout();
+  const { executeRecaptcha } = useGoogleReCaptcha();
 
-  const subtotal = cartItems.reduce((acc, item) => acc + Number(item.precioArs || 0), 0);
-  const costoServicio = subtotal * 0.15;
-  const total = subtotal + costoServicio;
+  // 👇 1. Detectamos el país
+  const esArgentina = usuario?.pais?.toLowerCase() === 'argentina' || usuario?.pais?.toLowerCase() === 'ar';
+
+  // 👇 2. Calculamos el total dinámicamente en ARS o USD según corresponda
+  const total = cartItems.reduce((acc, item) => {
+    const precio = esArgentina ? item.precioArs : item.precioUsd;
+    return acc + Number(precio || 0);
+  }, 0);
+
+  const moneda = esArgentina ? '$' : 'U$D';
+  const totalFormateado = esArgentina ? total.toLocaleString('es-AR') : total.toFixed(2);
 
   const handleConfirmar = async () => {
+    if (!executeRecaptcha) {
+      toast.error('Verificando conexión segura, por favor espera...');
+      return;
+    }
+    
+    const captchaToken = await executeRecaptcha('compra');
     const idsCategorias = cartItems.map((item) => item.id);
     
- 
-    await procesarCheckout(idsCategorias, formData);
+    // 👇 3. Forzamos la plataforma en el payload para que el backend no tenga dudas
+    const payloadCompra = {
+      idsCategorias,
+      plataforma: esArgentina ? 'MERCADOPAGO' : 'PAYPAL', 
+      captchaToken
+    };
+    
+    await procesarCheckout(payloadCompra, formData);
   };
 
   return (
@@ -49,48 +71,44 @@ const Paso3Resumen = ({ formData, usuario, metodoPago, setMetodoPago, onPrev }: 
         {cartItems.map(item => (
           <p key={item.id} className="text-sm text-neutral-300">1 x {item.titulo}</p>
         ))}
-        <div className="pt-4 space-y-1">
-          <p className="text-sm text-neutral-400">Subtotal: $ {subtotal.toLocaleString('es-AR')}</p>
-          <p className="text-sm text-neutral-400">Costo de plataforma: $ {costoServicio.toLocaleString('es-AR')}</p>
-        </div>
       </div>
 
-      {/* Total Gigante */}
+      {/* Total Gigante Dinámico */}
       <div className="w-full border-t border-b border-neutral-800 py-4 text-center mb-8">
-        <p className="text-2xl font-bold text-[#d7f250]">Total a pagar: $ {total.toLocaleString('es-AR')}</p>
+        <p className="text-2xl font-bold text-[#d7f250]">
+          Total a pagar: {moneda} {totalFormateado}
+        </p>
       </div>
 
-      <h3 className="font-bold text-lg mb-4 text-white">Elegí el medio de pago</h3>
+      <h3 className="font-bold text-lg mb-4 text-white">Medio de pago para tu región</h3>
       
-      {/* Selectores de Pago */}
+      {/* 👇 4. Renderizado Condicional de Pasarelas */}
       <div className="w-full border border-neutral-800 rounded-xl overflow-hidden mb-8">
-        <div 
-          onClick={() => setMetodoPago('mercadopago')}
-          className={`p-4 flex items-center gap-4 cursor-pointer border-b border-neutral-800 transition-colors ${metodoPago === 'mercadopago' ? 'bg-[#1a1a1a]' : 'hover:bg-[#111]'}`}
-        >
-          <div className="w-10 h-10 bg-[#009EE3] rounded-md flex items-center justify-center shrink-0">
-            <span className="text-white font-bold text-xs">MP</span>
+        {esArgentina ? (
+          // Vista para ARGENTINA
+          <div className="p-4 flex items-center gap-4 border-b border-neutral-800 bg-[#1a1a1a]">
+            <div className="w-10 h-10 bg-[#009EE3] rounded-md flex items-center justify-center shrink-0">
+              <span className="text-white font-bold text-xs">MP</span>
+            </div>
+            <div className="flex-1">
+              <h4 className="font-bold text-sm text-white">Mercado Pago</h4>
+              <p className="text-xs text-neutral-400">Pagos en Pesos Argentinos (ARS)</p>
+            </div>
+            <CheckCircle2 className="text-[#8b5cf6]" />
           </div>
-          <div className="flex-1">
-            <h4 className="font-bold text-sm text-white">Mercado Pago</h4>
-            <p className="text-xs text-neutral-400">Tarjetas, Rapipago o dinero en cuenta</p>
+        ) : (
+          // Vista para RESTO DEL MUNDO
+          <div className="p-4 flex items-center gap-4 bg-[#1a1a1a]">
+            <div className="w-10 h-10 bg-[#003087] rounded-md flex items-center justify-center shrink-0">
+              <span className="text-white font-bold text-xs">PP</span>
+            </div>
+            <div className="flex-1">
+              <h4 className="font-bold text-sm text-white">PayPal</h4>
+              <p className="text-xs text-neutral-400">Pagos internacionales (USD)</p>
+            </div>
+            <CheckCircle2 className="text-[#8b5cf6]" />
           </div>
-          {metodoPago === 'mercadopago' ? <CheckCircle2 className="text-[#8b5cf6]" /> : <Circle className="text-neutral-600" />}
-        </div>
-
-        <div 
-          onClick={() => setMetodoPago('modo')}
-          className={`p-4 flex items-center gap-4 cursor-pointer transition-colors ${metodoPago === 'modo' ? 'bg-[#1a1a1a]' : 'hover:bg-[#111]'}`}
-        >
-          <div className="w-10 h-10 bg-[#00A99D] rounded-md flex items-center justify-center shrink-0">
-            <span className="text-white font-bold text-xs">M</span>
-          </div>
-          <div className="flex-1">
-            <h4 className="font-bold text-sm text-white">MODO</h4>
-            <p className="text-xs text-neutral-400">Paga con tu banco</p>
-          </div>
-          {metodoPago === 'modo' ? <CheckCircle2 className="text-[#8b5cf6]" /> : <Circle className="text-neutral-600" />}
-        </div>
+        )}
       </div>
 
       {/* Manejo de Errores del Backend */}

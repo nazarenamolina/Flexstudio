@@ -1,10 +1,11 @@
 import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuthStore } from "../store/authStore";
-import { useCartStore } from "../store/cartStore"; 
+import { useCartStore } from "../store/cartStore";
 import { ShoppingCart, CircleUser, Search, LogOut, Menu, X, ChevronDown } from "lucide-react";
 import { AvatarIniciales } from "./AvatarIniciales";
-import { obtenerCategoriasRequest, type Categoria } from "../api/categoria"; 
+import { obtenerCategoriasRequest, type Categoria } from "../api/categoria";
+import { logoutRequest } from "../api/auth"; 
 
 export const HeaderComponent = () => {
   const { usuario, isAuthenticated, logout } = useAuthStore();
@@ -30,9 +31,15 @@ export const HeaderComponent = () => {
     cargarMenuCategorias();
   }, []);
 
-  const handleLogout = () => {
-    logout();
-    navigate("/login");
+  const handleLogout = async () => {
+    try {
+      await logoutRequest();
+    } catch (error) {
+      console.error('Error al cerrar sesión en backend:', error);
+    } finally {
+      logout();
+      navigate("/login");
+    }
   };
 
   return (

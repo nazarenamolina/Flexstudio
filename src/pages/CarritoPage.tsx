@@ -1,6 +1,5 @@
 import { Navigate } from 'react-router-dom';
 import CarritoMP from './carrito/CarritoMP';
-import CarritoPP from './CarritoPP';
 import { useAuthStore } from '../store/authStore'; 
 
 const CarritoPage = () => {
@@ -8,14 +7,7 @@ const CarritoPage = () => {
   if (!usuario) {
     return <Navigate to="/login" />;
   }
-  const esArgentina = 
-    usuario.pais?.toLowerCase() === 'argentina' || 
-    usuario.pais?.toLowerCase() === 'ar';
-  if (esArgentina) {
-    return <CarritoMP />;
-  } else {
-    return <CarritoPP />;
-  }
+  return <CarritoMP />;
 };
 
 export default CarritoPage;

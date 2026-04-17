@@ -78,7 +78,6 @@ const CategoriaDetailPage = () => {
       precioArs: categoria.precioArs,
       imagenTarjeta: categoria.imagenTarjeta,
       precioUsd:categoria.precioUsd,
-      tipoAcceso: 'Acceso Vitalicio',
     });
   };
 

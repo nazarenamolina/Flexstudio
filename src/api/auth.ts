@@ -36,6 +36,7 @@ export interface RegistroData {
   ciudad?: string;
   direccion?: string;
   codigoPostal?: string;
+  captchaToken?: string;
 }
 
 export const registroRequest = async (datos: RegistroData) => {

@@ -7,7 +7,6 @@ export interface CategoriaReal {
   precioArs: string | number; 
   imagenTarjeta?: string;
   precioUsd: string | number; 
-  tipoAcceso?: string;
 }
 
 interface CartState {

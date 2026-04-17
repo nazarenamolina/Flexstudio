@@ -5,7 +5,7 @@ import { io } from 'socket.io-client';
 import { obtenerTodosLosVideosRequest, eliminarVideoRequest, type Video } from '../api/videos'; // Ajusta la ruta si es necesario
 import { obtenerCategoriasRequest, type Categoria } from '../api/categoria'; // Ajusta la ruta si es necesario
 
-const SOCKET_URL = 'http://localhost:3000';
+const SOCKET_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
 
 export const useAdminVideos = () => {
   const navigate = useNavigate();
@@ -25,9 +25,9 @@ export const useAdminVideos = () => {
     if (!silencioso) setCargando(true);
     try {
       const resVideos = await obtenerTodosLosVideosRequest();
-      setVideos(Array.isArray(resVideos) ? resVideos : (resVideos as any).data || []);
+      setVideos(resVideos);
       const resCategorias = await obtenerCategoriasRequest();
-      setCategorias(Array.isArray(resCategorias) ? resCategorias : (resCategorias as any).categorias || []);
+      setCategorias(resCategorias);
     } catch (error) {
       if (!silencioso) toast.error("Error al cargar la librería de videos");
     } finally {
