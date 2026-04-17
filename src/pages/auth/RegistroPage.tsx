@@ -112,8 +112,12 @@ export const RegistroPage = () => {
                   <Controller
                     name="telefono"
                     control={control}
-                    rules={{required: 'El teléfono es obligatorio', validate: (value) => {if (!value) return true;
-                        return isValidPhoneNumber(value) || 'El número no es válido para el país seleccionado';}}}
+                    rules={{
+                      required: 'El teléfono es obligatorio', validate: (value) => {
+                        if (!value) return true;
+                        return isValidPhoneNumber(value) || 'El número no es válido para el país seleccionado';
+                      }
+                    }}
                     render={({ field: { onChange, value } }) => (
                       <div className="phone-wrapper">
                         <PhoneInput
@@ -192,6 +196,17 @@ export const RegistroPage = () => {
               ¿Ya tienes una cuenta? <Link to="/login" className="text-white font-bold hover:text-[#d7f250]">INICIAR SESIÓN</Link>
             </p>
           </form>
+          <div className="mt-4 text-center text-xs text-neutral-400">
+            Este sitio está protegido por reCAPTCHA y se aplican la{' '}
+            <a href="https://policies.google.com/privacy" target="_blank" rel="noreferrer" className="text-[#d7f250] hover:underline transition-all">
+              Política de Privacidad
+            </a>{' '}
+            y los{' '}
+            <a href="https://policies.google.com/terms" target="_blank" rel="noreferrer" className="text-[#d7f250] hover:underline transition-all">
+              Términos de Servicio
+            </a>{' '}
+            de Google.
+          </div>
         </div>
       </div>
     </div>

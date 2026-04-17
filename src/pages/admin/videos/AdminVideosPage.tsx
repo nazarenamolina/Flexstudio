@@ -9,7 +9,7 @@ import { obtenerTodosLosVideosRequest, eliminarVideoRequest, type Video } from '
 import { obtenerCategoriasRequest, type Categoria } from '../../../api/categoria';
 import { ConfirmarEliminarModal } from '../../../components/ConfirmarEliminarModal'; // 👈 Importamos el Modal
 
-const SOCKET_URL = 'http://localhost:3000';
+const SOCKET_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
 
 export const AdminVideosPage = () => {
   const navigate = useNavigate();
@@ -32,9 +32,9 @@ export const AdminVideosPage = () => {
     if (!silencioso) setCargando(true);
     try {
       const resVideos = await obtenerTodosLosVideosRequest();
-      setVideos(Array.isArray(resVideos) ? resVideos : (resVideos as any).data || []);
+      setVideos(resVideos);
       const resCategorias = await obtenerCategoriasRequest();
-      setCategorias(Array.isArray(resCategorias) ? resCategorias : (resCategorias as any).categorias || []);
+      setCategorias(resCategorias);
     } catch (error) {
       if (!silencioso) toast.error("Error al cargar la librería de videos");
     } finally {

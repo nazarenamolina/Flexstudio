@@ -1,5 +1,6 @@
 // src/api/compras.ts
 import { api } from './axios';
+import { type PayloadCompra } from '../hooks/useCheckout';
 
  
 export interface ClaseComprada {
@@ -26,7 +27,7 @@ export const obtenerDetalleClase = async (id: string) => {
   return respuesta.data;
 };
 
-export const iniciarCompraRequest = async (datos: DatosCompra) => {
-  const respuesta = await api.post('/compras/iniciar', datos);
-  return respuesta.data;
+export const iniciarCompraRequest = async (datosCompra: PayloadCompra) => {
+  const response = await api.post('/compras/iniciar', datosCompra);
+  return response.data;
 };

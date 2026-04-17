@@ -27,7 +27,8 @@ export const useLogin = () => {
       const respuesta = await loginRequest(data);
       setUsuario(respuesta.usuario);
       toast.success(respuesta.mensaje || '¡Bienvenida de vuelta!');
-      navigate('/admin');
+      const redirectTo = respuesta.usuario.rol === 'ADMIN' ? '/admin/categorias' : '/';
+      navigate(redirectTo);
     } catch (error: any) {
       const mensajeError = error.response?.data?.message || 'Error al iniciar sesión. Verifica tus credenciales.';
       setErrorServidor(mensajeError);
