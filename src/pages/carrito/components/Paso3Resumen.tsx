@@ -1,8 +1,8 @@
-import { CheckCircle2, Loader2 } from 'lucide-react';
-import { useCartStore } from '../../../store/cartStore'; 
-import { useCheckout } from '../../../hooks/useCheckout'; 
+import { Loader2 } from 'lucide-react';
+import { useCartStore } from '../../../store/cartStore';
+import { useCheckout } from '../../../hooks/useCheckout';
 import { type CheckoutPerfilData } from '../../../api/usuario';
-import { useGoogleReCaptcha } from 'react-google-recaptcha-v3'; 
+import { useGoogleReCaptcha } from 'react-google-recaptcha-v3';
 import toast from 'react-hot-toast';
 
 interface Props {
@@ -35,79 +35,95 @@ const Paso3Resumen = ({ formData, usuario, onPrev }: Props) => {
       toast.error('Verificando conexión segura, por favor espera...');
       return;
     }
-    
+
     const captchaToken = await executeRecaptcha('compra');
     const idsCategorias = cartItems.map((item) => item.id);
-    
+
     // 👇 3. Forzamos la plataforma en el payload para que el backend no tenga dudas
     const payloadCompra = {
       idsCategorias,
-      plataforma: esArgentina ? 'MERCADOPAGO' : 'PAYPAL', 
+      plataforma: esArgentina ? 'MERCADOPAGO' : 'PAYPAL',
       captchaToken
     };
-    
+
     await procesarCheckout(payloadCompra, formData);
   };
 
   return (
     <div className="max-w-2xl mx-auto w-full flex flex-col items-center">
-      <h2 className="text-2xl font-bold mb-6 text-white">¡Ya casi es tuyo! Revisa tus datos</h2>
+      <h2 className="text-3xl font-principal font-bold mb-6 text-[#131313]">¡Ya casi es tuyo! Revisa tus datos</h2>
 
       {/* Datos del Cliente */}
-      <div className="w-full text-center space-y-1 text-sm text-neutral-300 mb-8 bg-[#1a1a1a] p-6 rounded-xl border border-neutral-800">
-        <p><strong className="text-white">Titular:</strong> {usuario?.nombre} {usuario?.apellido}</p>
-        <p><strong className="text-white">Contacto:</strong> {usuario?.correo} | {formData.telefono || 'Sin teléfono'}</p>
+      <div className="w-full text-center space-y-1 text-neutral-800 p-2 mb-6 rounded-xl border-[1px] border-neutral-400">
+        <p><strong className="font-principal text-[#131313]">Titular: </strong> {usuario?.nombre} {usuario?.apellido}</p>
+        <p><strong className="font-principal text-[#131313]">Contacto: </strong> {usuario?.correo} | {formData.telefono || 'Sin teléfono'}</p>
         {formData.documentoIdentidad && (
-          <p><strong className="text-[#8b5cf6]">Documento (AFIP):</strong> {formData.documentoIdentidad}</p>
+          <p><strong className="font-principal text-[#131313]">Documento: </strong> {formData.documentoIdentidad}</p>
         )}
         {formData.direccion && (
-          <p><strong className="text-white">Facturación:</strong> {formData.direccion}, {formData.ciudad || ''} {formData.provincia ? `(${formData.provincia})` : ''}</p>
+          <p><strong className="font-principal text-[#131313]">Facturación: </strong> {formData.direccion}, {formData.ciudad || ''} {formData.provincia ? `(${formData.provincia})` : ''}</p>
         )}
       </div>
 
       {/* Resumen de la Orden */}
-      <div className="w-full border-t border-neutral-800 pt-6 text-center space-y-2 mb-8">
-        <p className="text-sm font-bold text-white mb-4">Tus clases seleccionadas:</p>
+      <div className="w-full border-t border-neutral-400 p-3 text-center space-y-2">
+        <p className="font-principal font-bold text-[#131313] mb-2">Tus clases seleccionadas:</p>
         {cartItems.map(item => (
-          <p key={item.id} className="text-sm text-neutral-300">1 x {item.titulo}</p>
+          <p key={item.id} className="text-sm text-neutral-800">1 x {item.titulo}</p>
         ))}
       </div>
 
       {/* Total Gigante Dinámico */}
-      <div className="w-full border-t border-b border-neutral-800 py-4 text-center mb-8">
-        <p className="text-2xl font-bold text-[#d7f250]">
+      <div className="w-full rounded-xl border-[1px] border-neutral-400 p-3 text-center mb-6 bg-[#131313]/90">
+        <p className="text-2xl font-principal font-bold text-[#d7f250]">
           Total a pagar: {moneda} {totalFormateado}
         </p>
       </div>
 
-      <h3 className="font-bold text-lg mb-4 text-white">Medio de pago para tu región</h3>
-      
-      {/* 👇 4. Renderizado Condicional de Pasarelas */}
-      <div className="w-full border border-neutral-800 rounded-xl overflow-hidden mb-8">
+      <h3 className="font-bold font-principal text-xl pt-4 mb-4 text-[#131313] border-t w-full text-center border-neutral-400">Medio de pago: </h3>
+
+      <div className="w-full border border-neutral-400 rounded-xl overflow-hidden mb-8">
         {esArgentina ? (
-          // Vista para ARGENTINA
-          <div className="p-4 flex items-center gap-4 border-b border-neutral-800 bg-[#1a1a1a]">
-            <div className="w-10 h-10 bg-[#009EE3] rounded-md flex items-center justify-center shrink-0">
-              <span className="text-white font-bold text-xs">MP</span>
+          <div className="p-4 flex items-center gap-[14px] rounded-[14px] w-full cursor-pointer">
+            <div className="w-12 h-12 rounded-[10px] flex items-center justify-center shrink-0 overflow-hidden">
+              <img
+                src="https://res.cloudinary.com/dmp7mcwie/image/upload/v1776553638/idQ3WnPeIo_1776553596063_frvubq.png"
+                alt="Mercado Pago"
+                className="w-full h-full object-cover"
+              />
             </div>
-            <div className="flex-1">
-              <h4 className="font-bold text-sm text-white">Mercado Pago</h4>
-              <p className="text-xs text-neutral-400">Pagos en Pesos Argentinos (ARS)</p>
+
+            <div className="flex-1 flex flex-col">
+              <h4 className="font-semibold text-[16px] text-[#131313] tracking-wide">
+                Mercado Pago
+              </h4>
+              <p className="text-[14px] text-[#131313]/60 mt-0.5">
+                Tarjeta de crédito, débito o dinero en cuenta.
+              </p>
             </div>
-            <CheckCircle2 className="text-[#8b5cf6]" />
+
+            <div className="w-[22px] h-[22px] rounded-full border-[2.5px] border-[#009EE3]  flex items-center justify-center shrink-0">
+              <div className="w-[10px] h-[10px] bg-[#009EE3] rounded-full"></div>
+            </div>
           </div>
         ) : (
-          // Vista para RESTO DEL MUNDO
-          <div className="p-4 flex items-center gap-4 bg-[#1a1a1a]">
-            <div className="w-10 h-10 bg-[#003087] rounded-md flex items-center justify-center shrink-0">
-              <span className="text-white font-bold text-xs">PP</span>
+          // Vista para el resto del mundo
+          <div className="p-4 flex items-center gap-4">
+            <div className="w-12 h-12 flex items-center justify-center">
+              <img
+                src="https://res.cloudinary.com/dmp7mcwie/image/upload/v1776554878/Paypal_2014_logo_xjlksb.png"
+                alt="PayPal"
+                className="w-full h-full object-cover"
+              />
             </div>
             <div className="flex-1">
-              <h4 className="font-bold text-sm text-white">PayPal</h4>
-              <p className="text-xs text-neutral-400">Pagos internacionales (USD)</p>
+              <h4 className="font-semibold text-[16px] text-[#131313] tracking-wide">PayPal</h4>
+              <p className="text-[14px] text-[#131313]/60 mt-0.">Pagos internacionales (USD)</p>
             </div>
-            <CheckCircle2 className="text-[#8b5cf6]" />
-          </div>
+             <div className="w-[22px] h-[22px] rounded-full border-[2.5px] border-[#009EE3]  flex items-center justify-center shrink-0">
+              <div className="w-[10px] h-[10px] bg-[#009EE3] rounded-full"></div>
+            </div>
+            </div>
         )}
       </div>
 
@@ -120,17 +136,17 @@ const Paso3Resumen = ({ formData, usuario, onPrev }: Props) => {
 
       {/* Botones Finales */}
       <div className="flex justify-center items-center gap-4 w-full">
-        <button 
-          onClick={onPrev} 
-          disabled={cargando} 
-          className="w-1/2 max-w-[200px] bg-transparent border border-neutral-700 hover:border-neutral-500 text-white font-semibold py-3 rounded-lg transition-colors disabled:opacity-50"
+        <button
+          onClick={onPrev}
+          disabled={cargando}
+          className="flex items-center justify-center gap-3 rounded-full bg-[#131313]/60 px-6 sm:px-8 py-3 sm:py-4 font-principal text-lg sm:text-xl font-bold text-[#fff]/90 shadow-sm transition-all duration-400 hover:-translate-y-1 hover:bg-[#131313] hover:text-white hover:shadow-md cursor-pointer"
         >
           Anterior
         </button>
-        <button 
-          onClick={handleConfirmar} 
-          disabled={cargando} 
-          className="w-1/2 max-w-[200px] bg-[#8b5cf6] hover:bg-[#7c3aed] text-white font-semibold py-3 rounded-lg transition-colors flex justify-center items-center gap-2 disabled:opacity-50"
+        <button
+          onClick={handleConfirmar}
+          disabled={cargando}
+          className="flex items-center justify-center gap-3 rounded-full bg-neon-pink px-3 sm:px-8 py-3 sm:py-4 font-principal text-lg sm:text-xl font-bold text-[#131313]/90 shadow-sm transition-all duration-400 hover:-translate-y-1 hover:bg-[#131313] hover:text-white hover:shadow-md cursor-pointer"
         >
           {cargando ? <><Loader2 className="animate-spin w-4 h-4" /> Procesando</> : 'Confirmar y Pagar'}
         </button>
