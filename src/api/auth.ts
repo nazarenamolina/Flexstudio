@@ -59,3 +59,13 @@ export const logoutRequest = async (): Promise<{ mensaje: string }> => {
   const response = await api.post('/auth/logout');
   return response.data;
 };
+
+export const solicitarRecuperacionRequest = async (data: { correo: string, captchaToken: string }) => {
+  const response = await api.post('/auth/solicitar-recuperacion', data);
+  return response.data;
+};
+
+export const cambiarContrasenaRequest = async (data: { token: string, nuevaContrasena: string }) => {
+  const response = await api.post('/auth/cambiar-contrasena', data);
+  return response.data;
+};
