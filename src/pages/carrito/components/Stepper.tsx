@@ -14,7 +14,7 @@ const Stepper = ({ pasoActual }: Props) => {
   ];
 
   return ( 
-    <div className="w-full max-w-4xl mx-auto mb-20 mt-4 px-4 md:px-8">
+    <div className="w-full max-w-4xl mx-auto mb-15 mt-4 px-4 md:px-8">
        
       <div className="flex items-center justify-between w-full relative">
         {pasos.map((step, index) => {
@@ -54,10 +54,10 @@ const Stepper = ({ pasoActual }: Props) => {
                 {/* Texto debajo del círculo */}
                 <motion.span
                   animate={{
-                    color: isActive ? '#131313' : isCompleted ? '#8b9b2a' : '#a1a1aa',
+                    color: isActive ? '#131313' : isCompleted ? '#d7f250' : '#a1a1aa',
                     y: isActive ? 2 : 0
                   }}
-                  className="absolute top-14 w-32 text-center text-[10px] sm:text-xs font-bold tracking-wide leading-tight"
+                  className="absolute top-12 w-32 text-center text-[10px] sm:text-sm font-bold tracking-tight leading-tight"
                 >
                   {step.label}
                 </motion.span>

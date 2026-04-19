@@ -77,7 +77,7 @@ const HomePage = () => {
   return (
     <main className="min-h-screen font-sans text-[#161616] pt-[52px]">
       <section
-        className="relative w-full h-[50vh] sm:h-[60vh] md:h-[70vh] lg:h-[80vh] xl:h-[100vh] overflow-hidden group"
+        className=" bg-white relative w-full h-[50vh] sm:h-[60vh] md:h-[70vh] lg:h-[80vh] xl:h-[100vh] overflow-hidden group"
         onTouchStart={handleTouchStart}
         onTouchMove={handleTouchMove}
         onTouchEnd={handleTouchEnd}
@@ -195,7 +195,7 @@ const HomePage = () => {
           )}
         </article>
 
-        <article className="mt-24 max-w-[500px] mx-auto bg-[#dee2e6] p-8 md:p-10 rounded-[16px] shadow-[0_10px_25px_rgba(0,0,0,0.08)]">
+        <article className="mt-24 w-[100%] sm:w-[50%] mx-auto bg-white bg-[url('https://res.cloudinary.com/dmp7mcwie/image/upload/v1774312699/fondo_hwrosv.png')] bg-cover bg-center border-2 border-[#161616]/60 rounded-2xl p-10">
           <div className="text-center mb-6">
             <h3 className="text-3xl font-black text-[#161616] tracking-tight mb-2">¿Tenés una consulta?</h3>
             <p className="text-gray-500 text-sm">Completa con tus datos y te respondo lo antes posible.</p>
@@ -203,39 +203,38 @@ const HomePage = () => {
 
           <form className="space-y-4">
             <div>
-              <label className="block text-sm font-semibold text-[#161616] mb-1">Nombre</label>
+              <label className="block text-sm font-principal font-semibold text-[#161616] mb-1">Nombre</label>
               <div className="relative">
                 <User className="absolute left-4 top-1/2 -translate-y-1/2 text-[#adb5bd] w-4 h-4" />
                 <input
                   type="text"
                   placeholder="Tu nombre"
-                  className="w-full bg-white border border-[#dee2e6] focus:border-[#0d6efd] focus:ring-[3px] focus:ring-[#0d6efd]/15 rounded-lg pl-10 pr-3 py-2.5 text-[#161616] placeholder-[#adb5bd] outline-none transition-all"
+                  className="w-full bg-white border border-[#dee2e6] focus:border-[#d7f250] focus:ring-[3px] focus:ring-[#d7f250]/15 rounded-lg pl-10 pr-3 py-2.5 text-[#161616] placeholder-[#adb5bd] outline-none transition-all"
                 />
               </div>
             </div>
 
             <div>
-              <label className="block text-sm font-semibold text-[#161616] mb-1">E-mail</label>
+              <label className="block text-sm font-principal font-semibold text-[#161616] mb-1">E-mail</label>
               <div className="relative">
                 <Mail className="absolute left-4 top-1/2 -translate-y-1/2 text-[#adb5bd] w-4 h-4" />
                 <input
                   type="email"
                   placeholder="correo@ejemplo.com"
-                  className="w-full bg-white border border-[#dee2e6] focus:border-[#0d6efd] focus:ring-[3px] focus:ring-[#0d6efd]/15 rounded-lg pl-10 pr-3 py-2.5 text-[#161616] placeholder-[#adb5bd] outline-none transition-all"
+                  className="w-full bg-white border border-[#dee2e6] focus:border-[#d7f250] focus:ring-[3px] focus:ring-[#d7f250]/15 rounded-lg pl-10 pr-3 py-2.5 text-[#161616] placeholder-[#adb5bd] outline-none transition-all"
                 />
               </div>
             </div>
 
             <div>
-              <label className="block text-sm font-semibold text-[#161616] mb-1">Consulta</label>
+              <label className="block text-sm font-principal font-semibold text-[#161616] mb-1">Consulta</label>
               <textarea
                 rows={3}
                 placeholder="Mensaje"
-                className="w-full bg-white border border-[#dee2e6] focus:border-[#0d6efd] focus:ring-[3px] focus:ring-[#0d6efd]/15 rounded-lg p-3 text-[#161616] placeholder-[#adb5bd] outline-none transition-all resize-none"
+                className="w-full bg-white border border-[#dee2e6] focus:border-[#d7f250] focus:ring-[3px] focus:ring-[#d7f250]/15 rounded-lg p-3 text-[#161616] placeholder-[#adb5bd] outline-none transition-all resize-none"
               />
             </div>
-            <Link to={`*`} className="w-full bg-[#161616] hover:bg-[#d7f250] hover:text-[#161616] hover:-translate-y-[1px] text-white font-bold py-3 px-4 rounded-lg transition-all mt-2">
-                <span>Enviar</span>
+            <Link to={`*`}  className="flex items-center justify-center gap-3 rounded-full bg-neon-pink px-6 sm:px-8 py-3 sm:py-4 font-principal text-lg sm:text-xl font-bold text-[#131313] shadow-sm transition-all duration-400 hover:-translate-y-1 hover:bg-[#131313] hover:text-white hover:shadow-md cursor-pointer">Enviar
             </Link>
           </form>
         </article>

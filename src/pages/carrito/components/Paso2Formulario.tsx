@@ -40,6 +40,7 @@ const Paso2Formulario = ({ formData, usuario, onPrev, onNext }: Props) => {
   };
 
   return (
+    <div className="bg-white bg-[url('https://res.cloudinary.com/dmp7mcwie/image/upload/v1774312699/fondo_hwrosv.png')] border border-neutral-100 w-full sm:w-[70%] mx-auto p-6 md:p-8 rounded-[24px] shadow-[0_8px_30px_rgb(0,0,0,0.04)] flex flex-col transition-shadow hover:shadow-[0_8px_30px_rgba(215,242,80,0.15)]">
     <form onSubmit={handleSubmit(onSubmit)} className="max-w-4xl mx-auto w-full">
       <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-5">
         
@@ -171,6 +172,7 @@ const Paso2Formulario = ({ formData, usuario, onPrev, onNext }: Props) => {
         </button>
       </div>
     </form>
+    </div>
   );
 };
 
