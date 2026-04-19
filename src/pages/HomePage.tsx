@@ -1,7 +1,22 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { User, Mail, Clock, ArrowRight, ChevronLeft, ChevronRight } from 'lucide-react';
+import { User, Mail, Clock, ArrowRight, ChevronLeft, ChevronRight, Loader2 } from 'lucide-react';
 import { obtenerCategoriasRequest, type Categoria } from '../api/categoria';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import * as z from 'zod';
+import toast from 'react-hot-toast';
+import { useGoogleReCaptcha } from 'react-google-recaptcha-v3';
+import { enviarConsultaRequest } from '../api/contacto';
+
+// 👇 Esquema de validación para el formulario
+const contactoSchema = z.object({
+  nombre: z.string().min(2, 'El nombre debe tener al menos 2 caracteres'),
+  correo: z.string().email('Ingresa un correo electrónico válido'),
+  mensaje: z.string().min(10, 'El mensaje debe tener al menos 10 caracteres').max(1000, 'El mensaje es muy largo'),
+});
+
+type ContactoFormValues = z.infer<typeof contactoSchema>;
 
 const HomePage = () => {
   const [categorias, setCategorias] = useState<Categoria[]>([]);
@@ -17,20 +32,26 @@ const HomePage = () => {
   const [touchStart, setTouchStart] = useState(0);
   const [touchEnd, setTouchEnd] = useState(0);
 
+  // 👇 Hooks para el formulario de contacto
+  const { executeRecaptcha } = useGoogleReCaptcha();
+  const { register, handleSubmit, formState: { errors, isSubmitting }, reset } = useForm<ContactoFormValues>({
+    resolver: zodResolver(contactoSchema),
+  });
+
   const nextSlide = () => setCurrentSlide((prev) => (prev === slides.length - 1 ? 0 : prev + 1));
   const prevSlide = () => setCurrentSlide((prev) => (prev === 0 ? slides.length - 1 : prev - 1));
 
   const handleTouchStart = (e: React.TouchEvent) => {
     if (e.targetTouches.length > 0) {
         setTouchStart(e.targetTouches[0].clientX);
+    }
   };
-}
 
   const handleTouchMove = (e: React.TouchEvent) => {
     if (e.targetTouches.length > 0) {
         setTouchEnd(e.targetTouches[0].clientX);
+    }
   };
-}
 
   const handleTouchEnd = () => {
     if (!touchStart || !touchEnd) return;
@@ -74,8 +95,27 @@ const HomePage = () => {
     cargarDatos();
   }, []);
 
+  // 👇 Función que se ejecuta al enviar el formulario
+  const onSubmitContacto = async (data: ContactoFormValues) => {
+    if (!executeRecaptcha) {
+      return toast.error('Verificando seguridad...');
+    }
+
+    try {
+      const captchaToken = await executeRecaptcha('contacto_home');
+      const respuesta = await enviarConsultaRequest({ ...data, captchaToken });
+      
+      toast.success(respuesta.mensaje || '¡Consulta enviada con éxito!');
+      reset(); // Limpia los inputs
+    } catch (error) {
+      toast.error('Hubo un error al enviar tu consulta. Intenta nuevamente.');
+    }
+  };
+
   return (
     <main className="min-h-screen font-sans text-[#161616] pt-[52px]">
+      
+      {/* --- SECCIÓN SLIDER --- */}
       <section
         className=" bg-white relative w-full h-[50vh] sm:h-[60vh] md:h-[70vh] lg:h-[80vh] xl:h-[100vh] overflow-hidden group"
         onTouchStart={handleTouchStart}
@@ -113,6 +153,7 @@ const HomePage = () => {
         </div>
       </section>
 
+      {/* --- SECCIÓN CATEGORÍAS --- */}
       <section className="container mx-auto px-6 pt-16 pb-4">
         <div className="flex justify-center mt-0 mb-16">
           <img
@@ -143,6 +184,7 @@ const HomePage = () => {
                     flippedCard === servicio.id ? '[transform:rotateY(180deg)]' : ''
                   }`}
                 >
+                  {/* Frente de la Tarjeta */}
                   <div className="absolute inset-0 w-full h-full [backface-visibility:hidden] rounded-[30px] overflow-hidden z-10">
                     <div 
                       className="absolute inset-0 bg-cover bg-center"
@@ -168,6 +210,7 @@ const HomePage = () => {
                     </div>
                   </div>
 
+                  {/* Dorso de la Tarjeta */}
                   <div className="absolute inset-0 w-full h-full [backface-visibility:hidden] [transform:rotateY(180deg)_translateZ(1px)] z-20 rounded-[30px] overflow-hidden bg-[#161616] p-[32px] flex flex-col justify-center items-center text-center">
                     
                     <h4 className="text-[#d7f250] text-3xl font-bold mb-6">
@@ -195,13 +238,15 @@ const HomePage = () => {
           )}
         </article>
 
+        {/* --- SECCIÓN CONTACTO --- */}
         <article className="mt-24 w-[100%] sm:w-[50%] mx-auto bg-white bg-[url('https://res.cloudinary.com/dmp7mcwie/image/upload/v1774312699/fondo_hwrosv.png')] bg-cover bg-center border-2 border-[#161616]/60 rounded-2xl p-10">
           <div className="text-center mb-6">
             <h3 className="text-3xl font-black text-[#161616] tracking-tight mb-2">¿Tenés una consulta?</h3>
             <p className="text-gray-500 text-sm">Completa con tus datos y te respondo lo antes posible.</p>
           </div>
 
-          <form className="space-y-4">
+          {/* 👇 FORMULARIO CONECTADO A REACT HOOK FORM 👇 */}
+          <form onSubmit={handleSubmit(onSubmitContacto)} className="space-y-4">
             <div>
               <label className="block text-sm font-principal font-semibold text-[#161616] mb-1">Nombre</label>
               <div className="relative">
@@ -209,9 +254,11 @@ const HomePage = () => {
                 <input
                   type="text"
                   placeholder="Tu nombre"
-                  className="w-full bg-white border border-[#dee2e6] focus:border-[#d7f250] focus:ring-[3px] focus:ring-[#d7f250]/15 rounded-lg pl-10 pr-3 py-2.5 text-[#161616] placeholder-[#adb5bd] outline-none transition-all"
+                  className={`w-full bg-white border ${errors.nombre ? 'border-red-500 focus:ring-red-500/15' : 'border-[#dee2e6] focus:border-[#d7f250] focus:ring-[#d7f250]/15'} focus:ring-[3px] rounded-lg pl-10 pr-3 py-2.5 text-[#161616] placeholder-[#adb5bd] outline-none transition-all`}
+                  {...register('nombre')}
                 />
               </div>
+              {errors.nombre && <p className="mt-1 text-xs text-red-500 font-medium">{errors.nombre.message}</p>}
             </div>
 
             <div>
@@ -221,9 +268,11 @@ const HomePage = () => {
                 <input
                   type="email"
                   placeholder="correo@ejemplo.com"
-                  className="w-full bg-white border border-[#dee2e6] focus:border-[#d7f250] focus:ring-[3px] focus:ring-[#d7f250]/15 rounded-lg pl-10 pr-3 py-2.5 text-[#161616] placeholder-[#adb5bd] outline-none transition-all"
+                  className={`w-full bg-white border ${errors.correo ? 'border-red-500 focus:ring-red-500/15' : 'border-[#dee2e6] focus:border-[#d7f250] focus:ring-[#d7f250]/15'} focus:ring-[3px] rounded-lg pl-10 pr-3 py-2.5 text-[#161616] placeholder-[#adb5bd] outline-none transition-all`}
+                  {...register('correo')}
                 />
               </div>
+              {errors.correo && <p className="mt-1 text-xs text-red-500 font-medium">{errors.correo.message}</p>}
             </div>
 
             <div>
@@ -231,14 +280,33 @@ const HomePage = () => {
               <textarea
                 rows={3}
                 placeholder="Mensaje"
-                className="w-full bg-white border border-[#dee2e6] focus:border-[#d7f250] focus:ring-[3px] focus:ring-[#d7f250]/15 rounded-lg p-3 text-[#161616] placeholder-[#adb5bd] outline-none transition-all resize-none"
+                className={`w-full bg-white border ${errors.mensaje ? 'border-red-500 focus:ring-red-500/15' : 'border-[#dee2e6] focus:border-[#d7f250] focus:ring-[#d7f250]/15'} focus:ring-[3px] rounded-lg p-3 text-[#161616] placeholder-[#adb5bd] outline-none transition-all resize-none`}
+                {...register('mensaje')}
               />
+              {errors.mensaje && <p className="mt-1 text-xs text-red-500 font-medium">{errors.mensaje.message}</p>}
             </div>
-            <Link to={`*`}  className="flex items-center justify-center gap-3 rounded-full bg-neon-pink px-6 sm:px-8 py-3 sm:py-4 font-principal text-lg sm:text-xl font-bold text-[#131313] shadow-sm transition-all duration-400 hover:-translate-y-1 hover:bg-[#131313] hover:text-white hover:shadow-md cursor-pointer">Enviar
-            </Link>
+            
+            {/* 👇 BOTÓN ACTUALIZADO PARA HACER SUBMIT 👇 */}
+            <button
+              type="submit"
+              disabled={isSubmitting}
+              className="w-full flex items-center justify-center gap-3 rounded-full bg-[#d7f250] px-6 sm:px-8 py-3 sm:py-4 font-principal text-lg sm:text-xl font-bold text-[#131313] shadow-sm transition-all duration-400 hover:-translate-y-1 hover:bg-[#131313] hover:text-[#d7f250] hover:shadow-md cursor-pointer disabled:opacity-70 disabled:cursor-not-allowed"
+            >
+              {isSubmitting ? (
+                <><Loader2 className="animate-spin w-5 h-5" /> Enviando...</>
+              ) : (
+                'Enviar'
+              )}
+            </button>
+
+            {/* Aviso de ReCaptcha */}
+            <p className="text-[10px] text-gray-500 text-center leading-tight mt-2">
+              Protegido por reCAPTCHA - <a href="https://policies.google.com/privacy" target="_blank" rel="noopener noreferrer" className="underline hover:text-[#161616]">Privacidad</a> y <a href="https://policies.google.com/terms" target="_blank" rel="noopener noreferrer" className="underline hover:text-[#161616]">Términos</a>.
+            </p>
           </form>
         </article>
 
+        {/* --- FOOTER DE INSTAGRAM --- */}
         <div className="mt-20 text-center">
           <h2 className="text-xl md:text-2xl p-[40px] font-bold uppercase bg-gradient-to-b from-transparent via-transparent to-black/5 rounded-2xl">
             Seguime en Instagram:{' '}
