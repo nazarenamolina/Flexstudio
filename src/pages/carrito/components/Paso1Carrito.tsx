@@ -23,7 +23,7 @@ const Paso1Carrito = ({ onNext }: Props) => {
   if (cartItems.length === 0) {
     return (
       <div className="max-w-2xl mx-auto flex flex-col items-center w-full">
-        <div className="bg-[#c9c5c5]/70 rounded-xl p-10 flex flex-col items-center text-center w-full border border-neutral-300">
+        <div className="bg-[#c9c5c5] rounded-xl p-10 flex flex-col items-center text-center w-full border border-neutral-300">
           <CartX className="w-16 h-16 text-[#131313]/70 mb-4" />
           <h3 className="text-xl font-bold mb-2 text-[#131313]/70">Tu carrito está vacío</h3>
           <p className="text-sm text-neutral-500 mb-6">Parece que aún no has seleccionado ninguna clase.</p>
@@ -36,10 +36,11 @@ const Paso1Carrito = ({ onNext }: Props) => {
   }
 
   return (
+    
     <div className="max-w-2xl mx-auto flex flex-col items-center w-full">
-      <h2 className="text-4xl font-principal font-bold mb-8 text-[#131313]">Tus clases</h2>
-      <div className="w-full space-y-6">
-        <div className="border-2 border-[#131313]/50 rounded-xl overflow-hidden">
+      <h2 className="mb-6 font-principal text-4xl uppercase leading-tight md:text-5xl text-[#131313]">Tus clases</h2>
+      <div className="w-full space-y-4">
+        <div className="rounded-xl overflow-hidden">
           {cartItems.map((item) => {
             const precioItem = moneda === 'ARS' ? item.precioArs : item.precioUsd;
             const precioFormateado = moneda === 'ARS'
@@ -49,10 +50,9 @@ const Paso1Carrito = ({ onNext }: Props) => {
             return (
               <div
                 key={item.id}
-                className="bg-[url('https://res.cloudinary.com/dmp7mcwie/image/upload/v1776544346/bg-card_dfxwsn.png')] bg-cover bg-center w-full rounded-xl sm:rounded-2xl p-3 sm:p-5 flex gap-3 sm:gap-5 transition-all duration-300 group relative shadow-lg"
+                className="bg-[#d7f250]/80 bg-cover bg-center w-full rounded-xl sm:rounded-2xl p-3 my-4 sm:p-5 flex gap-3 sm:gap-5 transition-all duration-300 group relative shadow-lg"
               >
-
-                <div className="w-16 h-16 sm:w-24 sm:h-24 rounded-lg sm:rounded-xl flex-shrink-0 overflow-hidden relative border border-white/10">
+                <div className="w-16 h-16 sm:w-24 sm:h-24 rounded-lg sm:rounded-xl flex-shrink-0 overflow-hidden relative">
                   <img
                     src={item.imagenTarjeta || 'https://placehold.co/150x150/111111/FFFFFF?text=Flex+Studio'}
                     alt={item.titulo}
@@ -89,11 +89,11 @@ const Paso1Carrito = ({ onNext }: Props) => {
             );
           })}
         </div>
-
+        <div className="bg-white bg-[url('https://res.cloudinary.com/dmp7mcwie/image/upload/v1774312699/fondo_hwrosv.png')] border border-neutral-100 w-full mx-auto p-6 md:p-8 rounded-[24px] shadow-[0_8px_30px_rgb(0,0,0,0.04)] flex flex-col transition-shadow hover:shadow-[0_8px_30px_rgba(215,242,80,0.15)]">
         <div className="w-full max-w-lg mx-auto flex flex-col">
           <h3 className="font-principal text-2xl mb-3 text-[#131313]">Resumen de compra:</h3>
           <div className="flex justify-between font-principal text-neutral-800">
-            <span>Aca define la clase seleccionada:</span>
+            <span>Subtotal:</span>
             <span>{simbolo} {totalFormateado}</span>
           </div>
           <div className="flex justify-between text-lg font-principal font-bold pt-4 text-[#131313] border-t border-neutral-400 mt-4">
@@ -111,6 +111,7 @@ const Paso1Carrito = ({ onNext }: Props) => {
           </button>
         </div>
       </div>
+    </div>
     </div>
   );
 };

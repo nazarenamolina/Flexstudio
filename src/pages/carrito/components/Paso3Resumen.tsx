@@ -44,7 +44,7 @@ const Paso3Resumen = ({ formData, usuario, onPrev }: Props) => {
   };
 
   return (
-    <div className="max-w-2xl mx-auto w-full flex flex-col items-center">
+    <div className="max-w-2xl mx-auto w-full flex flex-col items-center bg-white bg-[url('https://res.cloudinary.com/dmp7mcwie/image/upload/v1774312699/fondo_hwrosv.png')] border border-neutral-100 p-6 md:p-8 rounded-[24px] shadow-[0_8px_30px_rgb(0,0,0,0.04)] flex flex-col transition-shadow hover:shadow-[0_8px_30px_rgba(215,242,80,0.15)]">
       <h2 className="text-3xl font-principal font-bold mb-6 text-[#131313]">¡Ya casi es tuyo! Revisa tus datos</h2>
 
       {/* Datos del Cliente */}
@@ -145,7 +145,7 @@ const Paso3Resumen = ({ formData, usuario, onPrev }: Props) => {
           {cargando ? <><Loader2 className="animate-spin w-4 h-4" /> Procesando</> : 'Confirmar y Pagar'}
         </button>
       </div>
-      <p className="text-[10px] text-gray-500 text-center leading-tight mt-2 max-w-sm">
+      <p className="text-[10px] text-gray-500 text-center leading-tight mt-6 max-w-sm">
         Este sitio está protegido por reCAPTCHA y se aplican la{' '}
         <a href="https://policies.google.com/privacy" target="_blank" rel="noopener noreferrer" className="text-gray-600 hover:text-[#131313] underline font-medium">Política de privacidad</a> y los{' '}
         <a href="https://policies.google.com/terms" target="_blank" rel="noopener noreferrer" className="text-gray-600 hover:text-[#131313] underline font-medium">Términos de servicio</a> de Google.
