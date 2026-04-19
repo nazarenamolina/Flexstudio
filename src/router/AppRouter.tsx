@@ -25,6 +25,7 @@ import CarritoPage from '../pages/CarritoPage';
 import { ClientesPage } from '../pages/admin/clientes/ClientesPage';
 import { VerificarEmailPage } from '../pages/auth/VerificarEmailPage'
 import { AdminDashboard } from '../pages/admin/dasboard/AdminDashboard';
+import { ResetPasswordPage } from '../pages/auth/ResetPasswordPage';
 
 const LayoutConNav = () => {
   return (
@@ -74,6 +75,7 @@ export const AppRouter = () => {
           <Route path="/login" element={<LoginPage />} />
           <Route path="/registro" element={<RegistroPage />} />
           <Route path="/verificar-email" element={<VerificarEmailPage />} />
+          <Route path='/reset-password' element={<ResetPasswordPage/>}/>
         </Route>
 
         {/* RUTAS DE ADMINISTRADOR */}
