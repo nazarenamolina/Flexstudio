@@ -1,8 +1,9 @@
 import { useState, useEffect, useRef } from 'react';
-import { Link, useLocation, useNavigate } from 'react-router-dom'; 
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { Mail, Lock, Loader2, Eye, EyeOff } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { useLogin } from '../../hooks/useLogin';
+ 
 
 export const LoginPage = () => {
   const [mostrarPass, setMostrarPass] = useState(false);
@@ -111,6 +112,8 @@ export const LoginPage = () => {
               </Link>
             </div>
 
+          
+
             {/* Botón de Enviar */}
             <button
               type="submit"
@@ -126,6 +129,13 @@ export const LoginPage = () => {
                 'INICIAR SESIÓN'
               )}
             </button>
+
+            <p className="text-[10px] text-gray-500 text-center leading-tight mt-4">
+              Este sitio está protegido por reCAPTCHA y se aplican la{' '}
+              <a href="https://policies.google.com/privacy" target="_blank" rel="noopener noreferrer" className="text-gray-400 hover:text-[#d7f250] underline">Política de privacidad</a> y los{' '}
+              <a href="https://policies.google.com/terms" target="_blank" rel="noopener noreferrer" className="text-gray-400 hover:text-[#d7f250] underline">Términos de servicio</a> de Google.
+            </p>
+
           </form>
 
           {/* Enlace al Registro */}
