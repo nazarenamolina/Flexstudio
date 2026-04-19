@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { LayoutDashboard, Tags, Video, LogOut } from 'lucide-react';
+import { Home, Users, LayoutDashboard, Video, LogOut, ChartNoAxesCombined } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import toast from 'react-hot-toast';
 import { useAuthStore } from '../../store/authStore';
@@ -25,9 +25,9 @@ export const Sidebar = () => {
   };
 
   const menuItems = [
-    { name: 'Dashboard', path: '/admin', icon: LayoutDashboard },
-    { name: 'Clientes', path: '/admin/clientes', icon: Tags },
-    { name: 'Categorías', path: '/admin/categorias', icon: Tags },
+    { name: 'Dashboard', path: '/admin', icon: ChartNoAxesCombined },
+    { name: 'Clientes', path: '/admin/clientes', icon: Users },
+    { name: 'Categorías', path: '/admin/categorias', icon: LayoutDashboard },
     { name: 'Videos', path: '/admin/videos', icon: Video },
   ];
 
@@ -37,7 +37,7 @@ export const Sidebar = () => {
       {/* Logo */}
       <div className="flex items-center justify-center mb-8 shrink-0">
         <Link to="/" className="flex items-center justify-center w-12 h-12 rounded-xl bg-black border border-gray-800 hover:border-[#C6FF33] transition-colors duration-300">
-          <span className="text-[#C6FF33] font-black text-2xl block">F</span>
+          <Home/>
         </Link>
       </div>
 

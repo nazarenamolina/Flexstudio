@@ -109,7 +109,6 @@ const CategoriaDetailPage = () => {
           </p>
           <div className="flex flex-col gap-4 sm:flex-row">
             
-            {/* 👇 NUEVO: BOTÓN INTELIGENTE (HERO) 👇 */}
             {yaComprado ? (
               <button 
                 onClick={() => navigate(`/mis-clases/${categoria.id}`)}
@@ -146,7 +145,6 @@ const CategoriaDetailPage = () => {
         </div>
       </section>
 
-      {/* SECCIÓN 2: BENEFICIOS */}
       <section className="mx-auto mt-20 flex max-w-7xl flex-col gap-12 px-6 lg:flex-row lg:px-8">
         <div className="flex flex-col items-start lg:w-1/3">
           <span className="mb-2 font-principal font-bold tracking-widest text-neon-pink">SUMATE!</span>
@@ -178,7 +176,6 @@ const CategoriaDetailPage = () => {
         </div>
       </section>
 
-      {/* SECCIÓN 3: PREVIEW */}
       {categoria.playbackIdMuestra && (
         <section className="bg-[#131313] my-15 py-1">
           <div id="trailer" className="mx-auto my-10 flex max-w-5xl flex-col items-center px-6 text-center">
@@ -198,7 +195,6 @@ const CategoriaDetailPage = () => {
         </section>
       )}
 
-      {/* SECCIÓN 4: CALL TO ACTION */}
       <section className="mx-auto w-[90%] my-15 flex max-w-4xl flex-col items-center rounded-[2rem] bg-[#1a1a1a] p-10 text-center md:p-16">
         <h2 className="mb-8 font-principal text-4xl text-neon-pink uppercase leading-tight md:text-5xl">
           LISTA PARA ELEVAR TU <br /> POTENCIAL?
@@ -213,7 +209,6 @@ const CategoriaDetailPage = () => {
             {cargandoMoneda ? '...' : `${simbolo}${precioAMostrar}`}
           </div>
           
-          {/* 👇 NUEVO: BOTÓN INTELIGENTE (CTA INFERIOR) 👇 */}
           {yaComprado ? (
             <button 
               onClick={() => navigate(`/mis-clases/${categoria.id}`)}
