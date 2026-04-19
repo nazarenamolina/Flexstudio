@@ -8,7 +8,7 @@ import toast from 'react-hot-toast';
 interface Props {
   formData: CheckoutPerfilData;
   usuario: any;
-  metodoPago: string; // Ya no lo usaremos para cambiar estado, pero lo dejamos por si la interfaz lo requiere
+  metodoPago: string;
   setMetodoPago: (metodo: string) => void;
   onPrev: () => void;
 }
@@ -17,11 +17,7 @@ const Paso3Resumen = ({ formData, usuario, onPrev }: Props) => {
   const cartItems = useCartStore((state) => state.cartItems);
   const { procesarCheckout, cargando, error } = useCheckout();
   const { executeRecaptcha } = useGoogleReCaptcha();
-
-  // 👇 1. Detectamos el país
   const esArgentina = usuario?.pais?.toLowerCase() === 'argentina' || usuario?.pais?.toLowerCase() === 'ar';
-
-  // 👇 2. Calculamos el total dinámicamente en ARS o USD según corresponda
   const total = cartItems.reduce((acc, item) => {
     const precio = esArgentina ? item.precioArs : item.precioUsd;
     return acc + Number(precio || 0);
@@ -38,8 +34,6 @@ const Paso3Resumen = ({ formData, usuario, onPrev }: Props) => {
 
     const captchaToken = await executeRecaptcha('compra');
     const idsCategorias = cartItems.map((item) => item.id);
-
-    // 👇 3. Forzamos la plataforma en el payload para que el backend no tenga dudas
     const payloadCompra = {
       idsCategorias,
       plataforma: esArgentina ? 'MERCADOPAGO' : 'PAYPAL',
@@ -120,10 +114,10 @@ const Paso3Resumen = ({ formData, usuario, onPrev }: Props) => {
               <h4 className="font-semibold text-[16px] text-[#131313] tracking-wide">PayPal</h4>
               <p className="text-[14px] text-[#131313]/60 mt-0.">Pagos internacionales (USD)</p>
             </div>
-             <div className="w-[22px] h-[22px] rounded-full border-[2.5px] border-[#009EE3]  flex items-center justify-center shrink-0">
+            <div className="w-[22px] h-[22px] rounded-full border-[2.5px] border-[#009EE3]  flex items-center justify-center shrink-0">
               <div className="w-[10px] h-[10px] bg-[#009EE3] rounded-full"></div>
             </div>
-            </div>
+          </div>
         )}
       </div>
 
@@ -151,6 +145,11 @@ const Paso3Resumen = ({ formData, usuario, onPrev }: Props) => {
           {cargando ? <><Loader2 className="animate-spin w-4 h-4" /> Procesando</> : 'Confirmar y Pagar'}
         </button>
       </div>
+      <p className="text-[10px] text-gray-500 text-center leading-tight mt-2 max-w-sm">
+        Este sitio está protegido por reCAPTCHA y se aplican la{' '}
+        <a href="https://policies.google.com/privacy" target="_blank" rel="noopener noreferrer" className="text-gray-600 hover:text-[#131313] underline font-medium">Política de privacidad</a> y los{' '}
+        <a href="https://policies.google.com/terms" target="_blank" rel="noopener noreferrer" className="text-gray-600 hover:text-[#131313] underline font-medium">Términos de servicio</a> de Google.
+      </p>
     </div>
   );
 };
