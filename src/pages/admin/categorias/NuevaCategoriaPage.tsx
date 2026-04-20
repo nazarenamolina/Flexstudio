@@ -71,7 +71,7 @@ export const NuevaCategoriaPage = () => {
             </div>
 
             <div className="mb-6">
-              <label className={labelClass}>Descripción Tarjeta (Miniatura)</label>
+              <label className={labelClass}>Descripción de la Tarjeta de Inicio</label>
               <textarea rows={2} maxLength={255} {...register('descripcionCard')} placeholder="Breve descripción para la tarjeta..." className={`${inputClass} resize-none`} />
               <div className="text-right mt-1">
                 <span className={`text-xs font-bold ${descCard.length >= 255 ? 'text-red-500' : 'text-gray-500'}`}>
@@ -81,8 +81,8 @@ export const NuevaCategoriaPage = () => {
             </div>
 
             <div>
-              <label className={labelClass}>Descripción Detallada (Banner Principal)</label>
-              <textarea rows={4} {...register('descripcionDetallada')} placeholder="Texto largo que acompaña al video hero..." className={`${inputClass} resize-none`} />
+              <label className={labelClass}>Descripción detallada de la Categoría</label>
+              <textarea rows={4} {...register('descripcionDetallada')} placeholder="Con este entrenamiento especializado vas a potenciar tu flexibilidad de forma progresiva y segura..." className={`${inputClass} resize-none`} />
             </div>
           </div>
 
@@ -91,7 +91,7 @@ export const NuevaCategoriaPage = () => {
             <h3 className="text-xl font-bold text-white mb-6 border-b border-gray-800 pb-4">Sección Beneficios</h3>
 
             <div className="mb-8">
-              <label className={labelClass}>Descripción de Suscripción</label>
+              <label className={labelClass}>¿Qué incluye la suscripción?</label>
               <textarea rows={2} maxLength={255} {...register('descripcionBreve')} placeholder="Ej: Únete a esta suscripción y obtén acceso a..."
                 className={`${inputClass} resize-none`} />
               <div className="text-right mt-1">
@@ -108,15 +108,14 @@ export const NuevaCategoriaPage = () => {
                 <div key={field.id} className="relative p-5 bg-[#0a0a0a] border border-gray-800 rounded-xl flex flex-col md:flex-row gap-4 group">
                   <div className="flex-1 space-y-4">
 
-                    {/* 👇 EL NUEVO SELECTOR DE ÍCONOS */}
                     <div>
                       <label className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-2 block">
                         Ícono del beneficio
                       </label>
                       <Controller
-                        control={control} // Necesitas extraer 'control' de tu hook (useNuevaCategoria)
+                        control={control}
                         name={`beneficios.${index}.icono`}
-                        defaultValue="CheckCircle" // Ícono por defecto
+                        defaultValue="CheckCircle"
                         render={({ field }) => (
                           <IconPicker value={field.value || 'CheckCircle'} onChange={field.onChange} />
                         )}
@@ -141,7 +140,6 @@ export const NuevaCategoriaPage = () => {
                     </div>
                   </div>
 
-                  {/* Botón para eliminar */}
                   <button
                     type="button"
                     onClick={() => removeBeneficio(index)}
@@ -153,7 +151,6 @@ export const NuevaCategoriaPage = () => {
                 </div>
               ))}
 
-              {/* Botón para agregar un nuevo beneficio vacío */}
               <button
                 type="button"
                 onClick={() => appendBeneficio({ titulo: '', descripcion: '' })}
@@ -171,7 +168,7 @@ export const NuevaCategoriaPage = () => {
           <div className="bg-[#131313] p-6 rounded-[24px] border border-gray-800 shadow-sm flex flex-col gap-6">
             <h3 className="text-xl font-bold text-white border-b border-gray-800 pb-4">Archivos Multimedia</h3>
             <div>
-              <label className={labelClass}>Imagen Tarjeta</label>
+              <label className={labelClass}>Imagen de la Tarjeta de Inicio</label>
               <div className="relative w-full h-40 border-2 border-dashed border-gray-700 hover:border-[#d7f250] rounded-xl flex flex-col items-center justify-center transition-colors bg-[#0a0a0a] overflow-hidden group cursor-pointer">
                 <input type="file" accept="image/*" onChange={(e) => handleFileChange(e, 'imagenTarjeta')} className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10" />
 
@@ -194,7 +191,7 @@ export const NuevaCategoriaPage = () => {
               </div>
             </div>
             <div>
-              <label className={labelClass}>Imagen Hero</label>
+              <label className={labelClass}>Imagen de Categoría</label>
               <div className="relative w-full h-32 border-2 border-dashed border-gray-700 hover:border-[#d7f250] rounded-xl flex flex-col items-center justify-center transition-colors bg-[#0a0a0a] overflow-hidden group cursor-pointer">
                 <input type="file" accept="image/*" onChange={(e) => handleFileChange(e, 'imagenHero')} className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10" />
 

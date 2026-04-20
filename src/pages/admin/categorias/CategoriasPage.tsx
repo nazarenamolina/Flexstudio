@@ -1,9 +1,10 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Plus, Edit2, Trash2, ChevronRight } from 'lucide-react';
+import { Plus, Edit2, Trash2, ArrowRight } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { obtenerCategoriasRequest, eliminarCategoriaRequest, type Categoria } from '../../../api/categoria';
 import { ConfirmarEliminarModal } from '../../../components/ConfirmarEliminarModal';
+
 interface CategoriaConVideos extends Categoria {
   videos?: any[];
 }
@@ -12,7 +13,6 @@ export const CategoriasPage = () => {
   const [categorias, setCategorias] = useState<CategoriaConVideos[]>([]);
   const [cargando, setCargando] = useState(true);
   const navigate = useNavigate();
-  const colores = ['#1f2937', '#374151', '#111827', '#0f172a', '#1e293b'];
   const [modalAbierto, setModalAbierto] = useState(false);
   const [categoriaAEliminar, setCategoriaAEliminar] = useState<{ id: string, titulo: string } | null>(null);
   const [estaEliminando, setEstaEliminando] = useState(false);
@@ -30,128 +30,133 @@ export const CategoriasPage = () => {
     }
   };
 
-  useEffect(() => { 
-    cargarCategorias(); 
+  useEffect(() => {
+    cargarCategorias();
   }, []);
+
   const abrirModalEliminacion = (id: string, titulo: string) => {
     setCategoriaAEliminar({ id, titulo });
     setModalAbierto(true);
   };
+
   const ejecutarEliminacion = async () => {
     if (!categoriaAEliminar) return;
     setEstaEliminando(true);
     try {
       await eliminarCategoriaRequest(categoriaAEliminar.id);
       setCategorias(categorias.filter(cat => cat.id !== categoriaAEliminar.id));
-      toast.success('Categoría eliminada exitosamente'); 
+      toast.success('Categoría eliminada exitosamente');
       setModalAbierto(false);
     } catch (error) {
       toast.error('Ocurrió un error al eliminar la categoría');
     } finally {
       setEstaEliminando(false);
-      setTimeout(() => setCategoriaAEliminar(null), 300); 
+      setTimeout(() => setCategoriaAEliminar(null), 300);
     }
   };
 
-  const totalVideosSubidos = categorias.reduce((total, cat) => total + (cat.videos?.length || 0), 0);
+  const getBentoClasses = (index: number) => {
+    const pos = index % 3;
+    if (pos === 0) return 'md:col-span-2 md:row-span-2 min-h-[200px]';
+    if (pos === 1) return 'md:col-span-1 md:row-span-2 min-h-[200px]';
+    if (pos === 4) return 'md:col-span-2 md:row-span-1 min-h-[150px]';
+    return 'md:col-span-1 md:row-span-1 min-h-[150px]';
+  };
+
   if (cargando) {
     return (
-      <div className="w-full h-full flex items-center justify-center">
-        <div className="text-[#d7f250] text-xl font-bold animate-pulse">Cargando disciplinas...</div>
+      <div className="w-full h-screen flex items-center justify-center bg-[#1a1a1a]">
+        <div className="text-[#d7f250] text-xl font-bold animate-pulse">Cargando categorías...</div>
       </div>
     );
   }
 
   return (
-    <div className="w-full h-full flex flex-col gap-8 font-sans overflow-y-auto [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:bg-gray-800 [&::-webkit-scrollbar-thumb]:rounded-full hover:[&::-webkit-scrollbar-thumb]:bg-[#d7f250]/50 pr-2 relative">
+    <div className="w-full min-h-screen bg-[#1a1a1a] rounded-2xl p-6 md:p-10 font-sans overflow-y-auto relative">
 
-      {/* CABECERA PRINCIPAL */}
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-        <div>
-          <h1 className="text-3xl md:text-4xl font-extrabold text-white mb-1 tracking-tight">Disciplinas Flex Studio</h1>
-          <p className="text-gray-400 text-sm md:text-base">Administra las categorías de tu estudio.</p>
+      <div className="flex flex-col xl:flex-row justify-between items-start xl:items-end gap-6 mb-12">
+        <div className="max-w-2xl">
+          <h1 className="text-5xl md:text-7xl font-black text-white tracking-tighter leading-[0.9]">
+           EDITAR
+            <br />
+            <span className="text-[#d7f250] italic">CATEGORÍAS</span>
+          </h1>
         </div>
 
         <button
           onClick={() => navigate('/admin/categorias/nueva')}
-          className="bg-[#d7f250] hover:bg-[#c4dd46] text-[#131313] px-6 py-3 rounded-full font-bold flex items-center gap-2 transition-transform duration-200 hover:scale-105 shadow-lg"
+          className="bg-[#d7f250] hover:bg-[#D7F250] text-[#131313] px-8 py-4 rounded-full font-bold text-sm tracking-widest flex items-center gap-2 transition-all duration-300 hover:scale-105"
         >
-          <Plus size={20} /> Añadir Nueva Categoría
+          AÑADIR CATEGORÍA <Plus size={18} />
         </button>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-        <div className="bg-[#131313] p-6 rounded-[20px] border border-gray-800 shadow-sm">
-          <span className="text-gray-400 text-sm font-medium uppercase tracking-wider">Categorías Registradas</span>
-          <h2 className="text-4xl font-extrabold text-white mt-2">{categorias.length}</h2>
-        </div>
-        <div className="bg-[#131313] p-6 rounded-[20px] border border-gray-800 shadow-sm">
-          <span className="text-gray-400 text-sm font-medium uppercase tracking-wider">Total Videos Subidos</span>
-          <h2 className="text-4xl font-extrabold text-white mt-2">{totalVideosSubidos}</h2>
-        </div>
-      </div>
-
-      {/* CUADRÍCULA TARJETAS */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6 mt-2 pb-10">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 pb-10 auto-rows-fr">
         {categorias.map((cat, index) => {
           const tituloMostrar = cat.titulo.includes('|')
-            ? cat.titulo.split('|')[0].trim()
+            ? cat.titulo.split('|').map((s) => s.trim())
             : cat.titulo;
 
           return (
             <div
               key={cat.id}
-              className="bg-[#131313] rounded-[24px] overflow-hidden border border-gray-800 shadow-sm hover:shadow-xl transition-all duration-300 hover:-translate-y-1 cursor-pointer relative group flex flex-col"
+              onClick={() => navigate(`/admin/categorias/editar/${cat.id}`)}
+              className={`relative rounded-[32px] overflow-hidden group cursor-pointer border border-white/5 hover:border-[#d7f250]/50 transition-all duration-500 ${getBentoClasses(index)}`}
             >
-              {/* BOTONES FLOTANTES */}
-              <div className="absolute top-3 right-3 flex gap-2 z-10 opacity-100 lg:opacity-0 lg:group-hover:opacity-100 transition-opacity duration-200">
+              {/* IMAGEN DE FONDO */}
+              <div
+                className="absolute inset-0 bg-cover bg-center transition-transform duration-700 group-hover:scale-110"
+                style={{
+                  backgroundImage: cat.imagenTarjeta ? `url(${cat.imagenTarjeta})` : 'none',
+                }}
+              />
+
+              <div className="absolute inset-0 bg-gradient-to-t from-[#050505] via-[#050505]/60 to-transparent opacity-90" />
+
+              <div className="absolute top-6 right-6 flex gap-2 z-20 opacity-100 lg:opacity-0 lg:group-hover:opacity-100 transition-opacity duration-300">
                 <button
-                  onClick={(e) => {e.stopPropagation(); navigate(`/admin/categorias/editar/${cat.id}`);}} className="bg-white/10 hover:bg-white border border-white/20 hover:border-white p-2 rounded-lg cursor-pointer transition-colors shadow-lg group/edit" title="Editar">
-                  <Edit2 size={16} className="text-white group-hover/edit:text-[#131313]" />
+                  onClick={(e) => { e.stopPropagation(); navigate(`/admin/categorias/editar/${cat.id}`); }}
+                  className="bg-black/50 backdrop-blur-md hover:bg-white border border-white/20 hover:border-white p-2.5 rounded-full cursor-pointer transition-colors group/edit" title="Editar">
+                  <Edit2 size={16} className="text-white group-hover/edit:text-black" />
                 </button>
-                <button onClick={(e) => {e.stopPropagation(); abrirModalEliminacion(cat.id, tituloMostrar);}} className="bg-red-500/80 hover:bg-red-500 border border-red-500/20 p-2 rounded-lg cursor-pointer transition-colors shadow-lg" title="Eliminar">
+                <button
+                  onClick={(e) => { e.stopPropagation(); abrirModalEliminacion(`${cat.id}`, `${tituloMostrar}`); }}
+                  className="bg-black/50 backdrop-blur-md hover:bg-red-500 border border-white/20 hover:border-red-500 p-2.5 rounded-full cursor-pointer transition-colors" title="Eliminar">
                   <Trash2 size={16} className="text-white" />
                 </button>
               </div>
 
-              {/* IMAGEN DE LA CATEGORÍA */}
-              <div
-                className="h-[140px] w-full rounded-t-[24px] bg-cover bg-center"
-                style={{
-                  backgroundImage: cat.imagenTarjeta ? `url(${cat.imagenTarjeta})` : 'none',
-                  backgroundColor: cat.imagenTarjeta ? 'transparent' : colores[index % colores.length],
-                }}
-              >
-                <div className="w-full h-full bg-gradient-to-b from-black/50 to-transparent opacity-0 lg:group-hover:opacity-100 transition-opacity"></div>
-              </div>
-
-              {/* INFO DE LA CATEGORÍA */}
-              <div 
-                className="p-5 flex justify-between items-center flex-1"
-                onClick={() => navigate(`/admin/categorias/editar/${cat.id}`)}
-              >
-                <div>
-                  <h4 className="m-0 text-lg font-bold text-white leading-tight">{tituloMostrar}</h4>
-                  <span className="text-[13px] text-gray-400 mt-1 block font-medium">
-                    {cat.videos ? cat.videos.length : 0} Videos
+              <div className="absolute inset-0 p-8 flex flex-col justify-end z-10">
+                <div className="mb-4">
+                  <span className="inline-block px-3 py-1 rounded-full border border-[#d7f250]/50 bg-[#d7f250]/10 text-[#d7f250] text-[10px] font-bold tracking-widest uppercase backdrop-blur-sm">
+                    {cat.videos?.length || 0} VIDEOS
                   </span>
                 </div>
-                <ChevronRight size={20} className="text-gray-500 group-hover:text-[#d7f250] transition-colors" />
+
+                <h3 className="text-3xl md:text-4xl font-black italic text-white uppercase tracking-tight leading-none mb-3">
+                  {tituloMostrar}
+                </h3>
+
+                <p className="text-gray-400 text-sm md:text-base line-clamp-2 max-w-[85%] font-light">
+                  Edita los contenidos, videos de muestra y beneficios de esta categoría.
+                </p>
+
+                <div className="mt-6 flex items-center text-[#d7f250] text-xs font-bold tracking-widest uppercase">
+                  Ver Categoría <ArrowRight size={16} className="ml-2 group-hover:translate-x-2 transition-transform duration-300" />
+                </div>
               </div>
             </div>
           );
         })}
       </div>
 
-      {/* 👇 5. RENDERIZAMOS EL MODAL AQUÍ ABAJO */}
-      <ConfirmarEliminarModal 
+      <ConfirmarEliminarModal
         isOpen={modalAbierto}
         onClose={() => !estaEliminando && setModalAbierto(false)}
         onConfirm={ejecutarEliminacion}
         tituloItem={categoriaAEliminar?.titulo || ''}
         estaEliminando={estaEliminando}
       />
-
     </div>
   );
 };

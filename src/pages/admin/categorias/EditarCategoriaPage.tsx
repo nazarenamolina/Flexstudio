@@ -71,7 +71,7 @@ export const EditarCategoriaPage = () => {
       <div className="flex items-center gap-4 mb-8 shrink-0">
         <button onClick={() => navigate('/admin/categorias')} type="button" disabled={isSubmitting} className="p-2 bg-[#131313] hover:bg-gray-800 border border-gray-800 rounded-full text-white transition-colors disabled:opacity-50"><ArrowLeft size={24} /></button>
         <div>
-          <h1 className="text-3xl font-extrabold text-white tracking-tight">Editar Disciplina</h1>
+          <h1 className="text-3xl font-extrabold text-white tracking-tight">Editar Categoría</h1>
           <p className="text-gray-400 text-sm">Modifica los datos y beneficios de la categoría.</p>
         </div>
       </div>
@@ -80,17 +80,17 @@ export const EditarCategoriaPage = () => {
         <div className="flex-1 space-y-6">
 
           <div className="bg-[#131313] p-6 md:p-8 rounded-[24px] border border-gray-800 shadow-sm">
-            <h3 className="text-xl font-bold text-white mb-6 border-b border-gray-800 pb-4">Sección Banner</h3>
+            <h3 className="text-xl font-bold text-white mb-6 border-b border-gray-800 pb-4">Editar Información de la Categoría</h3>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
               <div>
-                <label className={labelClass}>Título *</label>
+                <label className={labelClass}>Título:</label>
                 <input type="text" {...register('titulo', { required: 'Obligatorio' })} className={inputClass} />
                 {errors.titulo && <p className="text-red-500 text-xs mt-1">{errors.titulo.message}</p>}
               </div>
               {/* PRECIO ARGENTINA */}
               <div>
-                <label className="block text-xs font-bold text-gray-400 uppercase mb-1">Precio (ARS) *</label>
+                <label className="block text-xs font-bold text-gray-400 uppercase mb-1">Precio (ARS):</label>
                 <input
                   type="number"
                   {...register('precioArs')}
@@ -100,7 +100,7 @@ export const EditarCategoriaPage = () => {
 
               {/* PRECIO INTERNACIONAL */}
               <div>
-                <label className="block text-xs font-bold text-gray-400 uppercase mb-1">Precio (USD) *</label>
+                <label className="block text-xs font-bold text-gray-400 uppercase mb-1">Precio (USD): </label>
                 <input
                   type="number"
                   {...register('precioUsd')}
@@ -110,7 +110,7 @@ export const EditarCategoriaPage = () => {
             </div>
 
             <div className="mb-6">
-              <label className={labelClass}>Descripción Tarjeta (Miniatura)</label>
+              <label className={labelClass}>Descripción de la Tarjeta de Inicio:</label>
               <textarea rows={2} maxLength={255} {...register('descripcionCard')} placeholder="Breve descripción para la tarjeta..." className={`${inputClass} resize-none`} />
               <div className="text-right mt-1">
                 <span className={`text-xs font-bold ${descCard.length >= 255 ? 'text-red-500' : 'text-gray-500'}`}>
@@ -120,13 +120,13 @@ export const EditarCategoriaPage = () => {
             </div>
 
             <div>
-              <label className={labelClass}>Descripción Detallada (Banner Principal)</label>
+              <label className={labelClass}>Descripción detallada de la Categoría:</label>
               <textarea rows={4} {...register('descripcionDetallada')} placeholder="Texto largo que acompaña al video hero..." className={`${inputClass} resize-none`} />
             </div>
           </div>
 
           <div className="bg-[#131313] p-6 md:p-8 rounded-[24px] border border-gray-800 shadow-sm">
-            <h3 className="text-xl font-bold text-white mb-6 border-b border-gray-800 pb-4">Sección Beneficios</h3>
+            <h3 className="text-xl font-bold text-white mb-6 border-b border-gray-800 pb-4">Editar Beneficios</h3>
 
             <div className="mb-8">
               <label className={labelClass}>Descripción de Suscripción</label>
@@ -197,7 +197,7 @@ export const EditarCategoriaPage = () => {
             <h3 className="text-xl font-bold text-white border-b border-gray-800 pb-4">Archivos Multimedia</h3>
 
             <div>
-              <label className={labelClass}>Imagen Tarjeta</label>
+              <label className={labelClass}>Imagen de la Tarjeta de Inicio</label>
               <div className="relative w-full h-40 border-2 border-dashed border-gray-700 hover:border-[#d7f250] rounded-xl flex flex-col items-center justify-center transition-colors bg-[#0a0a0a] overflow-hidden group cursor-pointer">
                 <input type="file" accept="image/*" onChange={(e) => handleFileChange(e, 'imagenTarjeta')} className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10" />
 
@@ -221,7 +221,7 @@ export const EditarCategoriaPage = () => {
             </div>
 
             <div>
-              <label className={labelClass}>Imagen Hero</label>
+              <label className={labelClass}>Imagen de Categoría</label>
               <div className="relative w-full h-32 border-2 border-dashed border-gray-700 hover:border-[#d7f250] rounded-xl flex flex-col items-center justify-center transition-colors bg-[#0a0a0a] overflow-hidden group cursor-pointer">
                 <input type="file" accept="image/*" onChange={(e) => handleFileChange(e, 'imagenHero')} className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10" />
 
@@ -239,7 +239,7 @@ export const EditarCategoriaPage = () => {
                 )}
                 <div className="z-0 flex flex-col items-center pointer-events-none">
                   <ImageIcon className="h-8 w-8 mb-2 text-white" />
-                  <span className="text-sm font-medium text-white shadow-black drop-shadow-md">Cambiar Banner</span>
+                  <span className="text-sm font-medium text-white shadow-black drop-shadow-md">Cambiar Imagen</span>
                 </div>
               </div>
             </div>
