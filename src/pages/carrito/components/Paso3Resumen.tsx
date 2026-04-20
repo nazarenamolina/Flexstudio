@@ -63,7 +63,7 @@ const Paso3Resumen = ({ formData, usuario, onPrev }: Props) => {
       <div className="w-full border-t border-neutral-400 p-3 text-center space-y-2">
         <p className="font-principal font-bold text-[#131313] mb-2">Tus clases seleccionadas:</p>
         {cartItems.map(item => (
-          <p key={item.id} className="text-sm text-neutral-800">1 x {item.titulo}</p>
+          <p key={item.id} className="text-sm text-neutral-800">{item.titulo}</p>
         ))}
       </div>
 
