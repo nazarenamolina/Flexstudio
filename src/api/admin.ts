@@ -1,7 +1,5 @@
 import { api } from './axios'; 
 
-// --- INTERFACES ---
-
 export interface EstadisticasDashboard {
   totalUsuarios: number;
   clasesVendidas: number;
@@ -21,7 +19,15 @@ export interface ResumenCliente {
   totalInvertidoUsd: number;
   fechaUltimaCompra: string | null;
 }
+
  
+export interface ComprobanteData {
+  id: string;
+  numeroRecibo: string;
+  fechaEmision: string;
+  urlPdf: string;
+  grupoPagoId: string;
+}
 
 export const obtenerEstadisticasRequest = async (): Promise<EstadisticasDashboard> => {
   const respuesta = await api.get('/admin/estadisticas');
@@ -30,5 +36,11 @@ export const obtenerEstadisticasRequest = async (): Promise<EstadisticasDashboar
 
 export const obtenerHistorialClientes = async (): Promise<ResumenCliente[]> => {
   const respuesta = await api.get('/admin/clientes');
+  return respuesta.data;
+};
+
+ 
+export const obtenerComprobantesCliente = async (idUsuario: string): Promise<ComprobanteData[]> => {
+  const respuesta = await api.get(`/comprobantes/usuario/${idUsuario}`);
   return respuesta.data;
 };

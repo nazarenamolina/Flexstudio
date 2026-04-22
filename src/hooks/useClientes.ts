@@ -1,5 +1,5 @@
 import { useEffect, useState, useMemo } from 'react';
-import { obtenerHistorialClientes, type ResumenCliente } from '../api/admin'; // Ajusta la ruta si es necesario
+import { obtenerHistorialClientes, obtenerComprobantesCliente, type ResumenCliente, type ComprobanteData } from '../api/admin';  
 import toast from 'react-hot-toast';
 
 export type SortField = 'nombreCompleto' | 'pais' | 'totalClasesCompradas' | 'totalInvertidoArs' | 'totalInvertidoUsd' | 'fechaUltimaCompra';
@@ -12,6 +12,8 @@ export const useClientes = () => {
   const [sortField, setSortField] = useState<SortField | null>(null);
   const [sortDir, setSortDir] = useState<SortDir>('asc');
   const [expandedId, setExpandedId] = useState<string | null>(null);
+  const [comprobantes, setComprobantes] = useState<Record<string, ComprobanteData[]>>({});
+  const [cargandoComprobantes, setCargandoComprobantes] = useState<Record<string, boolean>>({});
 
   useEffect(() => {
     const cargarClientes = async () => {
@@ -26,6 +28,26 @@ export const useClientes = () => {
     };
     cargarClientes();
   }, []);
+
+  const handleExpand = async (idUsuario: string) => {
+    if (expandedId === idUsuario) {
+      setExpandedId(null); 
+      return;
+    }
+    
+    setExpandedId(idUsuario);
+    if (!comprobantes[idUsuario]) {
+      setCargandoComprobantes(prev => ({ ...prev, [idUsuario]: true }));
+      try {
+        const data = await obtenerComprobantesCliente(idUsuario);
+        setComprobantes(prev => ({ ...prev, [idUsuario]: data }));
+      } catch (error) {
+        toast.error('Error al cargar los comprobantes');
+      } finally {
+        setCargandoComprobantes(prev => ({ ...prev, [idUsuario]: false }));
+      }
+    }
+  };
 
   const clientesFiltrados = useMemo(() => {
     let filtered = clientes.filter(c =>
@@ -83,18 +105,5 @@ export const useClientes = () => {
     }).format(value);
   };
 
-  return {
-    clientesFiltrados,
-    cargando,
-    busqueda,
-    setBusqueda,
-    sortField,
-    sortDir,
-    handleSort,
-    expandedId,
-    setExpandedId,
-    formatearFecha,
-    formatearFechaRegistro,
-    formatCurrency,
-  };
+  return {clientesFiltrados, cargando, busqueda, setBusqueda, sortField, sortDir, handleSort, expandedId, handleExpand, comprobantes, cargandoComprobantes,formatearFecha, formatearFechaRegistro, formatCurrency,};
 };
