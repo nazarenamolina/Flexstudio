@@ -6,7 +6,7 @@ import toast from 'react-hot-toast';
 import { useAuthStore } from '../../store/authStore';
 import { logoutRequest } from '../../api/auth';
 
-const MotionLink = motion(Link);
+ 
 
 export const Sidebar = () => {
   const { usuario, logout } = useAuthStore();
@@ -62,37 +62,44 @@ const SidebarItem = ({ item, isActive }: { item: any, isActive: boolean }) => {
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
     >
-      <MotionLink
-        to={item.path}
+      {/* Usamos motion.div nativo para que la física del resorte funcione perfecto */}
+      <motion.div
         layout
-        initial={{ width: 48, borderRadius: 24 }}
         animate={{ 
           width: isHovered ? "auto" : 48,
           backgroundColor: isHovered ? "#d7f250" : (isActive ? "#d7f250" : "transparent"),
           borderColor: isHovered ? "#d7f250" : (isActive ? "rgba(215, 242, 80, 0.4)" : "transparent"),
         }}
         transition={{ type: "spring", stiffness: 400, damping: 25 }}
-        className="absolute left-0 top-0 flex items-center h-12 overflow-hidden z-20 border"
+        className="absolute left-0 top-0 h-12 rounded-full overflow-hidden z-20 border"
         style={{ zIndex: isHovered ? 50 : 20 }}
       >
-        <div className="w-12 h-12 shrink-0 flex items-center justify-center transition-colors duration-200">
-          <Icon size={24} strokeWidth={isActive || isHovered ? 2.5 : 2} className={isHovered ? 'text-black' : (isActive ? 'text-[#131313]' : 'text-neutral-600')} />
-        </div>
-        
-        <AnimatePresence>
-          {isHovered && (
-            <motion.span
-              initial={{ opacity: 0, x: -10 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: -10, transition: { duration: 0.1 } }}
-              transition={{ delay: 0.05 }}
-              className="font-principal font-black tracking-widest uppercase text-xs whitespace-nowrap pr-6 text-black"
-            >
-              {item.name}
-            </motion.span>
-          )}
-        </AnimatePresence>
-      </MotionLink>
+        {/* El Link normal va por dentro ocupando el 100% del espacio */}
+        <Link to={item.path} className="flex items-center w-full h-full">
+          
+          <div className="w-12 h-12 shrink-0 flex items-center justify-center transition-colors duration-200">
+            <Icon 
+              size={24} 
+              strokeWidth={isActive || isHovered ? 2.5 : 2} 
+              className={isHovered ? 'text-black' : (isActive ? 'text-[#131313]' : 'text-neutral-600')} 
+            />
+          </div>
+          
+          <AnimatePresence>
+            {isHovered && (
+              <motion.span
+                initial={{ opacity: 0, x: -10 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: -10, transition: { duration: 0.1 } }}
+                className="font-principal font-black tracking-widest uppercase text-xs whitespace-nowrap pr-6 text-black"
+              >
+                {item.name}
+              </motion.span>
+            )}
+          </AnimatePresence>
+
+        </Link>
+      </motion.div>
     </div>
   );
 };
