@@ -1,11 +1,25 @@
 import { api } from './axios'; 
 
+export interface PeriodoEstadistica {
+  ars: number;
+  usd: number;
+  ventasArs: number;
+  ventasUsd: number;
+}
+
 export interface EstadisticasDashboard {
   totalUsuarios: number;
   clasesVendidas: number;
   ingresosArs: number;
   ingresosUsd: number;
+  resumenPeriodos: {
+    hoy: PeriodoEstadistica;
+    semana: PeriodoEstadistica;
+    mes: PeriodoEstadistica;
+    anio: PeriodoEstadistica;
+  };
 }
+
 
 export interface ResumenCliente {
   id: string;

@@ -18,6 +18,7 @@ const Paso3Resumen = ({ formData, usuario, onPrev }: Props) => {
   const { procesarCheckout, cargando, error } = useCheckout();
   const { executeRecaptcha } = useGoogleReCaptcha();
   const esArgentina = usuario?.pais?.toLowerCase() === 'argentina' || usuario?.pais?.toLowerCase() === 'ar';
+
   const total = cartItems.reduce((acc, item) => {
     const precio = esArgentina ? item.precioArs : item.precioUsd;
     return acc + Number(precio || 0);
@@ -31,16 +32,34 @@ const Paso3Resumen = ({ formData, usuario, onPrev }: Props) => {
       toast.error('Verificando conexión segura, por favor espera...');
       return;
     }
+    
+    const nuevaPestana = window.open('about:blank', '_blank');
 
-    const captchaToken = await executeRecaptcha('compra');
-    const idsCategorias = cartItems.map((item) => item.id);
-    const payloadCompra = {
-      idsCategorias,
-      plataforma: esArgentina ? 'MERCADOPAGO' : 'PAYPAL',
-      captchaToken
-    };
+    try {
+      const captchaToken = await executeRecaptcha('compra');
+      const idsCategorias = cartItems.map((item) => item.id);
+      const payloadCompra = {
+        idsCategorias,
+        plataforma: esArgentina ? 'MERCADOPAGO' : 'PAYPAL',
+        captchaToken
+      };
 
-    await procesarCheckout(payloadCompra, formData);
+      // 👇 2. Esperamos que el backend nos devuelva la URL
+      const urlDePago = await procesarCheckout(payloadCompra, formData);
+
+      // 👇 3. Si todo salió bien, redirigimos la pestaña que habíamos abierto
+      if (urlDePago && nuevaPestana) {
+        nuevaPestana.location.href = urlDePago;
+        toast.success('Se abrió una pestaña segura para completar tu pago', { duration: 4000 });
+      } else {
+        // Si no llegó la URL, cerramos la pestaña vacía
+        if (nuevaPestana) nuevaPestana.close();
+      }
+
+    } catch (err) {
+      // Si hubo un error (ej. tarjeta rechazada o error de red), cerramos la pestaña
+      if (nuevaPestana) nuevaPestana.close();
+    }
   };
 
   return (
@@ -96,7 +115,7 @@ const Paso3Resumen = ({ formData, usuario, onPrev }: Props) => {
               </p>
             </div>
 
-            <div className="w-[22px] h-[22px] rounded-full border-[2.5px] border-[#009EE3]  flex items-center justify-center shrink-0">
+            <div className="w-[22px] h-[22px] rounded-full border-[2.5px] border-[#009EE3] flex items-center justify-center shrink-0">
               <div className="w-[10px] h-[10px] bg-[#009EE3] rounded-full"></div>
             </div>
           </div>
@@ -114,7 +133,7 @@ const Paso3Resumen = ({ formData, usuario, onPrev }: Props) => {
               <h4 className="font-semibold text-[16px] text-[#131313] tracking-wide">PayPal</h4>
               <p className="text-[14px] text-[#131313]/60 mt-0.">Pagos internacionales (USD)</p>
             </div>
-            <div className="w-[22px] h-[22px] rounded-full border-[2.5px] border-[#009EE3]  flex items-center justify-center shrink-0">
+            <div className="w-[22px] h-[22px] rounded-full border-[2.5px] border-[#009EE3] flex items-center justify-center shrink-0">
               <div className="w-[10px] h-[10px] bg-[#009EE3] rounded-full"></div>
             </div>
           </div>

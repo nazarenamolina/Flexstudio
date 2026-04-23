@@ -8,6 +8,7 @@ const obtenerCodigoBandera = (pais: string | null | undefined) => {
   if (!pais) return null;
   
   const mapaPaises: Record<string, string> = {
+    spain: 'es',
     argentina: 'ar',
     mexico: 'mx',
     méxico: 'mx',
@@ -17,7 +18,7 @@ const obtenerCodigoBandera = (pais: string | null | undefined) => {
     españa: 'es',
     peru: 'pe',
     perú: 'pe',
-    'estados unidos': 'us',
+    'united states': 'us',
     usa: 'us',
     ecuador: 'ec',
     bolivia: 'bo',
