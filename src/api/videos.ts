@@ -5,15 +5,21 @@ import { type Categoria } from './categoria';
 export interface Video {
   id: string;
   titulo: string;
+  descripcion?: string; 
   assetId: string;
   playbackId: string;
   imagenUrl?: string;
   orden: number;
   duracion?: number;
+  duracionFormateada?: string; 
   idCategoria: string;
   categoria?: Categoria;
 }
 
+export const obtenerCredencialesReproduccion = async (idVideo: string) => {
+  const respuesta = await api.get(`/videos/reproducir/${idVideo}`);
+  return respuesta.data;  
+};
 
 export const obtenerTodosLosVideosRequest = async (): Promise<Video[]> => {
   const respuesta = await api.get('/videos');
