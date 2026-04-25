@@ -1,4 +1,5 @@
-import { useEffect, useState, useMemo } from 'react';
+import { useState, useMemo } from 'react';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { obtenerHistorialClientes, obtenerComprobantesCliente, type ResumenCliente, type ComprobanteData } from '../api/admin';  
 import toast from 'react-hot-toast';
 
@@ -6,40 +7,46 @@ export type SortField = 'nombreCompleto' | 'pais' | 'totalClasesCompradas' | 'to
 export type SortDir = 'asc' | 'desc';
 
 export const useClientes = () => {
-  const [clientes, setClientes] = useState<ResumenCliente[]>([]);
-  const [cargando, setCargando] = useState(true);
+  const queryClient = useQueryClient();
+
+  // Estados locales para la interfaz (filtros, orden, expansión)
   const [busqueda, setBusqueda] = useState('');
   const [sortField, setSortField] = useState<SortField | null>(null);
   const [sortDir, setSortDir] = useState<SortDir>('asc');
   const [expandedId, setExpandedId] = useState<string | null>(null);
+  
+  // Diccionarios locales para los comprobantes (mantiene compatibilidad con el componente)
   const [comprobantes, setComprobantes] = useState<Record<string, ComprobanteData[]>>({});
   const [cargandoComprobantes, setCargandoComprobantes] = useState<Record<string, boolean>>({});
 
-  useEffect(() => {
-    const cargarClientes = async () => {
-      try {
-        const data = await obtenerHistorialClientes();
-        setClientes(data);
-      } catch (error) {
-        toast.error('Error al cargar el historial de clientes');
-      } finally {
-        setCargando(false);
-      }
-    };
-    cargarClientes();
-  }, []);
+  // 👇 1. MAGIA DE TANSTACK QUERY: Obtenemos el listado principal
+  const { data: clientes = [], isLoading: cargando } = useQuery<ResumenCliente[]>({
+    queryKey: ['historial-clientes'],
+    queryFn: obtenerHistorialClientes,
+    staleTime: 1000 * 60 * 5, // Guarda los clientes en caché por 5 minutos
+  });
 
+  // 👇 2. EXPANSIÓN CON CACHÉ: Cargamos comprobantes individualmente
   const handleExpand = async (idUsuario: string) => {
+    // Si ya está abierto, lo cerramos
     if (expandedId === idUsuario) {
       setExpandedId(null); 
       return;
     }
     
     setExpandedId(idUsuario);
+
+    // Si no tenemos los comprobantes en el diccionario local, los pedimos
     if (!comprobantes[idUsuario]) {
       setCargandoComprobantes(prev => ({ ...prev, [idUsuario]: true }));
       try {
-        const data = await obtenerComprobantesCliente(idUsuario);
+        // Usamos fetchQuery para que TanStack también guarde estos recibos en caché
+        const data = await queryClient.fetchQuery({
+          queryKey: ['comprobantes-cliente', idUsuario],
+          queryFn: () => obtenerComprobantesCliente(idUsuario),
+          staleTime: 1000 * 60 * 15, // 15 minutos de caché para recibos (rara vez cambian)
+        });
+        
         setComprobantes(prev => ({ ...prev, [idUsuario]: data }));
       } catch (error) {
         toast.error('Error al cargar los comprobantes');
@@ -49,6 +56,7 @@ export const useClientes = () => {
     }
   };
 
+  // 👇 3. FILTROS Y ORDENAMIENTO (Memoizados para rendimiento)
   const clientesFiltrados = useMemo(() => {
     let filtered = clientes.filter(c =>
       c.nombreCompleto?.toLowerCase().includes(busqueda.toLowerCase()) ||
@@ -76,6 +84,7 @@ export const useClientes = () => {
     }
   };
 
+  // 👇 4. FUNCIONES UTILITARIAS DE FORMATEO
   const formatearFecha = (fechaISO: string | null | undefined) => {
     if (!fechaISO) return 'Sin compras';
     return new Date(fechaISO).toLocaleDateString('es-AR', {
@@ -105,5 +114,20 @@ export const useClientes = () => {
     }).format(value);
   };
 
-  return {clientesFiltrados, cargando, busqueda, setBusqueda, sortField, sortDir, handleSort, expandedId, handleExpand, comprobantes, cargandoComprobantes,formatearFecha, formatearFechaRegistro, formatCurrency,};
+  return {
+    clientesFiltrados, 
+    cargando, 
+    busqueda, 
+    setBusqueda, 
+    sortField, 
+    sortDir, 
+    handleSort, 
+    expandedId, 
+    handleExpand, 
+    comprobantes, 
+    cargandoComprobantes,
+    formatearFecha, 
+    formatearFechaRegistro, 
+    formatCurrency
+  };
 };

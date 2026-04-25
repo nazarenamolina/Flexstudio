@@ -13,6 +13,7 @@ export interface Categoria {
   imagenTarjeta?: string;
   beneficios?: { titulo: string; descripcion: string; icono?: string }[];
   fechaCreacion?: string | Date;
+  destacada?: boolean;
 }
 
 
