@@ -54,6 +54,11 @@ export const obtenerHistorialClientes = async (): Promise<ResumenCliente[]> => {
 };
 
  
+export const obtenerClasesMasCompradasRequest = async (limite = 5) => {
+  const { data } = await api.get('/admin/clases-mas-compradas', { params: { limite } });
+  return data;
+};
+
 export const obtenerComprobantesCliente = async (idUsuario: string): Promise<ComprobanteData[]> => {
   const respuesta = await api.get(`/comprobantes/usuario/${idUsuario}`);
   return respuesta.data;

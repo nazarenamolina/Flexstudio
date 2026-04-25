@@ -2,6 +2,7 @@ import { ArrowLeft, Save, Image as ImageIcon, Loader2, Film, CloudUpload, CheckC
 import { useNuevaCategoria } from '../../../hooks/useNuevaCategoria';
 import { Controller } from 'react-hook-form';
 import { IconPicker } from '../../../components/IconPicker';
+import { ToggleDestacada } from '../../../components/ToggleDestacada'; 
 
 export const NuevaCategoriaPage = () => {
   const { register, handleSubmit, errors, isSubmitting, estadoSubida, progreso, archivos, handleFileChange, handleEliminarMultimedia, watch, navigate, beneficiosFields, appendBeneficio, removeBeneficio, control } = useNuevaCategoria();
@@ -165,6 +166,29 @@ export const NuevaCategoriaPage = () => {
 
         {/* COLUMNA DERECHA */}
         <div className="w-full xl:w-[400px] flex flex-col gap-6 shrink-0">
+          {/* 👇 NUEVA SECCIÓN: CONFIGURACIÓN 👇 */}
+          <div className="bg-[#131313] p-6 rounded-[24px] border border-gray-800 shadow-sm flex flex-col gap-4">
+            <h3 className="text-xl font-bold text-white border-b border-gray-800 pb-4">Configuración</h3>
+            
+            <div className="flex items-center justify-between">
+              <div>
+                <label className="block text-sm font-bold text-white mb-1">Clase Destacada</label>
+                <p className="text-xs text-gray-400">Se mostrará al principio en la página principal.</p>
+              </div>
+              
+              <Controller
+                control={control}
+                name="destacada"
+                render={({ field }) => (
+                  <ToggleDestacada
+                    habilitado={field.value}
+                    onChange={field.onChange}
+                    deshabilitado={isSubmitting}
+                  />
+                )}
+              />
+            </div>
+          </div>
           <div className="bg-[#131313] p-6 rounded-[24px] border border-gray-800 shadow-sm flex flex-col gap-6">
             <h3 className="text-xl font-bold text-white border-b border-gray-800 pb-4">Archivos Multimedia</h3>
             <div>

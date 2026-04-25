@@ -4,6 +4,7 @@ import { useEditarCategoria } from '../../../hooks/useEditarCategoria';
 import { Controller } from 'react-hook-form';
 import { IconPicker } from '../../../components/IconPicker';
 import { ConfirmarEliminarModal } from '../../../components/ConfirmarEliminarModal';
+import { ToggleDestacada } from '../../../components/ToggleDestacada';
 
 export const EditarCategoriaPage = () => {
   const { register, handleSubmit, errors, isSubmitting, cargandoDatos, estadoSubida, progreso, archivos, imagenesActuales, handleFileChange, handleEliminarMultimedia, watch, navigate, beneficiosFields, appendBeneficio, removeBeneficio, control } = useEditarCategoria();
@@ -37,8 +38,6 @@ export const EditarCategoriaPage = () => {
       </div>
     );
   }
-
-  // 👇 Aquí arreglamos el error de TypeScript asegurándonos de que 'tipo' exista
   const confirmarEliminacion = () => {
     if (!itemAEliminar || !itemAEliminar.tipo) {
       setItemAEliminar(null);
@@ -50,7 +49,6 @@ export const EditarCategoriaPage = () => {
         removeBeneficio(itemAEliminar.indexBeneficio);
       }
     } else {
-      // Como ya descartamos 'beneficio' y 'null', TS sabe que es hero, tarjeta o video
       handleEliminarMultimedia(itemAEliminar.tipo);
     }
 
@@ -193,6 +191,30 @@ export const EditarCategoriaPage = () => {
         </div>
 
         <div className="w-full xl:w-[400px] flex flex-col gap-6 shrink-0">
+
+          {/* 👇 NUEVA SECCIÓN: CONFIGURACIÓN 👇 */}
+          <div className="bg-[#131313] p-6 rounded-[24px] border border-gray-800 shadow-sm flex flex-col gap-4">
+            <h3 className="text-xl font-bold text-white border-b border-gray-800 pb-4">Configuración</h3>
+            
+            <div className="flex items-center justify-between">
+              <div>
+                <label className="block text-sm font-bold text-white mb-1">Clase Destacada</label>
+                <p className="text-xs text-gray-400">Se mostrará al principio en la página principal.</p>
+              </div>
+              
+              <Controller
+                control={control}
+                name="destacada"
+                render={({ field }) => (
+                  <ToggleDestacada
+                    habilitado={field.value}
+                    onChange={field.onChange}
+                    deshabilitado={isSubmitting}
+                  />
+                )}
+              />
+            </div>
+          </div>
           <div className="bg-[#131313] p-6 rounded-[24px] border border-gray-800 shadow-sm flex flex-col gap-6">
             <h3 className="text-xl font-bold text-white border-b border-gray-800 pb-4">Archivos Multimedia</h3>
 

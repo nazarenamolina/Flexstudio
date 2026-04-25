@@ -1,15 +1,16 @@
 import { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
-import { User, Mail, Clock, ArrowRight, ChevronLeft, ChevronRight, Loader2 } from 'lucide-react';
-import { obtenerCategoriasRequest, type Categoria } from '../api/categoria';
+import { User, Mail, ChevronLeft, ChevronRight, Loader2 } from 'lucide-react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import toast from 'react-hot-toast';
 import { useGoogleReCaptcha } from 'react-google-recaptcha-v3';
+import { obtenerCategoriasRequest, type Categoria } from '../api/categoria';
 import { enviarConsultaRequest } from '../api/contacto';
+import { TarjetaClase } from '../components/TarjetaClase'; 
+import { CarruselDestacadas } from '../components/CarruselDestacadas';
 
-// 👇 Esquema de validación para el formulario
+// Validación del formulario
 const contactoSchema = z.object({
   nombre: z.string().min(2, 'El nombre debe tener al menos 2 caracteres'),
   correo: z.string().email('Ingresa un correo electrónico válido'),
@@ -32,7 +33,6 @@ const HomePage = () => {
   const [touchStart, setTouchStart] = useState(0);
   const [touchEnd, setTouchEnd] = useState(0);
 
-  // 👇 Hooks para el formulario de contacto
   const { executeRecaptcha } = useGoogleReCaptcha();
   const { register, handleSubmit, formState: { errors, isSubmitting }, reset } = useForm<ContactoFormValues>({
     resolver: zodResolver(contactoSchema),
@@ -42,29 +42,18 @@ const HomePage = () => {
   const prevSlide = () => setCurrentSlide((prev) => (prev === 0 ? slides.length - 1 : prev - 1));
 
   const handleTouchStart = (e: React.TouchEvent) => {
-    if (e.targetTouches.length > 0) {
-        setTouchStart(e.targetTouches[0].clientX);
-    }
+    if (e.targetTouches.length > 0) setTouchStart(e.targetTouches[0].clientX);
   };
 
   const handleTouchMove = (e: React.TouchEvent) => {
-    if (e.targetTouches.length > 0) {
-        setTouchEnd(e.targetTouches[0].clientX);
-    }
+    if (e.targetTouches.length > 0) setTouchEnd(e.targetTouches[0].clientX);
   };
 
   const handleTouchEnd = () => {
     if (!touchStart || !touchEnd) return;
     const distance = touchStart - touchEnd;
-    const isLeftSwipe = distance > 50;
-    const isRightSwipe = distance < -50;
-
-    if (isLeftSwipe) {
-      nextSlide();
-    }
-    if (isRightSwipe) {
-      prevSlide();
-    }
+    if (distance > 50) nextSlide();
+    if (distance < -50) prevSlide();
     setTouchStart(0);
     setTouchEnd(0);
   };
@@ -95,22 +84,21 @@ const HomePage = () => {
     cargarDatos();
   }, []);
 
-  // 👇 Función que se ejecuta al enviar el formulario
   const onSubmitContacto = async (data: ContactoFormValues) => {
-    if (!executeRecaptcha) {
-      return toast.error('Verificando seguridad...');
-    }
-
+    if (!executeRecaptcha) return toast.error('Verificando seguridad...');
     try {
       const captchaToken = await executeRecaptcha('contacto_home');
       const respuesta = await enviarConsultaRequest({ ...data, captchaToken });
-      
       toast.success(respuesta.mensaje || '¡Consulta enviada con éxito!');
-      reset(); // Limpia los inputs
+      reset(); 
     } catch (error) {
       toast.error('Hubo un error al enviar tu consulta. Intenta nuevamente.');
     }
   };
+
+  // 👇 LÓGICA DE SEPARACIÓN
+  const destacadas = categorias.filter(c => c.destacada);
+  const regulares = categorias.filter(c => !c.destacada);
 
   return (
     <main className="min-h-screen font-sans text-[#161616] pt-[52px]">
@@ -145,15 +133,21 @@ const HomePage = () => {
             <button
               key={index}
               onClick={() => setCurrentSlide(index)}
-              className={`w-3 h-3 rounded-full transition-all duration-300 ${currentSlide === index ? "bg-[#d7f250] w-8" : "bg-white/50 hover:bg-white"
-                }`}
+              className={`w-3 h-3 rounded-full transition-all duration-300 ${currentSlide === index ? "bg-[#d7f250] w-8" : "bg-white/50 hover:bg-white"}`}
               aria-label={`Ir a la diapositiva ${index + 1}`}
             />
           ))}
         </div>
       </section>
 
-      {/* --- SECCIÓN CATEGORÍAS --- */}
+      {/* --- SECCIÓN CARRUSEL DESTACADAS --- */}
+      <CarruselDestacadas 
+        categorias={destacadas} 
+        flippedCard={flippedCard} 
+        setFlippedCard={setFlippedCard} 
+      />
+
+      {/* --- SECCIÓN GRILLA TODAS LAS CATEGORÍAS --- */}
       <section className="container mx-auto px-6 pt-16 pb-4">
         <div className="flex justify-center mt-0 mb-16">
           <img
@@ -168,72 +162,18 @@ const HomePage = () => {
             <div className="w-full text-center py-10">
               <h4 className="text-xl text-gray-400 font-bold animate-pulse">Cargando clases disponibles...</h4>
             </div>
-          ) : categorias.length === 0 ? (
+          ) : regulares.length === 0 && destacadas.length === 0 ? (
             <div className="w-full text-center py-10">
               <p className="text-gray-400">Aún no hay categorías disponibles.</p>
             </div>
           ) : (
-           categorias.map((servicio) => (
-              <div 
+            regulares.map((servicio) => (
+              <TarjetaClase 
                 key={servicio.id} 
-                className="relative w-full max-w-[416px] h-[512px] group [perspective:1000px] cursor-pointer"
-                onClick={() => setFlippedCard(flippedCard === servicio.id ? null : servicio.id)}
-              >
-                <div 
-                  className={`relative w-full h-full transition-transform duration-700 [transform-style:preserve-3d] rounded-[30px] shadow-[0_15px_35px_rgba(0,0,0,0.2)] lg:group-hover:[transform:rotateY(180deg)] ${
-                    flippedCard === servicio.id ? '[transform:rotateY(180deg)]' : ''
-                  }`}
-                >
-                  {/* Frente de la Tarjeta */}
-                  <div className="absolute inset-0 w-full h-full [backface-visibility:hidden] rounded-[30px] overflow-hidden z-10">
-                    <div 
-                      className="absolute inset-0 bg-cover bg-center"
-                      style={{ backgroundImage: `url(${servicio.imagenTarjeta || 'https://placehold.co/400x500/1a1a1a/FFF?text=Flex+Studio'})` }}
-                    />
-                    <div 
-                      className="absolute inset-0"
-                      style={{ background: 'linear-gradient(to top, rgba(215, 242, 80, 0.48) 0%, rgba(15, 23, 42, 0.6) 50%, rgba(15, 23, 42, 0.2) 100%)' }}
-                    />
-
-                    <div className="relative flex flex-col justify-between h-full p-[24px]">
-                      <div className="flex justify-between items-center w-full">
-                        <span className="bg-[#d7f250] text-[#0f172a] px-[12px] py-[5px] rounded-[20px] text-[0.75rem] font-extrabold tracking-[1.5px] uppercase shadow-sm">
-                          Plan Mensual
-                        </span>
-                        <span className="flex items-center text-white text-[0.76rem] font-bold drop-shadow-md">
-                          <Clock className="w-[14px] h-[14px] mr-[6px] text-white" /> 1h 15min
-                        </span>
-                      </div>
-                      <h3 className="mt-auto text-white text-4xl md:text-5xl font-bold mb-[12px] leading-[1.1] drop-shadow-lg">
-                        {servicio.titulo}
-                      </h3>
-                    </div>
-                  </div>
-
-                  {/* Dorso de la Tarjeta */}
-                  <div className="absolute inset-0 w-full h-full [backface-visibility:hidden] [transform:rotateY(180deg)_translateZ(1px)] z-20 rounded-[30px] overflow-hidden bg-[#161616] p-[32px] flex flex-col justify-center items-center text-center">
-                    
-                    <h4 className="text-[#d7f250] text-3xl font-bold mb-6">
-                      {servicio.titulo}
-                    </h4>
-
-                    <p className="text-white/80 text-base mb-10">
-                      {servicio.descripcionCard || 'Descripción no disponible.'}
-                    </p>
-
-                    <Link
-                      to={`/categorias/${servicio.id}`}
-                      onClick={(e) => e.stopPropagation()}
-                      className="group/btn relative z-30 flex items-center justify-center w-max bg-[#d7f250] text-[#161616] font-bold rounded-[50px] px-6 py-3 transition-all duration-300 hover:bg-white hover:scale-105"
-                    >
-                      <span className="mr-2">Ver Más</span>
-                      <ArrowRight className="w-[18px] h-[18px]" />
-                    </Link>
-
-                    </div>
-                  </div>
-                </div>
-
+                servicio={servicio} 
+                flippedCard={flippedCard} 
+                setFlippedCard={setFlippedCard} 
+              />
             ))
           )}
         </article>
@@ -245,7 +185,6 @@ const HomePage = () => {
             <p className="text-gray-500 text-sm">Completa con tus datos y te respondo lo antes posible.</p>
           </div>
 
-          {/* 👇 FORMULARIO CONECTADO A REACT HOOK FORM 👇 */}
           <form onSubmit={handleSubmit(onSubmitContacto)} className="space-y-4">
             <div>
               <label className="block text-sm font-principal font-semibold text-[#161616] mb-1">Nombre</label>
@@ -286,7 +225,6 @@ const HomePage = () => {
               {errors.mensaje && <p className="mt-1 text-xs text-red-500 font-medium">{errors.mensaje.message}</p>}
             </div>
             
-            {/* 👇 BOTÓN ACTUALIZADO PARA HACER SUBMIT 👇 */}
             <button
               type="submit"
               disabled={isSubmitting}
@@ -299,7 +237,6 @@ const HomePage = () => {
               )}
             </button>
 
-            {/* Aviso de ReCaptcha */}
             <p className="text-[10px] text-gray-500 text-center leading-tight mt-2">
               Protegido por reCAPTCHA - <a href="https://policies.google.com/privacy" target="_blank" rel="noopener noreferrer" className="underline hover:text-[#161616]">Privacidad</a> y <a href="https://policies.google.com/terms" target="_blank" rel="noopener noreferrer" className="underline hover:text-[#161616]">Términos</a>.
             </p>

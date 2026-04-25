@@ -1,83 +1,10 @@
-import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-// Agregamos "Play" a las importaciones 👇
-import { Search, Plus, Loader2, Edit2, Trash2, Image as ImageIcon, Play } from 'lucide-react';
-import toast, { Toaster } from 'react-hot-toast';
-import { io } from 'socket.io-client';
-
-import { obtenerTodosLosVideosRequest, eliminarVideoRequest, type Video } from '../../../api/videos';
-import { obtenerCategoriasRequest, type Categoria } from '../../../api/categoria';
+import { Search, Plus, Loader2, Edit2, Trash2, Image as ImageIcon } from 'lucide-react';
+import { Toaster } from 'react-hot-toast';
 import { ConfirmarEliminarModal } from '../../../components/ConfirmarEliminarModal'; 
-
-const SOCKET_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+import { useAdminVideos } from '../../../hooks/useAdminVideos';
 
 export const AdminVideosPage = () => {
-  const navigate = useNavigate();
-  const [videos, setVideos] = useState<Video[]>([]);
-  const [categorias, setCategorias] = useState<Categoria[]>([]);
-  const [cargando, setCargando] = useState(true);
-  const [busqueda, setBusqueda] = useState('');
-  const [filtroCategoria, setFiltroCategoria] = useState('Todos los Videos');
-  const [modalAbierto, setModalAbierto] = useState(false);
-  const [videoAEliminar, setVideoAEliminar] = useState<{ id: string, titulo: string } | null>(null);
-  const [estaEliminando, setEstaEliminando] = useState(false);
-
-  useEffect(() => {
-    cargarDatos();
-  }, []);
-
-  const cargarDatos = async (silencioso = false) => {
-    if (!silencioso) setCargando(true);
-    try {
-      const resVideos = await obtenerTodosLosVideosRequest();
-      setVideos(resVideos);
-      const resCategorias = await obtenerCategoriasRequest();
-      setCategorias(resCategorias);
-    } catch (error) {
-      if (!silencioso) toast.error("Error al cargar la librería de videos");
-    } finally {
-      if (!silencioso) setCargando(false);
-    }
-  };
-
-  useEffect(() => {
-    const socket = io(SOCKET_URL);
-    socket.on('videoActualizado', (videoActualizado: Video) => {
-      setVideos((videosActuales) =>
-        videosActuales.map((v) => v.id === videoActualizado.id ? { ...v, ...videoActualizado } : v)
-      );
-      toast.success(`¡El video "${videoActualizado.titulo}" ya está listo!`);
-    });
-    return () => { socket.disconnect(); };
-  }, []);
-
-  const abrirModalEliminacion = (id: string, titulo: string) => {
-    setVideoAEliminar({ id, titulo });
-    setModalAbierto(true);
-  };
-
-  const ejecutarEliminacion = async () => {
-    if (!videoAEliminar) return;
-
-    setEstaEliminando(true); 
-    try {
-      await eliminarVideoRequest(videoAEliminar.id);
-      setVideos(videos.filter(v => v.id !== videoAEliminar.id));
-      toast.success('Video eliminado permanentemente');
-      setModalAbierto(false); 
-    } catch (error) {
-      toast.error('Ocurrió un error al eliminar el video');
-    } finally {
-      setEstaEliminando(false);
-      setTimeout(() => setVideoAEliminar(null), 300);
-    }
-  };
-
-  const videosFiltrados = videos.filter(video => {
-    const coincideBusqueda = video.titulo.toLowerCase().includes(busqueda.toLowerCase());
-    const coincideCategoria = filtroCategoria === 'Todos los Videos' || video.categoria?.titulo === filtroCategoria;
-    return coincideBusqueda && coincideCategoria;
-  });
+  const {navigate, cargando, categorias, busqueda, setBusqueda, filtroCategoria, setFiltroCategoria, videosFiltrados, modalAbierto, setModalAbierto, videoAEliminar, estaEliminando, abrirModalEliminacion, ejecutarEliminacion} = useAdminVideos();
 
   return (
     <div className="w-full h-full flex flex-col font-sans overflow-hidden relative">
@@ -144,7 +71,7 @@ export const AdminVideosPage = () => {
             {videosFiltrados.map(video => (
               <div key={video.id} className="bg-[#131313] rounded-[30px] overflow-hidden border border-gray-800 shadow-sm flex flex-col hover:border-gray-700 transition-colors group">
                 
-                {/* 👇 SECCIÓN DEL REPRODUCTOR / MINIATURA MODIFICADA 👇 */}
+                {/* REPRODUCTOR / MINIATURA */}
                 <div className="w-full aspect-video bg-[#0a0a0a] relative flex items-center justify-center overflow-hidden">
                   
                   {/* ESTADO: PROCESANDO */}
@@ -157,7 +84,7 @@ export const AdminVideosPage = () => {
                       <p className="text-[10px] text-gray-400 font-black uppercase tracking-[0.2em] relative z-10">Procesando</p>
                     </div>
                   ) : (
-                    /* ESTADO: LISTO (Mostramos imagen + Badge en lugar de MuxPlayer) */
+                    /* ESTADO: LISTO */
                     <div className="absolute inset-0 w-full h-full">
                       {video.imagenUrl ? (
                         <img 
@@ -171,14 +98,10 @@ export const AdminVideosPage = () => {
                         </div>
                       )}
                       
-                      {/* Overlay decorativo de Play al hacer hover */}
                       <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                        <div className="bg-[#d7f250] p-3 rounded-full shadow-2xl scale-75 group-hover:scale-100 transition-transform duration-300">
-                           <Play size={20} className="text-black fill-black ml-0.5" />
-                        </div>
                       </div>
 
-                      {/* BADGE DE DURACIÓN (Estilo Youtube) */}
+                      {/* BADGE DE DURACIÓN */}
                       {video.duracionFormateada && (
                         <span className="absolute bottom-3 right-3 bg-black/80 text-white text-[10px] font-bold px-2 py-1 rounded backdrop-blur-sm z-20">
                           {video.duracionFormateada}
@@ -192,7 +115,6 @@ export const AdminVideosPage = () => {
                     {video.categoria?.titulo || 'Sin categoría'}
                   </span>
                 </div>
-                {/* 👆 FIN DE SECCIÓN MODIFICADA 👆 */}
 
                 <div className="p-5 flex-1 flex flex-col">
                   <h3 className="text-white font-bold text-lg leading-tight line-clamp-2 mb-4">
