@@ -11,6 +11,7 @@ export const NuevoVideoPage = () => {
   const [categorias, setCategorias] = useState<Categoria[]>([]);
   const [datos, setDatos] = useState({
     titulo: '',
+    descripcion: '',
     idCategoria: '',
     duracion: '',
     orden: '',
@@ -21,7 +22,7 @@ export const NuevoVideoPage = () => {
     imagen: null as File | null,
   });
 
-  // Estados de subida
+ 
   const [estadoSubida, setEstadoSubida] = useState<'IDLE' | 'PIDIENDO_URL' | 'SUBIENDO' | 'COMPLETADO'>('IDLE');
   const [progreso, setProgreso] = useState(0);
 
@@ -58,6 +59,7 @@ export const NuevoVideoPage = () => {
       setEstadoSubida('PIDIENDO_URL');
       const formData = new FormData();
       formData.append('titulo', datos.titulo);
+      if (datos.descripcion) {formData.append('descripcion', datos.descripcion);}
       formData.append('idCategoria', datos.idCategoria);
       formData.append('duracion', datos.duracion || '0');
       formData.append('orden', datos.orden || '1');
@@ -140,6 +142,18 @@ export const NuevoVideoPage = () => {
           <div>
             <label className={labelClass}>Título del Video *</label>
             <input type="text" name="titulo" required placeholder="Ej: Clase 1 - Introducción" value={datos.titulo} onChange={handleChange} className={inputClass} />
+          </div>
+
+          <div>
+            <label className={labelClass}>Descripción / Resumen de la Clase</label>
+            <textarea 
+              name="descripcion" 
+              rows={4} 
+              placeholder="Ej: En esta clase aprenderemos los fundamentos técnicos de la coreografía, enfocándonos en la postura y el control del núcleo..." 
+              value={datos.descripcion} 
+              onChange={handleChange as unknown as React.ChangeEventHandler<HTMLTextAreaElement>} 
+              className={`${inputClass} resize-none`} 
+            />
           </div>
 
           <div>

@@ -52,7 +52,7 @@ export const FooterComponent = () => {
           <ul className="flex flex-col gap-3">
             {/* Efecto de padding en hover traducido: hover:pl-1.5 */}
             <li><Link to="/acerca-de" className="block text-[0.95rem] text-[#cdcdcd] transition-all duration-300 hover:pl-1.5 hover:text-[#d7f250]">Acerca de mí</Link></li>
-            <li><Link to="/cursos" className="block text-[0.95rem] text-[#cdcdcd] transition-all duration-300 hover:pl-1.5 hover:text-[#d7f250]">Ver Cursos</Link></li>
+            <li><Link to="/videos" className="block text-[0.95rem] text-[#cdcdcd] transition-all duration-300 hover:pl-1.5 hover:text-[#d7f250]">Ver Cursos</Link></li>
             <li><Link to="/terminos-y-condiciones" className="block text-[0.95rem] text-[#cdcdcd] transition-all duration-300 hover:pl-1.5 hover:text-[#d7f250]">Términos y Condiciones</Link></li>
             <li><Link to="/politica-de-privacidad" className="block text-[0.95rem] text-[#cdcdcd] transition-all duration-300 hover:pl-1.5 hover:text-[#d7f250]">Política de Privacidad</Link></li>
           </ul>

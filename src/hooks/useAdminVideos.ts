@@ -1,83 +1,108 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import toast from 'react-hot-toast';
 import { io } from 'socket.io-client';
-import { obtenerTodosLosVideosRequest, eliminarVideoRequest, type Video } from '../api/videos'; // Ajusta la ruta si es necesario
-import { obtenerCategoriasRequest, type Categoria } from '../api/categoria'; // Ajusta la ruta si es necesario
+import { obtenerTodosLosVideosRequest, eliminarVideoRequest, type Video } from '../api/videos'; 
+import { obtenerCategoriasRequest, type Categoria } from '../api/categoria'; 
 
-const SOCKET_URL = 'http://localhost:3000';
+const SOCKET_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
 
 export const useAdminVideos = () => {
   const navigate = useNavigate();
- 
-  const [videos, setVideos] = useState<Video[]>([]);
-  const [categorias, setCategorias] = useState<Categoria[]>([]);
-  const [cargando, setCargando] = useState(true);
- 
+  const queryClient = useQueryClient();
+
+  // Estados locales para la UI
   const [busqueda, setBusqueda] = useState('');
   const [filtroCategoria, setFiltroCategoria] = useState('Todos los Videos');
- 
   const [modalAbierto, setModalAbierto] = useState(false);
   const [videoAEliminar, setVideoAEliminar] = useState<{ id: string, titulo: string } | null>(null);
-  const [estaEliminando, setEstaEliminando] = useState(false);
- 
-  const cargarDatos = async (silencioso = false) => {
-    if (!silencioso) setCargando(true);
-    try {
-      const resVideos = await obtenerTodosLosVideosRequest();
-      setVideos(Array.isArray(resVideos) ? resVideos : (resVideos as any).data || []);
-      const resCategorias = await obtenerCategoriasRequest();
-      setCategorias(Array.isArray(resCategorias) ? resCategorias : (resCategorias as any).categorias || []);
-    } catch (error) {
-      if (!silencioso) toast.error("Error al cargar la librería de videos");
-    } finally {
-      if (!silencioso) setCargando(false);
-    }
-  };
 
-  useEffect(() => {
-    cargarDatos();
-  }, []);
- 
+  // 👇 1. QUERIES: Descargamos Videos y Categorías en paralelo
+  const { data: videos = [], isLoading: cargandoVideos } = useQuery<Video[]>({
+    queryKey: ['videos-admin'],
+    queryFn: obtenerTodosLosVideosRequest,
+    staleTime: 1000 * 60 * 5, // 5 minutos de caché
+  });
+
+  const { data: categorias = [], isLoading: cargandoCategorias } = useQuery<Categoria[]>({
+    queryKey: ['categorias'],
+    queryFn: async () => {
+      const data = await obtenerCategoriasRequest();
+      if (Array.isArray(data)) return data;
+      if (data && Array.isArray((data as any).categorias)) return (data as any).categorias;
+      return [];
+    },
+    staleTime: 1000 * 60 * 60, // 1 hora de caché (las categorías casi no cambian)
+  });
+
+  const cargando = cargandoVideos || cargandoCategorias;
+
+  // 👇 2. WEBSOCKET + TANSTACK QUERY
   useEffect(() => {
     const socket = io(SOCKET_URL);
+    
     socket.on('videoActualizado', (videoActualizado: Video) => {
-      setVideos((videosActuales) =>
-        videosActuales.map((v) => v.id === videoActualizado.id ? { ...v, ...videoActualizado } : v)
-      );
+      // Modificamos el caché directamente cuando el websocket avisa
+      queryClient.setQueryData<Video[]>(['videos-admin'], (videosAntiguos) => {
+        if (!videosAntiguos) return [];
+        return videosAntiguos.map((v) => 
+          v.id === videoActualizado.id ? { ...v, ...videoActualizado } : v
+        );
+      });
       toast.success(`¡El video "${videoActualizado.titulo}" ya está listo!`);
     });
+
     return () => { socket.disconnect(); };
-  }, []);
- 
+  }, [queryClient]);
+
+  // 👇 3. MUTACIÓN: Eliminar Video con Actualización Optimista
+  const eliminarMutation = useMutation({
+    mutationFn: eliminarVideoRequest,
+    onMutate: async (id: string) => {
+      await queryClient.cancelQueries({ queryKey: ['videos-admin'] });
+      const previousVideos = queryClient.getQueryData(['videos-admin']);
+      
+      // Borramos de la pantalla al instante
+      queryClient.setQueryData<Video[]>(['videos-admin'], (old = []) =>
+        old.filter((v) => v.id !== id)
+      );
+      
+      return { previousVideos };
+    },
+    onSuccess: () => {
+      toast.success('Video eliminado permanentemente');
+      queryClient.invalidateQueries({ queryKey: ['videos-admin'] });
+    },
+    onError: (_error, _id, context) => {
+      queryClient.setQueryData(['videos-admin'], context?.previousVideos);
+      toast.error('Ocurrió un error al eliminar el video');
+    },
+    onSettled: () => {
+      setTimeout(() => setVideoAEliminar(null), 300); 
+    }
+  });
+
+  // Funciones de la Interfaz
   const abrirModalEliminacion = (id: string, titulo: string) => {
     setVideoAEliminar({ id, titulo });
     setModalAbierto(true);
   };
 
-  const ejecutarEliminacion = async () => {
+  const ejecutarEliminacion = () => {
     if (!videoAEliminar) return;
-
-    setEstaEliminando(true);
-    try {
-      await eliminarVideoRequest(videoAEliminar.id);
-      setVideos(videos.filter(v => v.id !== videoAEliminar.id));
-      toast.success('Video eliminado permanentemente');
-      setModalAbierto(false);  
-    } catch (error) {
-      toast.error('Ocurrió un error al eliminar el video');
-    } finally {
-      setEstaEliminando(false);
-      setTimeout(() => setVideoAEliminar(null), 300); 
-    }
+    setModalAbierto(false); // Cerramos el modal instantáneamente
+    eliminarMutation.mutate(videoAEliminar.id); // Lanzamos la mutación optimista
   };
 
- 
-  const videosFiltrados = videos.filter(video => {
-    const coincideBusqueda = video.titulo.toLowerCase().includes(busqueda.toLowerCase());
-    const coincideCategoria = filtroCategoria === 'Todos los Videos' || video.categoria?.titulo === filtroCategoria;
-    return coincideBusqueda && coincideCategoria;
-  });
+  // 👇 4. FILTROS (Memoizados)
+  const videosFiltrados = useMemo(() => {
+    return videos.filter(video => {
+      const coincideBusqueda = video.titulo.toLowerCase().includes(busqueda.toLowerCase());
+      const coincideCategoria = filtroCategoria === 'Todos los Videos' || video.categoria?.titulo === filtroCategoria;
+      return coincideBusqueda && coincideCategoria;
+    });
+  }, [videos, busqueda, filtroCategoria]);
 
   return {
     navigate,
@@ -91,7 +116,7 @@ export const useAdminVideos = () => {
     modalAbierto,
     setModalAbierto,
     videoAEliminar,
-    estaEliminando,
+    estaEliminando: eliminarMutation.isPending,
     abrirModalEliminacion,
     ejecutarEliminacion
   };

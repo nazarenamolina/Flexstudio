@@ -30,9 +30,9 @@ export const useMiPerfil = () => {
         reset({
           nombre: datosBD.nombre || '',
           apellido: datosBD.apellido || '',
-          correo: datosBD.correo || '', 
+          correo: datosBD.correo || '',
           telefono: datosBD.telefono || '',
-          fechaNacimiento: datosBD.fechaNacimiento ? String(datosBD.fechaNacimiento).split('T')[0] : '',
+          fechaNacimiento: datosBD.fechaNacimiento || '',
           pais: datosBD.pais || '',
           provincia: datosBD.provincia || '',
           ciudad: datosBD.ciudad || '',
@@ -51,7 +51,7 @@ export const useMiPerfil = () => {
   const onSubmit = async (data: PerfilForm) => {
     const loadingToast = toast.loading('Guardando cambios...');
     try {
-      const { correo,pais, ...datosAEnviar } = data;
+      const { correo, pais, ...datosAEnviar } = data;
       const usuarioActualizado = await actualizarMiPerfilRequest(datosAEnviar);
       if (usuarioZustand) {
         setUsuario({ ...usuarioZustand, nombre: usuarioActualizado.nombre, apellido: usuarioActualizado.apellido });

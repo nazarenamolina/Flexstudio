@@ -8,6 +8,7 @@ import toast from 'react-hot-toast';
 
 export interface NuevoVideoForm {
   titulo: string;
+  descripcion?: string;  
   idCategoria: string;
   duracion: number | string;
   orden: number | string;
@@ -54,7 +55,8 @@ export const useNuevoVideo = () => {
       formData.append('idCategoria', data.idCategoria);
       formData.append('duracion', data.duracion.toString() || '0');
       formData.append('orden', data.orden.toString() || '1');
-      
+      formData.append('descripcion', data.descripcion || '');
+
       if (archivos.imagen) {
         formData.append('imagen', archivos.imagen);  
       }
@@ -77,6 +79,14 @@ export const useNuevoVideo = () => {
       upload.on('error', () => {
         toast.error('Error al subir el video a Mux. Reintentando...');
         setEstadoSubida('IDLE');
+      });
+
+      upload.on('offline', () => {
+        toast.error('Se cortó el internet. La subida está pausada...', { duration: 5000 });
+      });
+
+      upload.on('online', () => {
+        toast.success('Internet recuperado. Retomando subida...');
       });
 
     } catch (error) {

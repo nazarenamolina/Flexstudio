@@ -6,12 +6,14 @@ export interface Categoria {
   descripcionCard?: string;
   descripcionBreve?: string;
   descripcionDetallada?: string;
-  precio: number;
+  precioArs:number;
+  precioUsd: number;
   playbackIdMuestra?: string;
   imagenHero?: string;
   imagenTarjeta?: string;
   beneficios?: { titulo: string; descripcion: string; icono?: string }[];
   fechaCreacion?: string | Date;
+  destacada?: boolean;
 }
 
 
@@ -35,7 +37,7 @@ export const obtenerCategoriaPorIdRequest = async (id: string): Promise<Categori
 
 export const crearCategoriaRequest = async (
   datosCategoria: FormData
-): Promise<{ categoria: Categoria; uploadUrl: string | null }> => {  
+): Promise<{ categoria: Categoria; uploadUrl?: string | null }> => {  
   try {
     const respuesta = await api.post('/categorias', datosCategoria, {
       headers: {
@@ -51,7 +53,7 @@ export const crearCategoriaRequest = async (
 export const actualizarCategoriaRequest = async (
   id: string,
   datosCategoria: FormData
-): Promise<{ categoria: Categoria; uploadUrl: string | null }> => {
+): Promise<{ categoria: Categoria; uploadUrl?: string | null }> => {
   try {
     const respuesta = await api.patch(`/categorias/${id}`, datosCategoria, {
       headers: { 'Content-Type': 'multipart/form-data' },

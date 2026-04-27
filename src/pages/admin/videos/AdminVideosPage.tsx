@@ -1,87 +1,10 @@
-import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { Search, Plus, Loader2, Edit2, Trash2, Image as ImageIcon } from 'lucide-react';
-import toast, { Toaster } from 'react-hot-toast';
-import MuxPlayer from '@mux/mux-player-react';
-import { io } from 'socket.io-client';
-
-import { obtenerTodosLosVideosRequest, eliminarVideoRequest, type Video } from '../../../api/videos';
-import { obtenerCategoriasRequest, type Categoria } from '../../../api/categoria';
-import { ConfirmarEliminarModal } from '../../../components/ConfirmarEliminarModal'; // 👈 Importamos el Modal
-
-const SOCKET_URL = 'http://localhost:3000';
+import { Toaster } from 'react-hot-toast';
+import { ConfirmarEliminarModal } from '../../../components/ConfirmarEliminarModal'; 
+import { useAdminVideos } from '../../../hooks/useAdminVideos';
 
 export const AdminVideosPage = () => {
-  const navigate = useNavigate();
-  const [videos, setVideos] = useState<Video[]>([]);
-  const [categorias, setCategorias] = useState<Categoria[]>([]);
-  const [cargando, setCargando] = useState(true);
-  const [busqueda, setBusqueda] = useState('');
-  const [filtroCategoria, setFiltroCategoria] = useState('Todos los Videos');
-
-  // 👇 1. ESTADOS PARA EL MODAL
-  const [modalAbierto, setModalAbierto] = useState(false);
-  const [videoAEliminar, setVideoAEliminar] = useState<{ id: string, titulo: string } | null>(null);
-  const [estaEliminando, setEstaEliminando] = useState(false);
-
-  useEffect(() => {
-    cargarDatos();
-  }, []);
-
-  const cargarDatos = async (silencioso = false) => {
-    if (!silencioso) setCargando(true);
-    try {
-      const resVideos = await obtenerTodosLosVideosRequest();
-      setVideos(Array.isArray(resVideos) ? resVideos : (resVideos as any).data || []);
-      const resCategorias = await obtenerCategoriasRequest();
-      setCategorias(Array.isArray(resCategorias) ? resCategorias : (resCategorias as any).categorias || []);
-    } catch (error) {
-      if (!silencioso) toast.error("Error al cargar la librería de videos");
-    } finally {
-      if (!silencioso) setCargando(false);
-    }
-  };
-
-  useEffect(() => {
-    const socket = io(SOCKET_URL);
-    socket.on('videoActualizado', (videoActualizado: Video) => {
-      setVideos((videosActuales) =>
-        videosActuales.map((v) => v.id === videoActualizado.id ? { ...v, ...videoActualizado } : v)
-      );
-      toast.success(`¡El video "${videoActualizado.titulo}" ya está listo!`);
-    });
-    return () => { socket.disconnect(); };
-  }, []);
-
-  // 👇 2. FUNCIÓN PARA ABRIR EL MODAL
-  const abrirModalEliminacion = (id: string, titulo: string) => {
-    setVideoAEliminar({ id, titulo });
-    setModalAbierto(true);
-  };
-
-  // 👇 3. FUNCIÓN PARA EJECUTAR EL BORRADO
-  const ejecutarEliminacion = async () => {
-    if (!videoAEliminar) return;
-
-    setEstaEliminando(true); // Activa el spinner
-    try {
-      await eliminarVideoRequest(videoAEliminar.id);
-      setVideos(videos.filter(v => v.id !== videoAEliminar.id));
-      toast.success('Video eliminado permanentemente');
-      setModalAbierto(false); // Cierra el modal
-    } catch (error) {
-      toast.error('Ocurrió un error al eliminar el video');
-    } finally {
-      setEstaEliminando(false);
-      setTimeout(() => setVideoAEliminar(null), 300); // Limpia el estado después de la animación
-    }
-  };
-
-  const videosFiltrados = videos.filter(video => {
-    const coincideBusqueda = video.titulo.toLowerCase().includes(busqueda.toLowerCase());
-    const coincideCategoria = filtroCategoria === 'Todos los Videos' || video.categoria?.titulo === filtroCategoria;
-    return coincideBusqueda && coincideCategoria;
-  });
+  const {navigate, cargando, categorias, busqueda, setBusqueda, filtroCategoria, setFiltroCategoria, videosFiltrados, modalAbierto, setModalAbierto, videoAEliminar, estaEliminando, abrirModalEliminacion, ejecutarEliminacion} = useAdminVideos();
 
   return (
     <div className="w-full h-full flex flex-col font-sans overflow-hidden relative">
@@ -146,38 +69,58 @@ export const AdminVideosPage = () => {
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
             {videosFiltrados.map(video => (
-              <div key={video.id} className="bg-[#131313] rounded-[30px] overflow-hidden border border-gray-800 shadow-sm flex flex-col hover:border-gray-700 transition-colors">
-                <div className="w-full aspect-video bg-[#0a0a0a] relative group flex items-center justify-center overflow-hidden">
+              <div key={video.id} className="bg-[#131313] rounded-[30px] overflow-hidden border border-gray-800 shadow-sm flex flex-col hover:border-gray-700 transition-colors group">
+                
+                {/* REPRODUCTOR / MINIATURA */}
+                <div className="w-full aspect-video bg-[#0a0a0a] relative flex items-center justify-center overflow-hidden">
+                  
+                  {/* ESTADO: PROCESANDO */}
                   {(video as any).estado === 'PROCESANDO' || !video.playbackId ? (
-                    <div className="relative w-full h-[full] flex flex-col items-center justify-center">
+                    <div className="relative w-full h-full flex flex-col items-center justify-center">
                       {video.imagenUrl && (
-                        <img src={video.imagenUrl} alt="Fondo" className="absolute inset-0 w-full h-full object-cover opacity-30" />
+                        <img src={video.imagenUrl} alt="Fondo" className="absolute inset-0 w-full h-full object-cover opacity-20" />
                       )}
                       <Loader2 className="w-8 h-8 animate-spin text-[#d7f250] relative z-10 mb-2" />
-                      <p className="text-xs text-gray-400 font-bold uppercase tracking-widest relative z-10 shadow-black">Procesando</p>
+                      <p className="text-[10px] text-gray-400 font-black uppercase tracking-[0.2em] relative z-10">Procesando</p>
                     </div>
                   ) : (
-                    <div className="absolute inset-0 z-10">
-                      <MuxPlayer
-                        playbackId={video.playbackId}
-                        poster={video.imagenUrl || undefined}
-                        metadataVideoTitle={video.titulo}
-                        primaryColor="#D4F85E"
-                        style={{ width: '100%', height: '100%' }}
-                      />
+                    /* ESTADO: LISTO */
+                    <div className="absolute inset-0 w-full h-full">
+                      {video.imagenUrl ? (
+                        <img 
+                          src={video.imagenUrl} 
+                          alt={video.titulo} 
+                          className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" 
+                        />
+                      ) : (
+                        <div className="w-full h-full bg-gray-900 flex items-center justify-center text-gray-700">
+                           <ImageIcon size={40} />
+                        </div>
+                      )}
+                      
+                      <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                      </div>
+
+                      {/* BADGE DE DURACIÓN */}
+                      {video.duracionFormateada && (
+                        <span className="absolute bottom-3 right-3 bg-black/80 text-white text-[10px] font-bold px-2 py-1 rounded backdrop-blur-sm z-20">
+                          {video.duracionFormateada}
+                        </span>
+                      )}
                     </div>
                   )}
+
+                  {/* BADGE DE CATEGORÍA */}
                   <span className="absolute top-3 left-3 z-20 bg-[#d7f250] text-[#131313] text-[10px] font-black px-2 py-1 rounded uppercase tracking-wider shadow-md pointer-events-none">
                     {video.categoria?.titulo || 'Sin categoría'}
                   </span>
                 </div>
+
                 <div className="p-5 flex-1 flex flex-col">
-                  {/* Título de la clase */}
                   <h3 className="text-white font-bold text-lg leading-tight line-clamp-2 mb-4">
                     {video.titulo}
                   </h3>
 
-                  {/* Contenedor de botones empujado hacia abajo con mt-auto */}
                   <div className="mt-auto flex items-center gap-3">
                     <button
                       onClick={() => navigate(`/admin/videos/editar/${video.id}`)}
@@ -186,7 +129,6 @@ export const AdminVideosPage = () => {
                       <Edit2 size={18} /> Editar
                     </button>
 
-                    {/* 👇 4. BOTÓN ACTUALIZADO PARA ABRIR EL MODAL */}
                     <button
                       onClick={() => abrirModalEliminacion(video.id, video.titulo)}
                       className="p-2.5 bg-[#1a1a1a] hover:bg-red-500 text-gray-400 hover:text-white border border-gray-700 hover:border-red-500 rounded-xl transition-all duration-200 hover:-translate-y-1 shadow-md"
@@ -203,7 +145,6 @@ export const AdminVideosPage = () => {
         )}
       </div>
 
-      {/* 👇 5. RENDERIZAMOS EL MODAL AL FINAL DEL COMPONENTE */}
       <ConfirmarEliminarModal
         isOpen={modalAbierto}
         onClose={() => !estaEliminando && setModalAbierto(false)}

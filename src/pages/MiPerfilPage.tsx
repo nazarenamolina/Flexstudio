@@ -44,7 +44,7 @@ export const MiPerfilPage = () => {
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                     
                     {/* TARJETA 1: INFO PERSONAL */}
-                    <div className="bg-white p-6 md:p-8 rounded-[24px] shadow-[0_8px_30px_rgb(0,0,0,0.04)] flex flex-col transition-shadow hover:shadow-[0_8px_30px_rgba(215,242,80,0.15)]">
+                    <div className="bg-white border border-neutral-100 p-6 md:p-8 rounded-[24px] shadow-[0_8px_30px_rgb(0,0,0,0.04)] flex flex-col transition-shadow hover:shadow-[0_8px_30px_rgba(215,242,80,0.15)]">
                         <div className="flex items-center gap-3 mb-8">
                             <User className="text-[#131313] w-6 h-6" />
                             <h3 className="text-xl font-bold text-[#131313]">Información Personal</h3>
@@ -77,7 +77,7 @@ export const MiPerfilPage = () => {
                     </div>
 
                     {/* TARJETA 2: UBICACIÓN */}
-                    <div className="bg-white p-6 md:p-8 rounded-[24px] shadow-[0_8px_30px_rgb(0,0,0,0.04)] flex flex-col transition-shadow hover:shadow-[0_8px_30px_rgba(215,242,80,0.15)]">
+                    <div className="bg-white border border-neutral-100 p-6 md:p-8 rounded-[24px] shadow-[0_8px_30px_rgb(0,0,0,0.04)] flex flex-col transition-shadow hover:shadow-[0_8px_30px_rgba(215,242,80,0.15)]">
                         <div className="flex items-center gap-3 mb-8">
                             <MapPin className="text-[#131313] w-6 h-6" />
                             <h3 className="text-xl font-bold text-[#131313]">Ubicación</h3>
@@ -108,13 +108,11 @@ export const MiPerfilPage = () => {
                     </div>
                 </div>
 
-                {/* BOTÓN GUARDAR */}
-                {/* 3. Ajustado a la derecha fuera del grid para mantener consistencia con la imagen */}
                 <div className="flex justify-end mt-8">
                     <button
                         type="submit"
                         disabled={isSubmitting}
-                        className="flex items-center justify-center gap-3 rounded-full bg-neon-pink px-6 sm:px-8 py-3 sm:py-4 font-principal text-lg sm:text-xl font-bold text-[#131313] shadow-sm transition-all duration-400 hover:-translate-y-1 hover:bg-[#131313] hover:text-white hover:shadow-md disabled:cursor-not-allowed disabled:opacity-70 disabled:hover:-translate-y-0 disabled:hover:bg-neon-pink disabled:hover:text-[#131313] cursor-pointer"
+                        className="flex items-center justify-center gap-3 rounded-full bg-neon-pink px-6 sm:px-8 py-3 sm:py-4 font-principal text-lg sm:text-xl font-bold text-[#131313] shadow-sm transition-all duration-400 hover:-translate-y-1 hover:bg-[#131313] hover:text-white hover:shadow-md cursor-pointer"
                     >
                         {isSubmitting ? <><Loader2 className="w-6 h-6 animate-spin" /> Guardando...</> : <><Save className="w-5 h-5" /> Actualizar Perfil</>}
                     </button>

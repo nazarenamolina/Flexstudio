@@ -2,6 +2,7 @@ import { ArrowLeft, Save, Image as ImageIcon, Loader2, Film, CloudUpload, CheckC
 import { useNuevaCategoria } from '../../../hooks/useNuevaCategoria';
 import { Controller } from 'react-hook-form';
 import { IconPicker } from '../../../components/IconPicker';
+import { ToggleDestacada } from '../../../components/ToggleDestacada'; 
 
 export const NuevaCategoriaPage = () => {
   const { register, handleSubmit, errors, isSubmitting, estadoSubida, progreso, archivos, handleFileChange, handleEliminarMultimedia, watch, navigate, beneficiosFields, appendBeneficio, removeBeneficio, control } = useNuevaCategoria();
@@ -49,15 +50,29 @@ export const NuevaCategoriaPage = () => {
                 <input type="text" {...register('titulo', { required: 'El título es obligatorio' })} placeholder="Ej: Danza Inicial" className={inputClass} />
                 {errors.titulo && <p className="text-red-500 text-xs mt-1">{errors.titulo.message}</p>}
               </div>
+              {/* PRECIO ARGENTINA */}
               <div>
-                <label className={labelClass}>Precio ($) *</label>
-                <input type="number" step="0.01" {...register('precio', { required: 'El precio es obligatorio', min: { value: 0, message: 'Debe ser mayor a 0' } })} placeholder="Ej: 5000" className={inputClass} />
-                {errors.precio && <p className="text-red-500 text-xs mt-1">{errors.precio.message}</p>}
+                <label className="block text-xs font-bold text-gray-400 uppercase mb-1">Precio (ARS) *</label>
+                <input
+                  type="number"
+                  {...register('precioArs')}
+                  className="w-full bg-transparent border border-[#d7f250] rounded-md px-3 py-2 text-white"
+                />
+              </div>
+
+              {/* PRECIO INTERNACIONAL */}
+              <div>
+                <label className="block text-xs font-bold text-gray-400 uppercase mb-1">Precio (USD) *</label>
+                <input
+                  type="number"
+                  {...register('precioUsd')}
+                  className="w-full bg-transparent border border-[#d7f250] rounded-md px-3 py-2 text-white"
+                />
               </div>
             </div>
 
             <div className="mb-6">
-              <label className={labelClass}>Descripción Tarjeta (Miniatura)</label>
+              <label className={labelClass}>Descripción de la Tarjeta de Inicio</label>
               <textarea rows={2} maxLength={255} {...register('descripcionCard')} placeholder="Breve descripción para la tarjeta..." className={`${inputClass} resize-none`} />
               <div className="text-right mt-1">
                 <span className={`text-xs font-bold ${descCard.length >= 255 ? 'text-red-500' : 'text-gray-500'}`}>
@@ -67,8 +82,8 @@ export const NuevaCategoriaPage = () => {
             </div>
 
             <div>
-              <label className={labelClass}>Descripción Detallada (Banner Principal)</label>
-              <textarea rows={4} {...register('descripcionDetallada')} placeholder="Texto largo que acompaña al video hero..." className={`${inputClass} resize-none`} />
+              <label className={labelClass}>Descripción detallada de la Categoría</label>
+              <textarea rows={4} {...register('descripcionDetallada')} placeholder="Con este entrenamiento especializado vas a potenciar tu flexibilidad de forma progresiva y segura..." className={`${inputClass} resize-none`} />
             </div>
           </div>
 
@@ -77,7 +92,7 @@ export const NuevaCategoriaPage = () => {
             <h3 className="text-xl font-bold text-white mb-6 border-b border-gray-800 pb-4">Sección Beneficios</h3>
 
             <div className="mb-8">
-              <label className={labelClass}>Descripción de Suscripción</label>
+              <label className={labelClass}>¿Qué incluye la suscripción?</label>
               <textarea rows={2} maxLength={255} {...register('descripcionBreve')} placeholder="Ej: Únete a esta suscripción y obtén acceso a..."
                 className={`${inputClass} resize-none`} />
               <div className="text-right mt-1">
@@ -94,15 +109,14 @@ export const NuevaCategoriaPage = () => {
                 <div key={field.id} className="relative p-5 bg-[#0a0a0a] border border-gray-800 rounded-xl flex flex-col md:flex-row gap-4 group">
                   <div className="flex-1 space-y-4">
 
-                    {/* 👇 EL NUEVO SELECTOR DE ÍCONOS */}
                     <div>
                       <label className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-2 block">
                         Ícono del beneficio
                       </label>
                       <Controller
-                        control={control} // Necesitas extraer 'control' de tu hook (useNuevaCategoria)
+                        control={control}
                         name={`beneficios.${index}.icono`}
-                        defaultValue="CheckCircle" // Ícono por defecto
+                        defaultValue="CheckCircle"
                         render={({ field }) => (
                           <IconPicker value={field.value || 'CheckCircle'} onChange={field.onChange} />
                         )}
@@ -127,7 +141,6 @@ export const NuevaCategoriaPage = () => {
                     </div>
                   </div>
 
-                  {/* Botón para eliminar */}
                   <button
                     type="button"
                     onClick={() => removeBeneficio(index)}
@@ -139,7 +152,6 @@ export const NuevaCategoriaPage = () => {
                 </div>
               ))}
 
-              {/* Botón para agregar un nuevo beneficio vacío */}
               <button
                 type="button"
                 onClick={() => appendBeneficio({ titulo: '', descripcion: '' })}
@@ -154,10 +166,33 @@ export const NuevaCategoriaPage = () => {
 
         {/* COLUMNA DERECHA */}
         <div className="w-full xl:w-[400px] flex flex-col gap-6 shrink-0">
+          {/* 👇 NUEVA SECCIÓN: CONFIGURACIÓN 👇 */}
+          <div className="bg-[#131313] p-6 rounded-[24px] border border-gray-800 shadow-sm flex flex-col gap-4">
+            <h3 className="text-xl font-bold text-white border-b border-gray-800 pb-4">Configuración</h3>
+            
+            <div className="flex items-center justify-between">
+              <div>
+                <label className="block text-sm font-bold text-white mb-1">Clase Destacada</label>
+                <p className="text-xs text-gray-400">Se mostrará al principio en la página principal.</p>
+              </div>
+              
+              <Controller
+                control={control}
+                name="destacada"
+                render={({ field }) => (
+                  <ToggleDestacada
+                    habilitado={field.value}
+                    onChange={field.onChange}
+                    deshabilitado={isSubmitting}
+                  />
+                )}
+              />
+            </div>
+          </div>
           <div className="bg-[#131313] p-6 rounded-[24px] border border-gray-800 shadow-sm flex flex-col gap-6">
             <h3 className="text-xl font-bold text-white border-b border-gray-800 pb-4">Archivos Multimedia</h3>
             <div>
-              <label className={labelClass}>Imagen Tarjeta</label>
+              <label className={labelClass}>Imagen de la Tarjeta de Inicio</label>
               <div className="relative w-full h-40 border-2 border-dashed border-gray-700 hover:border-[#d7f250] rounded-xl flex flex-col items-center justify-center transition-colors bg-[#0a0a0a] overflow-hidden group cursor-pointer">
                 <input type="file" accept="image/*" onChange={(e) => handleFileChange(e, 'imagenTarjeta')} className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10" />
 
@@ -180,7 +215,7 @@ export const NuevaCategoriaPage = () => {
               </div>
             </div>
             <div>
-              <label className={labelClass}>Imagen Hero</label>
+              <label className={labelClass}>Imagen de Categoría</label>
               <div className="relative w-full h-32 border-2 border-dashed border-gray-700 hover:border-[#d7f250] rounded-xl flex flex-col items-center justify-center transition-colors bg-[#0a0a0a] overflow-hidden group cursor-pointer">
                 <input type="file" accept="image/*" onChange={(e) => handleFileChange(e, 'imagenHero')} className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10" />
 

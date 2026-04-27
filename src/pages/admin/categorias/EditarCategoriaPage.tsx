@@ -4,6 +4,7 @@ import { useEditarCategoria } from '../../../hooks/useEditarCategoria';
 import { Controller } from 'react-hook-form';
 import { IconPicker } from '../../../components/IconPicker';
 import { ConfirmarEliminarModal } from '../../../components/ConfirmarEliminarModal';
+import { ToggleDestacada } from '../../../components/ToggleDestacada';
 
 export const EditarCategoriaPage = () => {
   const { register, handleSubmit, errors, isSubmitting, cargandoDatos, estadoSubida, progreso, archivos, imagenesActuales, handleFileChange, handleEliminarMultimedia, watch, navigate, beneficiosFields, appendBeneficio, removeBeneficio, control } = useEditarCategoria();
@@ -16,11 +17,11 @@ export const EditarCategoriaPage = () => {
 
   const labelClass = "block text-sm font-bold text-gray-400 mb-2";
   const inputClass = "w-full bg-[#131313] border border-gray-800 focus:border-[#d7f250] focus:ring-1 focus:ring-[#d7f250]/50 rounded-xl px-4 py-3 text-white placeholder-gray-600 outline-none transition-all shadow-sm";
-  
+
   if (cargandoDatos) {
     return <div className="w-full h-full flex items-center justify-center text-[#d7f250]"><Loader2 className="w-10 h-10 animate-spin" /></div>;
   }
-  
+
   const descCard = watch('descripcionCard') || '';
   const descBreve = watch('descripcionBreve') || '';
 
@@ -37,8 +38,6 @@ export const EditarCategoriaPage = () => {
       </div>
     );
   }
-
-  // 👇 Aquí arreglamos el error de TypeScript asegurándonos de que 'tipo' exista
   const confirmarEliminacion = () => {
     if (!itemAEliminar || !itemAEliminar.tipo) {
       setItemAEliminar(null);
@@ -50,16 +49,15 @@ export const EditarCategoriaPage = () => {
         removeBeneficio(itemAEliminar.indexBeneficio);
       }
     } else {
-      // Como ya descartamos 'beneficio' y 'null', TS sabe que es hero, tarjeta o video
       handleEliminarMultimedia(itemAEliminar.tipo);
     }
-    
+
     setItemAEliminar(null);
   };
 
   return (
     <div className="w-full h-full flex flex-col font-sans overflow-y-auto custom-scrollbar pr-2 pb-10">
-      
+
       <ConfirmarEliminarModal
         isOpen={!!itemAEliminar}
         onClose={() => setItemAEliminar(null)}
@@ -71,7 +69,7 @@ export const EditarCategoriaPage = () => {
       <div className="flex items-center gap-4 mb-8 shrink-0">
         <button onClick={() => navigate('/admin/categorias')} type="button" disabled={isSubmitting} className="p-2 bg-[#131313] hover:bg-gray-800 border border-gray-800 rounded-full text-white transition-colors disabled:opacity-50"><ArrowLeft size={24} /></button>
         <div>
-          <h1 className="text-3xl font-extrabold text-white tracking-tight">Editar Disciplina</h1>
+          <h1 className="text-3xl font-extrabold text-white tracking-tight">Editar Categoría</h1>
           <p className="text-gray-400 text-sm">Modifica los datos y beneficios de la categoría.</p>
         </div>
       </div>
@@ -80,24 +78,38 @@ export const EditarCategoriaPage = () => {
         <div className="flex-1 space-y-6">
 
           <div className="bg-[#131313] p-6 md:p-8 rounded-[24px] border border-gray-800 shadow-sm">
-            <h3 className="text-xl font-bold text-white mb-6 border-b border-gray-800 pb-4">Sección Banner</h3>
+            <h3 className="text-xl font-bold text-white mb-6 border-b border-gray-800 pb-4">Editar Información de la Categoría</h3>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
               <div>
-                <label className={labelClass}>Título *</label>
+                <label className={labelClass}>Título:</label>
                 <input type="text" {...register('titulo', { required: 'Obligatorio' })} className={inputClass} />
                 {errors.titulo && <p className="text-red-500 text-xs mt-1">{errors.titulo.message}</p>}
               </div>
+              {/* PRECIO ARGENTINA */}
               <div>
-                <label className={labelClass}>Precio ($) *</label>
-                <input type="number" step="0.01" {...register('precio', { required: 'Obligatorio' })} className={inputClass} />
-                {errors.precio && <p className="text-red-500 text-xs mt-1">{errors.precio.message}</p>}
+                <label className="block text-xs font-bold text-gray-400 uppercase mb-1">Precio (ARS):</label>
+                <input
+                  type="number"
+                  {...register('precioArs')}
+                  className="w-full bg-transparent border border-[#d7f250] rounded-md px-3 py-2 text-white"
+                />
+              </div>
+
+              {/* PRECIO INTERNACIONAL */}
+              <div>
+                <label className="block text-xs font-bold text-gray-400 uppercase mb-1">Precio (USD): </label>
+                <input
+                  type="number"
+                  {...register('precioUsd')}
+                  className="w-full bg-transparent border border-[#d7f250] rounded-md px-3 py-2 text-white"
+                />
               </div>
             </div>
 
             <div className="mb-6">
-              <label className={labelClass}>Descripción Tarjeta (Miniatura)</label>
-              <textarea rows={2} maxLength={255} {...register('descripcionCard')} placeholder="Breve descripción para la tarjeta..." className={`${inputClass} resize-none`}/>
+              <label className={labelClass}>Descripción de la Tarjeta de Inicio:</label>
+              <textarea rows={2} maxLength={255} {...register('descripcionCard')} placeholder="Breve descripción para la tarjeta..." className={`${inputClass} resize-none`} />
               <div className="text-right mt-1">
                 <span className={`text-xs font-bold ${descCard.length >= 255 ? 'text-red-500' : 'text-gray-500'}`}>
                   {descCard.length} / 255
@@ -106,18 +118,18 @@ export const EditarCategoriaPage = () => {
             </div>
 
             <div>
-              <label className={labelClass}>Descripción Detallada (Banner Principal)</label>
+              <label className={labelClass}>Descripción detallada de la Categoría:</label>
               <textarea rows={4} {...register('descripcionDetallada')} placeholder="Texto largo que acompaña al video hero..." className={`${inputClass} resize-none`} />
             </div>
           </div>
 
           <div className="bg-[#131313] p-6 md:p-8 rounded-[24px] border border-gray-800 shadow-sm">
-            <h3 className="text-xl font-bold text-white mb-6 border-b border-gray-800 pb-4">Sección Beneficios</h3>
+            <h3 className="text-xl font-bold text-white mb-6 border-b border-gray-800 pb-4">Editar Beneficios</h3>
 
             <div className="mb-8">
               <label className={labelClass}>Descripción de Suscripción</label>
-              <textarea rows={2} maxLength={255} {...register('descripcionBreve')} placeholder="Ej: Únete a esta suscripción y obtén acceso a..." className={`${inputClass} resize-none`}/>
-               <div className="text-right mt-1">
+              <textarea rows={2} maxLength={255} {...register('descripcionBreve')} placeholder="Ej: Únete a esta suscripción y obtén acceso a..." className={`${inputClass} resize-none`} />
+              <div className="text-right mt-1">
                 <span className={`text-xs font-bold ${descBreve.length >= 255 ? 'text-red-500' : 'text-gray-500'}`}>
                   {descBreve.length} / 255
                 </span>
@@ -134,7 +146,7 @@ export const EditarCategoriaPage = () => {
                         Ícono del beneficio
                       </label>
                       <Controller
-                        control={control} 
+                        control={control}
                         name={`beneficios.${index}.icono`}
                         defaultValue="CheckCircle"
                         render={({ field }) => (
@@ -179,19 +191,43 @@ export const EditarCategoriaPage = () => {
         </div>
 
         <div className="w-full xl:w-[400px] flex flex-col gap-6 shrink-0">
+
+          {/* 👇 NUEVA SECCIÓN: CONFIGURACIÓN 👇 */}
+          <div className="bg-[#131313] p-6 rounded-[24px] border border-gray-800 shadow-sm flex flex-col gap-4">
+            <h3 className="text-xl font-bold text-white border-b border-gray-800 pb-4">Configuración</h3>
+            
+            <div className="flex items-center justify-between">
+              <div>
+                <label className="block text-sm font-bold text-white mb-1">Clase Destacada</label>
+                <p className="text-xs text-gray-400">Se mostrará al principio en la página principal.</p>
+              </div>
+              
+              <Controller
+                control={control}
+                name="destacada"
+                render={({ field }) => (
+                  <ToggleDestacada
+                    habilitado={field.value}
+                    onChange={field.onChange}
+                    deshabilitado={isSubmitting}
+                  />
+                )}
+              />
+            </div>
+          </div>
           <div className="bg-[#131313] p-6 rounded-[24px] border border-gray-800 shadow-sm flex flex-col gap-6">
             <h3 className="text-xl font-bold text-white border-b border-gray-800 pb-4">Archivos Multimedia</h3>
 
             <div>
-              <label className={labelClass}>Imagen Tarjeta</label>
+              <label className={labelClass}>Imagen de la Tarjeta de Inicio</label>
               <div className="relative w-full h-40 border-2 border-dashed border-gray-700 hover:border-[#d7f250] rounded-xl flex flex-col items-center justify-center transition-colors bg-[#0a0a0a] overflow-hidden group cursor-pointer">
                 <input type="file" accept="image/*" onChange={(e) => handleFileChange(e, 'imagenTarjeta')} className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10" />
-                
+
                 {(archivos.imagenTarjeta || imagenesActuales.imagenTarjeta) && (
                   <>
                     <img src={archivos.imagenTarjeta ? URL.createObjectURL(archivos.imagenTarjeta) : imagenesActuales.imagenTarjeta} alt="Preview" className="absolute inset-0 w-full h-full object-cover opacity-60" />
-                    <button 
-                      type="button" 
+                    <button
+                      type="button"
                       onClick={(e) => { e.preventDefault(); e.stopPropagation(); setItemAEliminar({ tipo: 'tarjeta', tituloMostrar: 'la Imagen de Tarjeta' }); }}
                       className="absolute top-2 right-2 z-30 p-2 bg-red-500/80 hover:bg-red-500 text-white rounded-lg opacity-0 group-hover:opacity-100 transition-opacity"
                     >
@@ -207,15 +243,15 @@ export const EditarCategoriaPage = () => {
             </div>
 
             <div>
-              <label className={labelClass}>Imagen Hero</label>
+              <label className={labelClass}>Imagen de Categoría</label>
               <div className="relative w-full h-32 border-2 border-dashed border-gray-700 hover:border-[#d7f250] rounded-xl flex flex-col items-center justify-center transition-colors bg-[#0a0a0a] overflow-hidden group cursor-pointer">
                 <input type="file" accept="image/*" onChange={(e) => handleFileChange(e, 'imagenHero')} className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10" />
-                
+
                 {(archivos.imagenHero || imagenesActuales.imagenHero) && (
                   <>
                     <img src={archivos.imagenHero ? URL.createObjectURL(archivos.imagenHero) : imagenesActuales.imagenHero} alt="Preview" className="absolute inset-0 w-full h-full object-cover opacity-60" />
-                    <button 
-                      type="button" 
+                    <button
+                      type="button"
                       onClick={(e) => { e.preventDefault(); e.stopPropagation(); setItemAEliminar({ tipo: 'hero', tituloMostrar: 'la Imagen Hero' }); }}
                       className="absolute top-2 right-2 z-30 p-2 bg-red-500/80 hover:bg-red-500 text-white rounded-lg opacity-0 group-hover:opacity-100 transition-opacity"
                     >
@@ -225,7 +261,7 @@ export const EditarCategoriaPage = () => {
                 )}
                 <div className="z-0 flex flex-col items-center pointer-events-none">
                   <ImageIcon className="h-8 w-8 mb-2 text-white" />
-                  <span className="text-sm font-medium text-white shadow-black drop-shadow-md">Cambiar Banner</span>
+                  <span className="text-sm font-medium text-white shadow-black drop-shadow-md">Cambiar Imagen</span>
                 </div>
               </div>
             </div>
@@ -237,14 +273,14 @@ export const EditarCategoriaPage = () => {
               )}
               <div className="relative w-full h-24 border-2 border-dashed border-gray-700 hover:border-[#d7f250] rounded-xl flex flex-col items-center justify-center transition-colors bg-[#0a0a0a] group cursor-pointer">
                 <input type="file" accept="video/*" onChange={(e) => handleFileChange(e, 'videoMuestra')} className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10" />
-                
+
                 {(imagenesActuales.tieneVideo || archivos.videoMuestra) && (
-                  <button 
-                      type="button" 
-                      onClick={(e) => { e.preventDefault(); e.stopPropagation(); setItemAEliminar({ tipo: 'video', tituloMostrar: 'el Video de Muestra' }); }}
-                      className="absolute top-2 right-2 z-30 p-2 bg-red-500/80 hover:bg-red-500 text-white rounded-lg opacity-0 group-hover:opacity-100 transition-opacity"
-                    >
-                      <Trash2 size={16} />
+                  <button
+                    type="button"
+                    onClick={(e) => { e.preventDefault(); e.stopPropagation(); setItemAEliminar({ tipo: 'video', tituloMostrar: 'el Video de Muestra' }); }}
+                    className="absolute top-2 right-2 z-30 p-2 bg-red-500/80 hover:bg-red-500 text-white rounded-lg opacity-0 group-hover:opacity-100 transition-opacity"
+                  >
+                    <Trash2 size={16} />
                   </button>
                 )}
 

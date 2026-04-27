@@ -14,5 +14,55 @@
 }
 body {
   background-color: #ffff;
-  background-image: url("https://res.cloudinary.com/dmp7mcwie/image/upload/v1774312699/fondo_hwrosv.png");
+  background-image: url("https://res.cloudinary.com/dmp7mcwie/image/upload/v1776544346/bg-card_dfxwsn.png");
+}
+
+/* CONTENEDOR GENERAL */
+.phone-wrapper {
+  @apply w-full;
+}
+
+/* INPUT COMPLETO (Contenedor padre) */
+/* 🔥 Aquí ponemos el borde principal para que envuelva todo sin romperse */
+.phone-input {
+  @apply flex items-center w-full bg-transparent border border-[#d7f250] rounded-md h-[38px] transition-all;
+}
+
+/* BOTÓN DE PAÍS (bandera + flechita) */
+.phone-input .PhoneInputCountry {
+  @apply flex items-center justify-center px-3 h-full border-r border-[#333] mr-0;
+}
+
+ 
+.phone-input .PhoneInputInput {
+  @apply flex-1 w-full bg-transparent px-3 py-2 text-white outline-none border-none shadow-none h-full rounded-r-md;
+}
+
+
+.phone-input:focus-within {
+  @apply border-white ring-1 ring-white/20 ;
+}
+
+/* DROPDOWN (Selector nativo de países) */
+.PhoneInputCountrySelect {
+  @apply bg-[#131313] text-white cursor-pointer;
+}
+
+/* Asegura que las opciones desplegables sean oscuras */
+.PhoneInputCountrySelect option {
+  @apply bg-[#131313] text-white;
+}
+
+ 
+.grecaptcha-badge { 
+    visibility: hidden !important; 
+}
+
+ 
+.scrollbar-hide::-webkit-scrollbar {
+    display: none;
+}
+.scrollbar-hide {
+    -ms-overflow-style: none;   
+    scrollbar-width: none;  
 }

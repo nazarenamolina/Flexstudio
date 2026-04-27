@@ -4,6 +4,8 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import toast from 'react-hot-toast';
 import { registroRequest, type RegistroData } from '../api/auth';
+import { useGoogleReCaptcha } from 'react-google-recaptcha-v3';
+
 const registroSchema = z.object({
   nombre: z.string().min(1, 'El nombre es obligatorio'),
   apellido: z.string().min(1, 'El apellido es obligatorio'),
@@ -26,19 +28,28 @@ const registroSchema = z.object({
 });
 
 export type RegistroFormValues = z.infer<typeof registroSchema>;
+
 export const useRegistro = () => {
   const navigate = useNavigate();
+  const { executeRecaptcha } = useGoogleReCaptcha();
   const form = useForm<RegistroFormValues>({
     resolver: zodResolver(registroSchema),
   });
 
   const onSubmit = async (data: RegistroFormValues) => {
     try {
+      if (!executeRecaptcha) {toast.error('Verificando seguridad, por favor intenta de nuevo en unos segundos.');
+        return;
+      }
+      const captchaToken = await executeRecaptcha('registro');
+      console.log("¡Token de Google generado con éxito!:", captchaToken);
       const { confirmarContrasena, ...datosParaBackend } = data;
-      await registroRequest(datosParaBackend as RegistroData);
-      toast.success('¡Cuenta creada con éxito! Por favor inicia sesión.');
-      navigate('/login');
+      await registroRequest({ ...datosParaBackend, captchaToken } as RegistroData);
+      toast.success('¡Registro casi listo! Te enviamos un código a tu correo.');
+      navigate('/verificar-email', { state: { correo: data.correo } });
+
     } catch (error: any) {
+      console.error("🚨 ERROR COMPLETO DETECTADO:", error);
       const mensaje = error.response?.data?.message || 'Error al crear la cuenta';
       toast.error(typeof mensaje === 'string' ? mensaje : mensaje[0]);
     }
