@@ -7,7 +7,7 @@ import toast from 'react-hot-toast';
 import { useGoogleReCaptcha } from 'react-google-recaptcha-v3';
 import { obtenerCategoriasRequest, type Categoria } from '../api/categoria';
 import { enviarConsultaRequest } from '../api/contacto';
-import { TarjetaClase } from '../components/TarjetaClase'; 
+import { TarjetaClase } from '../components/TarjetaClase';
 import { CarruselDestacadas } from '../components/CarruselDestacadas';
 
 // Validación del formulario
@@ -90,7 +90,7 @@ const HomePage = () => {
       const captchaToken = await executeRecaptcha('contacto_home');
       const respuesta = await enviarConsultaRequest({ ...data, captchaToken });
       toast.success(respuesta.mensaje || '¡Consulta enviada con éxito!');
-      reset(); 
+      reset();
     } catch (error) {
       toast.error('Hubo un error al enviar tu consulta. Intenta nuevamente.');
     }
@@ -102,7 +102,7 @@ const HomePage = () => {
 
   return (
     <main className="min-h-screen font-sans text-[#161616] pt-[52px]">
-      
+
       {/* --- SECCIÓN SLIDER --- */}
       <section
         className=" bg-white relative w-full h-[50vh] sm:h-[60vh] md:h-[70vh] lg:h-[80vh] xl:h-[100vh] overflow-hidden group"
@@ -141,14 +141,56 @@ const HomePage = () => {
       </section>
 
       {/* --- SECCIÓN CARRUSEL DESTACADAS --- */}
-      <CarruselDestacadas 
-        categorias={destacadas} 
-        flippedCard={flippedCard} 
-        setFlippedCard={setFlippedCard} 
+      <CarruselDestacadas
+        categorias={destacadas}
+        flippedCard={flippedCard}
+        setFlippedCard={setFlippedCard}
       />
 
       {/* --- SECCIÓN GRILLA TODAS LAS CATEGORÍAS --- */}
       <section className="container mx-auto px-6 pt-16 pb-4">
+        <article className="w-full max-w-6xl mx-auto flex flex-col lg:flex-row items-center gap-10 lg:gap-16 p-6 md:p-10 lg:p-12 rounded-[30px]">
+
+          {/* COLUMNA IZQUIERDA: IMAGEN */}
+          <div className="w-full lg:w-1/2 ">
+            <div className="relative w-full aspect-[4/5] sm:aspect-square lg:aspect-[4/5] overflow-hidden rounded-[24px] border border-gray-800 shadow-inner group">
+              <img
+                src="https://res.cloudinary.com/dmp7mcwie/image/upload/v1777342798/flex-studio/videos/dsgzc42aoeigsmxpvb3f.png"
+                alt="Cande Imbaud"
+                className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+              />
+              {/* Un overlay sutil (sin blur) para integrar la imagen al fondo oscuro */}
+              <div className="absolute inset-0 bg-gradient-to-t from-[#131313]/60 via-transparent to-transparent pointer-events-none"></div>
+            </div>
+          </div>
+
+          {/* COLUMNA DERECHA: TEXTO */}
+          <div className="w-full lg:w-1/2 flex flex-col justify-center space-y-6">
+
+            {/* Encabezado */}
+            <div>
+              <span className="text-[#d7f250] text-xs md:text-sm font-black tracking-[0.2em] uppercase mb-3 block">
+                Sobre la instructora
+              </span>
+              <h2 className="text-3xl md:text-5xl font-black text-white leading-[1.1] uppercase italic tracking-tight">
+                Conocé a <span className="text-[#d7f250]">Cande</span>
+              </h2>
+            </div>
+
+            {/* Párrafos */}
+            <div className="space-y-4 text-[#131313] text-base md:text-lg leading-relaxed font-medium">
+              <p>
+                Hola, soy Cande, tengo 27 años y soy profesora de educación física, acróbata y entrenadora especializada en flexibilidad para deportistas de todas las disciplinas.
+              </p>
+              <p>
+                Con más de 8 años de experiencia en clases de fitness grupal, flexibilidad y acrobacias, he acompañado a patinadoras, bailarinas, gimnastas y deportistas a mejorar su rendimiento y prevenir lesiones a través de la flexibilidad. Además, me encanta compartir el movimiento con los más pequeños, dando clases para niños desde hace más de 3 años, siempre con creatividad y respeto por cada proceso.
+              </p>
+              <p>
+                Mi misión es que descubras que trabajar tu flexibilidad no es solo estirar, sino entrenar tu cuerpo con inteligencia para que se mueva con libertad, fuerza y control.
+              </p>
+            </div>
+          </div>
+        </article>
         <div className="flex justify-center mt-0 mb-16">
           <img
             src="https://res.cloudinary.com/dmp7mcwie/image/upload/v1774312501/titulo_rue8kw.png"
@@ -156,6 +198,8 @@ const HomePage = () => {
             className="w-full md:h-60"
           />
         </div>
+
+
 
         <article className="flex flex-wrap justify-center gap-[25px]">
           {cargando ? (
@@ -168,11 +212,11 @@ const HomePage = () => {
             </div>
           ) : (
             regulares.map((servicio) => (
-              <TarjetaClase 
-                key={servicio.id} 
-                servicio={servicio} 
-                flippedCard={flippedCard} 
-                setFlippedCard={setFlippedCard} 
+              <TarjetaClase
+                key={servicio.id}
+                servicio={servicio}
+                flippedCard={flippedCard}
+                setFlippedCard={setFlippedCard}
               />
             ))
           )}
@@ -224,7 +268,7 @@ const HomePage = () => {
               />
               {errors.mensaje && <p className="mt-1 text-xs text-red-500 font-medium">{errors.mensaje.message}</p>}
             </div>
-            
+
             <button
               type="submit"
               disabled={isSubmitting}
