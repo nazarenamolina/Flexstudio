@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Users, Video, DollarSign, Globe, Loader2, PlusCircle, LayoutGrid, Search, ArrowRight, BarChart, Star, Image as ImageIcon } from 'lucide-react';
+import { Users, Video, DollarSign, Loader2, PlusCircle, LayoutGrid, Search, ArrowRight, BarChart, Star, Image as ImageIcon } from 'lucide-react';
 import { obtenerEstadisticasRequest, obtenerHistorialClientes, obtenerClasesMasCompradasRequest } from '../../../api/admin';
 import { actualizarCategoriaRequest } from '../../../api/categoria';
 import { ToggleDestacada } from '../../../components/ToggleDestacada';
@@ -53,7 +53,7 @@ export const AdminDashboard = () => {
     return (
       <div className="w-full h-[80vh] flex flex-col items-center justify-center text-gray-400">
         <Loader2 className="w-10 h-10 animate-spin mb-4 text-[#d7f250]" />
-        <p className="font-bold tracking-widest uppercase text-sm animate-pulse">Cargando centro de mando...</p>
+        <p className="font-bold tracking-widest uppercase text-sm animate-pulse">Cargando...</p>
       </div>
     );
   }
@@ -61,7 +61,7 @@ export const AdminDashboard = () => {
   if (isError || !data?.estadisticas) {
     return (
       <div className="w-full h-[80vh] flex flex-col items-center justify-center text-red-500">
-        <p className="font-bold uppercase tracking-widest">Error al cargar el dashboard</p>
+        <p className="font-bold uppercase tracking-widest">Error al cargar el dashboard.</p>
         <p className="text-sm mt-2 text-gray-500">Por favor, recarga la página o intenta más tarde.</p>
       </div>
     );
@@ -94,16 +94,6 @@ export const AdminDashboard = () => {
 
   return (
     <div className="max-w-7xl mx-auto space-y-8 animate-in fade-in duration-500 pb-10">
-      
-      {/* CABECERA */}
-      <div>
-        <h1 className="text-3xl md:text-4xl font-black text-white tracking-tight uppercase">
-          Panel de <span className="text-[#d7f250]">Control</span>
-        </h1>
-        <p className="text-gray-400 mt-2 font-medium">
-          Resumen general de rendimiento y ventas de Flex Studio.
-        </p>
-      </div>
 
       {/* 1. TARJETAS DE MÉTRICAS */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -142,10 +132,10 @@ export const AdminDashboard = () => {
 
         <div className="bg-[#131313] border border-gray-800 rounded-2xl p-6 relative overflow-hidden group hover:border-emerald-500/30 transition-colors shadow-lg">
           <div className="absolute top-0 right-0 p-6 opacity-10 transform translate-x-4 -translate-y-4 group-hover:scale-110 transition-transform">
-            <Globe size={80} />
+            <DollarSign size={80} />
           </div>
           <div className="w-12 h-12 rounded-xl bg-emerald-500/10 flex items-center justify-center text-emerald-400 mb-4 border border-emerald-500/20">
-            <Globe size={24} />
+            <DollarSign size={24} />
           </div>
           <p className="text-3xl font-black text-white">U$D {estadisticas.ingresosUsd.toLocaleString('en-US', { minimumFractionDigits: 2 })}</p>
           <p className="text-xs text-gray-400 font-bold tracking-widest uppercase mt-2">Ingresos (USD)</p>
@@ -154,33 +144,30 @@ export const AdminDashboard = () => {
 
       {/* 2. ACCESOS DIRECTOS */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pt-4">
-        <button onClick={() => navigate('/admin/videos/nuevo')} className="flex items-center gap-4 p-4 bg-[#131313] border border-gray-800 hover:border-[#d7f250] rounded-2xl transition-all group shadow-md hover:shadow-[#d7f250]/10">
+        <button onClick={() => navigate('/admin/videos/nuevo')} className="flex items-center gap-4 p-4 bg-[#131313] border border-gray-800 hover:border-[#d7f250] rounded-2xl transition-all group shadow-md hover:shadow-[#d7f250]/10 cursor-pointer">
           <div className="bg-white/5 p-3 rounded-xl group-hover:bg-[#d7f250] group-hover:text-black transition-colors">
             <PlusCircle size={24} />
           </div>
           <div className="text-left">
             <p className="font-bold text-white uppercase tracking-wider text-sm">Subir Nueva Clase</p>
-            <p className="text-xs text-gray-500">Agrega contenido a la librería</p>
           </div>
         </button>
 
-        <button onClick={() => navigate('/admin/categorias')} className="flex items-center gap-4 p-4 bg-[#131313] border border-gray-800 hover:border-[#d7f250] rounded-2xl transition-all group shadow-md hover:shadow-[#d7f250]/10">
+        <button onClick={() => navigate('/admin/categorias')} className="flex items-center gap-4 p-4 bg-[#131313] border border-gray-800 hover:border-[#d7f250] rounded-2xl transition-all group shadow-md hover:shadow-[#d7f250]/10 cursor-pointer">
           <div className="bg-white/5 p-3 rounded-xl group-hover:bg-[#d7f250] group-hover:text-black transition-colors">
             <LayoutGrid size={24} />
           </div>
           <div className="text-left">
-            <p className="font-bold text-white uppercase tracking-wider text-sm">Gestionar Categorías</p>
-            <p className="text-xs text-gray-500">Organiza tus disciplinas</p>
+            <p className="font-bold text-white uppercase tracking-wider text-sm">Editar Categorías</p>
           </div>
         </button>
 
-        <button onClick={() => navigate('/admin/clientes')} className="flex items-center gap-4 p-4 bg-[#131313] border border-gray-800 hover:border-[#d7f250] rounded-2xl transition-all group shadow-md hover:shadow-[#d7f250]/10">
+        <button onClick={() => navigate('/admin/clientes')} className="flex items-center gap-4 p-4 bg-[#131313] border border-gray-800 hover:border-[#d7f250] rounded-2xl transition-all group shadow-md hover:shadow-[#d7f250]/10 cursor-pointer">
           <div className="bg-white/5 p-3 rounded-xl group-hover:bg-[#d7f250] group-hover:text-black transition-colors">
             <Search size={24} />
           </div>
           <div className="text-left">
             <p className="font-bold text-white uppercase tracking-wider text-sm">Buscar Alumna</p>
-            <p className="text-xs text-gray-500">Ver historial de compras</p>
           </div>
         </button>
       </div>
@@ -203,7 +190,7 @@ export const AdminDashboard = () => {
               <button
                 key={tab.id}
                 onClick={() => setPeriodoActivo(tab.id as any)}
-                className={`px-4 py-2 text-sm font-bold rounded-lg transition-all ${
+                className={`px-4 py-2 text-sm font-bold rounded-lg cursor-pointer transition-all ${
                   periodoActivo === tab.id 
                     ? 'bg-[#d7f250] text-[#131313] shadow-md' 
                     : 'text-gray-500 hover:text-white hover:bg-white/5'
@@ -247,9 +234,6 @@ export const AdminDashboard = () => {
                </div>
             ) : (
               <>
-                <p className="text-gray-400 text-sm font-bold uppercase tracking-widest mb-4">
-                  Volumen de Transacciones
-                </p>
                 <Chart 
                   options={{
                     ...chartOptions,
@@ -277,10 +261,10 @@ export const AdminDashboard = () => {
           <div className="p-6 border-b border-gray-800 flex justify-between items-center bg-[#0a0a0a]">
             <div>
               <h2 className="text-lg font-black text-white uppercase tracking-wider">Actividad Reciente</h2>
-              <p className="text-sm text-gray-500">Últimas alumnas en comprar.</p>
+              <p className="text-sm text-gray-500">Últimas alumnas en comprar</p>
             </div>
-            <button onClick={() => navigate('/admin/clientes')} className="flex items-center gap-2 text-sm font-bold text-[#d7f250] hover:text-white transition-colors">
-              Ver Todas <ArrowRight size={16} />
+            <button onClick={() => navigate('/admin/clientes')} className="flex items-center gap-2 text-sm font-bold text-[#d7f250] hover:text-white transition-colors cursor-pointer">
+              Ver todas las ventas <ArrowRight size={16} />
             </button>
           </div>
           
@@ -323,11 +307,8 @@ export const AdminDashboard = () => {
               <h2 className="text-lg font-black text-white uppercase tracking-wider flex items-center gap-2">
                 <Star className="text-[#d7f250] w-5 h-5" /> Top Clases
               </h2>
-              <p className="text-sm text-gray-500">Tus disciplinas más compradas.</p>
+              <p className="text-sm text-gray-500">Tus clases más compradas</p>
             </div>
-            <button onClick={() => navigate('/admin/categorias')} className="flex items-center gap-2 text-sm font-bold text-gray-400 hover:text-white transition-colors">
-              Gestionar <ArrowRight size={16} />
-            </button>
           </div>
 
           <div className="flex-1 flex flex-col">

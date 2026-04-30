@@ -127,12 +127,12 @@ export const ClientesPage = () => {
       {/* HEADER */}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 md:mb-8 gap-4">
         <div>
-          <h1 className="text-2xl sm:text-3xl font-principal font-bold text-white flex items-center gap-2 sm:gap-3">
-            <Users className="text-[#d7f250]" size={28} />
+          <h1 className="text-2xl sm:text-5xl font-principal font-bold text-white flex items-center gap-2 sm:gap-3">
+            <Users className="text-[#d7f250]" size={40} />
             <span className="hidden xs:inline">Historial de</span>Clientes
           </h1>
           <p className="text-[#a1a1aa] mt-1 text-sm md:text-base">
-            {cargando ? 'Cargando...' : `${clientesFiltrados.length} estudiante${clientesFiltrados.length !== 1 ? 's' : ''}`}
+            {cargando ? 'Cargando...' : `${clientesFiltrados.length} cliente${clientesFiltrados.length !== 1 ? 's' : ''}`}
           </p>
         </div>
 

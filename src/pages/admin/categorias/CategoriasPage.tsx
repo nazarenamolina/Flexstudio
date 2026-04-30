@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Plus, Edit2, Trash2, ArrowRight } from 'lucide-react';
+import { Plus, Edit2, Trash2, ArrowRight, PencilLine } from 'lucide-react';
 import { useCategorias } from '../../../hooks/useCategorias';
 import { ConfirmarEliminarModal } from '../../../components/ConfirmarEliminarModal';
 
@@ -22,18 +22,17 @@ export const CategoriasPage = () => {
   const getBentoClasses = (index: number) => {
     const pos = index % 5;
 
-    if (pos === 0) return 'md:col-span-2 md:row-span-2';
-    if (pos === 1) return 'md:col-span-1 md:row-span-1';
-    if (pos === 2) return 'md:col-span-1 md:row-span-1';
-    if (pos === 3) return 'md:col-span-1 md:row-span-1';
-    if (pos === 4) return 'md:col-span-2 md:row-span-1';
+    if (pos === 0) return 'md:col-span-1 md:row-span-1';
+    if (pos === 1) return 'md:col-span-1 md:row-span-2';
+    if (pos === 2) return 'md:col-span-1 md:row-span-2';
+    if (pos === 3) return 'md:col-span-1 md:row-span-2';
 
     return 'col-span-1 row-span-1';
   };
 
   if (isLoading) {
     return (
-      <div className="w-full min-h-screen bg-[#1a1a1a] rounded-2xl p-6 md:p-10 font-sans">
+      <div className="min-h-screen rounded-2xl p-6 md:p-20 font-sans">
         <div className="flex flex-col xl:flex-row justify-between items-start xl:items-end gap-6 mb-12">
           <div className="max-w-2xl">
             <div className="h-20 w-64 bg-gray-800 rounded animate-pulse" />
@@ -55,14 +54,14 @@ export const CategoriasPage = () => {
 
   if (!isLoading && categorias.length === 0) {
     return (
-      <div className="w-full min-h-screen bg-[#1a1a1a] rounded-2xl p-6 md:p-10 font-sans flex items-center justify-center">
+      <div className="w-full min-h-screen rounded-2xl p-9 md:p-10 font-sans flex items-center justify-center">
         <div className="text-center max-w-md">
           <div className="w-20 h-20 mx-auto mb-6 rounded-full bg-gray-800 flex items-center justify-center">
             <Plus className="w-10 h-10 text-gray-600" />
           </div>
           <h2 className="text-3xl font-black text-white mb-3">Sin categorías</h2>
           <p className="text-gray-400 mb-8">
-            No hay categorías creadas aún. Comienza añadiendo la primera categoría para organizar tus videos.
+            No hay categorías aún. Comienza añadiendo la primera categoría para organizar tus videos.
           </p>
           <button
             onClick={navigateANueva}
@@ -87,25 +86,21 @@ export const CategoriasPage = () => {
   };
 
   return (
-    <div className="w-full min-h-screen bg-[#1a1a1a] rounded-2xl p-6 md:p-10 font-sans overflow-y-auto relative">
-      <div className="flex flex-col xl:flex-row justify-between items-start xl:items-end gap-6 mb-12">
-        <div className="max-w-2xl">
-          <h1 className="text-5xl md:text-7xl font-black text-white tracking-tighter leading-[0.9]">
-            EDITAR
-            <br />
-            <span className="text-[#d7f250] italic">CATEGORÍAS</span>
+    <>
+        <div className="p-3 sm:p-6 md:p-8 max-w-7xl mx-auto flex flex-row justify-between">
+           <h1 className="text-3xl sm:text-5xl font-principal font-bold text-white flex items-center gap-2 sm:gap-3"> <PencilLine className="text-[#d7f250]" size={40} />Editar Categorías
           </h1>
+          <button
+          onClick={navigateANueva}
+          className="bg-[#d7f250] text-[#131313] px-3 py-3 sm:px-8 sm:py-4 rounded-full font-bold text-sm tracking-widest flex  items-center transition-all duration-300 hover:scale-105 shadow-lg hover:bg-[#fff] cursor-pointer"
+        >
+          <span className="sm:hidden"></span>
+          <span className="hidden sm:block px-4">AÑADIR CATEGORÍA</span>
+        <Plus size={18} />
+        </button>
         </div>
 
-        <button
-          onClick={navigateANueva}
-          className="bg-[#d7f250] hover:bg-[#c4dd46] text-[#131313] px-8 py-4 rounded-full font-bold text-sm tracking-widest flex items-center gap-2 transition-all duration-300 hover:scale-105 shadow-lg"
-        >
-          AÑADIR CATEGORÍA <Plus size={18} />
-        </button>
-      </div>
-
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 pb-10 auto-rows-[280px] grid-flow-row-dense">
+      <div className="mx-auto lg:mx-15 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 auto-rows-[280px] grid-flow-row-dense">
         {categorias.map((cat, index) => {
           const tituloMostrar = cat.titulo.includes('|')
             ? cat.titulo.split('|').map((s) => s.trim())
@@ -115,7 +110,7 @@ export const CategoriasPage = () => {
             <div
               key={cat.id}
               onClick={() => navigateAEditar(cat.id)}
-              className={`relative rounded-[32px] overflow-hidden group cursor-pointer border border-white/5 hover:border-[#d7f250]/50 transition-all duration-500 ${getBentoClasses(index)}`}
+              className={`relative rounded-3xl overflow-hidden group cursor-pointer border border-white/5 hover:border-[#d7f250]/50 transition-all duration-500 ${getBentoClasses(index)}`}
             >
               <div
                 className="absolute inset-0 bg-cover bg-center transition-transform duration-700 group-hover:scale-110"
@@ -126,7 +121,7 @@ export const CategoriasPage = () => {
 
               <div className="absolute inset-0 bg-gradient-to-t from-[#050505] via-[#050505]/60 to-transparent opacity-90 transition-opacity duration-300 group-hover:opacity-100" />
 
-              <div className="absolute top-6 right-6 flex gap-2 z-20 opacity-100 lg:opacity-0 lg:group-hover:opacity-100 transition-opacity duration-300">
+              <div className="absolute top-3 right-3 flex gap-2 z-20 opacity-100 lg:opacity-0 lg:group-hover:opacity-100 transition-opacity duration-300">
                 <button
                   onClick={(e) => { e.stopPropagation(); navigateAEditar(cat.id); }}
                   className="bg-black/50 hover:bg-white border border-white/20 hover:border-white p-2.5 rounded-full cursor-pointer transition-colors group/edit" title="Editar">
@@ -139,14 +134,14 @@ export const CategoriasPage = () => {
                 </button>
               </div>
 
-              <div className="absolute inset-0 p-8 flex flex-col justify-end z-10">
+              <div className="absolute p-8 flex flex-col z-10">
                 <div className="mb-4">
                   <span className="inline-block px-3 py-1 rounded-full border border-[#d7f250]/50 bg-[#d7f250]/10 text-[#d7f250] text-[10px] font-bold tracking-widest uppercase backdrop-blur-sm shadow-black/50">
                     {cat.videos?.length || 0} VIDEOS
                   </span>
                 </div>
 
-                <h3 className="text-3xl md:text-4xl font-black italic text-white uppercase tracking-tight leading-none mb-3 drop-shadow-md">
+                <h3 className="text-3xl md:text-4xl font-black text-white uppercase tracking-tight leading-none mb-3 drop-shadow-md">
                   {tituloMostrar}
                 </h3>
 
@@ -162,7 +157,6 @@ export const CategoriasPage = () => {
           );
         })}
       </div>
-
       <ConfirmarEliminarModal
         isOpen={modalAbierto}
         onClose={() => !estaEliminando && setModalAbierto(false)}
@@ -170,6 +164,6 @@ export const CategoriasPage = () => {
         tituloItem={categoriaAEliminar?.titulo || ''}
         estaEliminando={estaEliminando}
       />
-    </div>
+</>
   );
 };
