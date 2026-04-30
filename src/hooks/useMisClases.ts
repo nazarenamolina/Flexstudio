@@ -1,4 +1,4 @@
-// src/hooks/useMisClases.ts
+
 import { useState, useEffect } from 'react';
 import { obtenerMisClasesCompradas, type ClaseComprada } from '../api/compras';
 import { useAuthStore } from '../store/authStore';

@@ -1,13 +1,19 @@
 import { useState } from 'react';
-import { ArrowLeft, Save, Image as ImageIcon, Loader2, Film, CloudUpload, CheckCircle2, Plus, Trash2 } from 'lucide-react';
+import { ArrowLeft, Save, Image as ImageIcon, Loader2, Film, CloudUpload, CheckCircle2, Plus, Trash2, Library } from 'lucide-react';
 import { useEditarCategoria } from '../../../hooks/useEditarCategoria';
 import { Controller } from 'react-hook-form';
 import { IconPicker } from '../../../components/IconPicker';
 import { ConfirmarEliminarModal } from '../../../components/ConfirmarEliminarModal';
 import { ToggleDestacada } from '../../../components/ToggleDestacada';
+import { GaleriaModal } from '../../../components/GaleriaModal'; // 👇 Importamos la galería
 
 export const EditarCategoriaPage = () => {
-  const { register, handleSubmit, errors, isSubmitting, cargandoDatos, estadoSubida, progreso, archivos, imagenesActuales, handleFileChange, handleEliminarMultimedia, watch, navigate, beneficiosFields, appendBeneficio, removeBeneficio, control } = useEditarCategoria();
+  const { 
+    register, handleSubmit, errors, isSubmitting, cargandoDatos, estadoSubida, 
+    progreso, archivos, imagenesActuales, handleFileChange, handleSelectFromGallery, 
+    handleEliminarMultimedia, watch, navigate, beneficiosFields, appendBeneficio, 
+    removeBeneficio, control 
+  } = useEditarCategoria();
 
   const [itemAEliminar, setItemAEliminar] = useState<{
     tipo: 'hero' | 'tarjeta' | 'video' | 'beneficio' | null;
@@ -15,8 +21,19 @@ export const EditarCategoriaPage = () => {
     tituloMostrar: string;
   } | null>(null);
 
+  // 👇 Estado para el modal de la galería
+  const [modalGaleriaDestino, setModalGaleriaDestino] = useState<'imagenTarjeta' | 'imagenHero' | null>(null);
+
   const labelClass = "block text-sm font-bold text-gray-400 mb-2";
   const inputClass = "w-full bg-[#131313] border border-gray-800 focus:border-[#d7f250] focus:ring-1 focus:ring-[#d7f250]/50 rounded-xl px-4 py-3 text-white placeholder-gray-600 outline-none transition-all shadow-sm";
+
+  // 👇 Función inteligente para previsualizar la imagen correcta
+  const getPreviewUrl = (archivoNuevo: File | string | null, imagenActual: string) => {
+    if (archivoNuevo) {
+      return typeof archivoNuevo === 'string' ? archivoNuevo : URL.createObjectURL(archivoNuevo);
+    }
+    return imagenActual; // Si no hay archivo nuevo, muestra lo que ya estaba en BD
+  };
 
   if (cargandoDatos) {
     return <div className="w-full h-full flex items-center justify-center text-[#d7f250]"><Loader2 className="w-10 h-10 animate-spin" /></div>;
@@ -38,6 +55,7 @@ export const EditarCategoriaPage = () => {
       </div>
     );
   }
+
   const confirmarEliminacion = () => {
     if (!itemAEliminar || !itemAEliminar.tipo) {
       setItemAEliminar(null);
@@ -57,6 +75,17 @@ export const EditarCategoriaPage = () => {
 
   return (
     <div className="w-full h-full flex flex-col font-sans overflow-y-auto custom-scrollbar pr-2 pb-10">
+
+      {/* 👇 Componente Modal de la Galería */}
+      <GaleriaModal 
+        isOpen={modalGaleriaDestino !== null}
+        onClose={() => setModalGaleriaDestino(null)}
+        onSelectImagen={(url) => {
+          if (modalGaleriaDestino) {
+            handleSelectFromGallery(url, modalGaleriaDestino);
+          }
+        }}
+      />
 
       <ConfirmarEliminarModal
         isOpen={!!itemAEliminar}
@@ -86,24 +115,13 @@ export const EditarCategoriaPage = () => {
                 <input type="text" {...register('titulo', { required: 'Obligatorio' })} className={inputClass} />
                 {errors.titulo && <p className="text-red-500 text-xs mt-1">{errors.titulo.message}</p>}
               </div>
-              {/* PRECIO ARGENTINA */}
               <div>
                 <label className="block text-xs font-bold text-gray-400 uppercase mb-1">Precio (ARS):</label>
-                <input
-                  type="number"
-                  {...register('precioArs')}
-                  className="w-full bg-transparent border border-[#d7f250] rounded-md px-3 py-2 text-white"
-                />
+                <input type="number" {...register('precioArs')} className="w-full bg-transparent border border-[#d7f250] rounded-md px-3 py-2 text-white" />
               </div>
-
-              {/* PRECIO INTERNACIONAL */}
               <div>
                 <label className="block text-xs font-bold text-gray-400 uppercase mb-1">Precio (USD): </label>
-                <input
-                  type="number"
-                  {...register('precioUsd')}
-                  className="w-full bg-transparent border border-[#d7f250] rounded-md px-3 py-2 text-white"
-                />
+                <input type="number" {...register('precioUsd')} className="w-full bg-transparent border border-[#d7f250] rounded-md px-3 py-2 text-white" />
               </div>
             </div>
 
@@ -119,7 +137,7 @@ export const EditarCategoriaPage = () => {
 
             <div>
               <label className={labelClass}>Descripción detallada de la Categoría:</label>
-              <textarea rows={4} {...register('descripcionDetallada')} placeholder="Texto largo que acompaña al video hero..." className={`${inputClass} resize-none`} />
+              <textarea rows={4} {...register('descripcionDetallada')} placeholder="Texto largo que acompaña al video hero..." className={`${inputClass} resize-none scrollbar-hide`} />
             </div>
           </div>
 
@@ -142,9 +160,7 @@ export const EditarCategoriaPage = () => {
                 <div key={field.id} className="relative p-5 bg-[#0a0a0a] border border-gray-800 rounded-xl flex flex-col md:flex-row gap-4 group">
                   <div className="flex-1 space-y-4">
                     <div>
-                      <label className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-2 block">
-                        Ícono del beneficio
-                      </label>
+                      <label className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-2 block">Ícono del beneficio</label>
                       <Controller
                         control={control}
                         name={`beneficios.${index}.icono`}
@@ -154,23 +170,11 @@ export const EditarCategoriaPage = () => {
                         )}
                       />
                     </div>
-
                     <div className="pt-2 border-t border-gray-800 mt-2">
-                      <input
-                        type="text"
-                        {...register(`beneficios.${index}.titulo`)}
-                        placeholder="Título del beneficio (Ej: Clases en vivo)"
-                        className={inputClass}
-                      />
+                      <input type="text" {...register(`beneficios.${index}.titulo`)} placeholder="Título del beneficio" className={inputClass} />
                     </div>
-
                     <div>
-                      <textarea
-                        rows={2}
-                        {...register(`beneficios.${index}.descripcion`)}
-                        placeholder="Descripción del beneficio..."
-                        className={`${inputClass} resize-none`}
-                      />
+                      <textarea rows={2} {...register(`beneficios.${index}.descripcion`)} placeholder="Descripción del beneficio..." className={`${inputClass} resize-none`} />
                     </div>
                   </div>
 
@@ -192,7 +196,6 @@ export const EditarCategoriaPage = () => {
 
         <div className="w-full xl:w-[400px] flex flex-col gap-6 shrink-0">
 
-          {/* 👇 NUEVA SECCIÓN: CONFIGURACIÓN 👇 */}
           <div className="bg-[#131313] p-6 rounded-[24px] border border-gray-800 shadow-sm flex flex-col gap-4">
             <h3 className="text-xl font-bold text-white border-b border-gray-800 pb-4">Configuración</h3>
             
@@ -206,26 +209,34 @@ export const EditarCategoriaPage = () => {
                 control={control}
                 name="destacada"
                 render={({ field }) => (
-                  <ToggleDestacada
-                    habilitado={field.value}
-                    onChange={field.onChange}
-                    deshabilitado={isSubmitting}
-                  />
+                  <ToggleDestacada habilitado={field.value} onChange={field.onChange} deshabilitado={isSubmitting} />
                 )}
               />
             </div>
           </div>
+
           <div className="bg-[#131313] p-6 rounded-[24px] border border-gray-800 shadow-sm flex flex-col gap-6">
             <h3 className="text-xl font-bold text-white border-b border-gray-800 pb-4">Archivos Multimedia</h3>
 
+            {/* IMAGEN TARJETA */}
             <div>
-              <label className={labelClass}>Imagen de la Tarjeta de Inicio</label>
+              <div className="flex items-center justify-between mb-2">
+                <label className="text-sm font-bold text-gray-400">Imagen de la Tarjeta</label>
+                <button 
+                  type="button" 
+                  onClick={() => setModalGaleriaDestino('imagenTarjeta')}
+                  className="flex items-center gap-1 text-xs font-bold text-[#d7f250] hover:text-white transition-colors"
+                >
+                  <Library size={14} /> Galería
+                </button>
+              </div>
+              
               <div className="relative w-full h-40 border-2 border-dashed border-gray-700 hover:border-[#d7f250] rounded-xl flex flex-col items-center justify-center transition-colors bg-[#0a0a0a] overflow-hidden group cursor-pointer">
                 <input type="file" accept="image/*" onChange={(e) => handleFileChange(e, 'imagenTarjeta')} className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10" />
 
                 {(archivos.imagenTarjeta || imagenesActuales.imagenTarjeta) && (
                   <>
-                    <img src={archivos.imagenTarjeta ? URL.createObjectURL(archivos.imagenTarjeta) : imagenesActuales.imagenTarjeta} alt="Preview" className="absolute inset-0 w-full h-full object-cover opacity-60" />
+                    <img src={getPreviewUrl(archivos.imagenTarjeta, imagenesActuales.imagenTarjeta)} alt="Preview" className="absolute inset-0 w-full h-full object-cover opacity-60" />
                     <button
                       type="button"
                       onClick={(e) => { e.preventDefault(); e.stopPropagation(); setItemAEliminar({ tipo: 'tarjeta', tituloMostrar: 'la Imagen de Tarjeta' }); }}
@@ -242,14 +253,25 @@ export const EditarCategoriaPage = () => {
               </div>
             </div>
 
+            {/* IMAGEN HERO */}
             <div>
-              <label className={labelClass}>Imagen de Categoría</label>
+              <div className="flex items-center justify-between mb-2">
+                <label className="text-sm font-bold text-gray-400">Imagen de Categoría</label>
+                <button 
+                  type="button" 
+                  onClick={() => setModalGaleriaDestino('imagenHero')}
+                  className="flex items-center gap-1 text-xs font-bold text-[#d7f250] hover:text-white transition-colors"
+                >
+                  <Library size={14} /> Galería
+                </button>
+              </div>
+
               <div className="relative w-full h-32 border-2 border-dashed border-gray-700 hover:border-[#d7f250] rounded-xl flex flex-col items-center justify-center transition-colors bg-[#0a0a0a] overflow-hidden group cursor-pointer">
                 <input type="file" accept="image/*" onChange={(e) => handleFileChange(e, 'imagenHero')} className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10" />
 
                 {(archivos.imagenHero || imagenesActuales.imagenHero) && (
                   <>
-                    <img src={archivos.imagenHero ? URL.createObjectURL(archivos.imagenHero) : imagenesActuales.imagenHero} alt="Preview" className="absolute inset-0 w-full h-full object-cover opacity-60" />
+                    <img src={getPreviewUrl(archivos.imagenHero, imagenesActuales.imagenHero)} alt="Preview" className="absolute inset-0 w-full h-full object-cover opacity-60" />
                     <button
                       type="button"
                       onClick={(e) => { e.preventDefault(); e.stopPropagation(); setItemAEliminar({ tipo: 'hero', tituloMostrar: 'la Imagen Hero' }); }}
@@ -266,6 +288,7 @@ export const EditarCategoriaPage = () => {
               </div>
             </div>
 
+            {/* VIDEO MUESTRA */}
             <div className="border-t border-gray-800 pt-4">
               <label className={labelClass}>Video de Muestra</label>
               {imagenesActuales.tieneVideo && !archivos.videoMuestra && (

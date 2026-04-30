@@ -10,7 +10,6 @@ import { enviarConsultaRequest } from '../api/contacto';
 import { TarjetaClase } from '../components/TarjetaClase';
 import { CarruselDestacadas } from '../components/CarruselDestacadas';
 
-// Validación del formulario
 const contactoSchema = z.object({
   nombre: z.string().min(2, 'El nombre debe tener al menos 2 caracteres'),
   correo: z.string().email('Ingresa un correo electrónico válido'),
@@ -29,7 +28,6 @@ const HomePage = () => {
     'https://res.cloudinary.com/dmp7mcwie/image/upload/v1774312483/Banner_jntyks.png'
   ];
   const [currentSlide, setCurrentSlide] = useState(0);
-
   const [touchStart, setTouchStart] = useState(0);
   const [touchEnd, setTouchEnd] = useState(0);
 
@@ -96,7 +94,6 @@ const HomePage = () => {
     }
   };
 
-  // 👇 LÓGICA DE SEPARACIÓN
   const destacadas = categorias.filter(c => c.destacada);
   const regulares = categorias.filter(c => !c.destacada);
 
@@ -139,19 +136,9 @@ const HomePage = () => {
           ))}
         </div>
       </section>
-
-      {/* --- SECCIÓN CARRUSEL DESTACADAS --- */}
-      <CarruselDestacadas
-        categorias={destacadas}
-        flippedCard={flippedCard}
-        setFlippedCard={setFlippedCard}
-      />
-
-      {/* --- SECCIÓN GRILLA TODAS LAS CATEGORÍAS --- */}
+ {/* --- SECCIÓN BIOGRAFÍA --- */}
       <section className="container mx-auto px-6 pt-16 pb-4">
         <article className="w-full max-w-6xl mx-auto flex flex-col lg:flex-row items-center gap-10 lg:gap-16 p-6 md:p-10 lg:p-12 rounded-[30px]">
-
-          {/* COLUMNA IZQUIERDA: IMAGEN */}
           <div className="w-full lg:w-1/2 ">
             <div className="relative w-full aspect-[4/5] sm:aspect-square lg:aspect-[4/5] overflow-hidden rounded-[24px] border border-gray-800 shadow-inner group">
               <img
@@ -159,15 +146,11 @@ const HomePage = () => {
                 alt="Cande Imbaud"
                 className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
               />
-              {/* Un overlay sutil (sin blur) para integrar la imagen al fondo oscuro */}
               <div className="absolute inset-0 bg-gradient-to-t from-[#131313]/60 via-transparent to-transparent pointer-events-none"></div>
             </div>
           </div>
 
-          {/* COLUMNA DERECHA: TEXTO */}
           <div className="w-full lg:w-1/2 flex flex-col justify-center space-y-6">
-
-            {/* Encabezado */}
             <div>
               <span className="text-[#d7f250] text-xs md:text-sm font-black tracking-[0.2em] uppercase mb-3 block">
                 Sobre la instructora
@@ -176,21 +159,16 @@ const HomePage = () => {
                 Conocé a <span className="text-[#d7f250]">Cande</span>
               </h2>
             </div>
-
-            {/* Párrafos */}
             <div className="space-y-4 text-[#131313] text-base md:text-lg leading-relaxed font-medium">
-              <p>
-                Hola, soy Cande, tengo 27 años y soy profesora de educación física, acróbata y entrenadora especializada en flexibilidad para deportistas de todas las disciplinas.
-              </p>
-              <p>
-                Con más de 8 años de experiencia en clases de fitness grupal, flexibilidad y acrobacias, he acompañado a patinadoras, bailarinas, gimnastas y deportistas a mejorar su rendimiento y prevenir lesiones a través de la flexibilidad. Además, me encanta compartir el movimiento con los más pequeños, dando clases para niños desde hace más de 3 años, siempre con creatividad y respeto por cada proceso.
-              </p>
-              <p>
-                Mi misión es que descubras que trabajar tu flexibilidad no es solo estirar, sino entrenar tu cuerpo con inteligencia para que se mueva con libertad, fuerza y control.
-              </p>
+              <p>Hola, soy Cande, tengo 27 años y soy profesora de educación física, acróbata y entrenadora especializada en flexibilidad para deportistas de todas las disciplinas.</p>
+              <p>Con más de 8 años de experiencia en clases de fitness grupal, flexibilidad y acrobacias, he acompañado a patinadoras, bailarinas, gimnastas y deportistas a mejorar su rendimiento y prevenir lesiones a través de la flexibilidad. Además, me encanta compartir el movimiento con los más pequeños, dando clases para niños desde hace más de 3 años, siempre con creatividad y respeto por cada proceso.</p>
+              <p>Mi misión es que descubras que trabajar tu flexibilidad no es solo estirar, sino entrenar tu cuerpo con inteligencia para que se mueva con libertad, fuerza y control.</p>
             </div>
           </div>
         </article>
+
+
+ {/* --- TÍTULO EXPLORAR CLASES --- */}
         <div className="flex justify-center mt-0 mb-16">
           <img
             src="https://res.cloudinary.com/dmp7mcwie/image/upload/v1774312501/titulo_rue8kw.png"
@@ -198,9 +176,12 @@ const HomePage = () => {
             className="w-full md:h-60"
           />
         </div>
-
-
-
+     <CarruselDestacadas
+        categorias={categorias}
+        flippedCard={flippedCard}
+        setFlippedCard={setFlippedCard}
+      />
+        {/* --- GRILLA TODAS LAS CATEGORÍAS --- */}
         <article className="flex flex-wrap justify-center gap-[25px]">
           {cargando ? (
             <div className="w-full text-center py-10">
