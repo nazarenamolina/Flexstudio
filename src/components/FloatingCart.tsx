@@ -51,8 +51,8 @@ export const FloatingCart = () => {
             leaveFrom="translate-x-0"
             leaveTo="translate-x-full"
           >
-            <div className="relative w-full sm:max-w-md h-full bg-white shadow-2xl flex flex-col pointer-events-auto">
-              <div className="px-6 pt-24 pb-5 border-b border-gray-100 relative bg-gradient-to-r from-gray-50 to-white">
+            <div className="bg-white bg-[url('https://res.cloudinary.com/dmp7mcwie/image/upload/v1774312699/fondo_hwrosv.png')] relative w-full sm:max-w-md h-full shadow-2xl flex flex-col pointer-events-auto">
+              <div className="px-6 pt-6 pb-6 border-b border-gray-200 relative">
                 <button
                   onClick={() => setMinimizado(true)}
                   className="absolute top-6 right-5 text-gray-400 hover:text-gray-600 hover:bg-gray-100 p-2 rounded-full transition-all"
@@ -64,17 +64,17 @@ export const FloatingCart = () => {
                     <BagHeart className="w-5 h-5 text-gray-900" />
                   </div>
                   <div>
-                    <h2 className="text-xl font-bold text-gray-900 tracking-tight">
+                    <h2 className="text-3xl font-principal text-gray-900 tracking-tight">
                       Tu Carrito
                     </h2>
                     <p className="text-xs text-gray-500 font-medium">
-                      {cartItems.length} {cartItems.length === 1 ? 'clase' : 'clases'} seleccionadas
+                      {cartItems.length} {cartItems.length === 1 ? 'clase seleccionada' : 'clases seleccionadas'}
                     </p>
                   </div>
                 </div>
               </div>
 
-              <div className="flex-1 overflow-y-auto p-4 space-y-3 bg-[#0A0A0A]">
+              <div className="flex-1 overflow-y-auto p-4 space-y-3 bg-[url('https://res.cloudinary.com/dmp7mcwie/image/upload/v1776544346/bg-card_dfxwsn.png')]">
                 {cartItems.map((item) => {
                   const precioItem = moneda === 'ARS' ? item.precioArs : item.precioUsd;
                   const precioItemFormateado = moneda === 'ARS'
@@ -84,7 +84,7 @@ export const FloatingCart = () => {
                   return (
                     <div
                       key={item.id}
-                      className="relative bg-[url('https://res.cloudinary.com/dmp7mcwie/image/upload/v1776544346/bg-card_dfxwsn.png')] bg-cover bg-center w-full rounded-2xl p-4 flex gap-4 shadow-sm border border-white/10 hover:shadow-md hover:border-[#d7f250]/30 transition-all duration-300 group"
+                      className="relative bg-[#d7f250]/80 w-full rounded-2xl p-4 flex gap-4 shadow-sm hover:shadow-md hover:border-[#d7f250]/30 transition-all duration-300 group"
                     >
                       <div className="w-20 h-20 rounded-xl overflow-hidden flex-shrink-0 shadow-sm border border-white/20">
                         <img
@@ -105,7 +105,7 @@ export const FloatingCart = () => {
                         </div>
 
                         <div className="flex justify-between items-end mt-2">
-                          <p className="text-lg font-bold text-[#d7f250]">
+                          <p className="text-lg font-bold text-[#131313]">
                             <span className="text-[10px] font-medium text-gray-400 mr-0.5">{simbolo}</span>
                             {precioItemFormateado}
                           </p>
@@ -124,13 +124,13 @@ export const FloatingCart = () => {
                 })}
               </div>
 
-              <div className="px-6 py-5 bg-[#111111] border-t border-white/10 shadow-[0_-4px_20px_rgba(0,0,0,0.3)]">
+              <div className="px-6 py-5 bg-white bg-[url('https://res.cloudinary.com/dmp7mcwie/image/upload/v1774312699/fondo_hwrosv.png')] border-t border-white/10 shadow-[0_-4px_20px_rgba(0,0,0,0.3)]">
                 <div className="flex justify-between items-center mb-4 pb-4 border-b border-white/10">
-                  <span className="text-sm text-gray-400 font-medium uppercase tracking-wider">
+                  <span className="text-xl font-principal uppercase tracking-wider">
                     Subtotal
                   </span>
-                  <span className="text-2xl font-bold text-white">
-                    <span className="text-sm font-medium text-gray-400 mr-0.5">{simbolo}</span>
+                  <span className="text-2xl font-bold">
+                    <span className="text-sm font-medium text-gray-800 mr-0.5">{simbolo}</span>
                     {totalFormateado}
                   </span>
                 </div>
@@ -140,7 +140,7 @@ export const FloatingCart = () => {
                     setMinimizado(true);
                     navigate('/carrito');
                   }}
-                  className="w-full rounded-2xl bg-gradient-to-r from-[#d7f250] to-[#c4e038] py-4 font-bold text-gray-900 text-sm flex items-center justify-center gap-2 transition-all duration-300 hover:shadow-lg hover:shadow-[#d7f250]/25 hover:-translate-y-0.5 active:translate-y-0 cursor-pointer"
+                  className="w-full rounded-2xl bg-[#d7f250] py-4 font-bold text-gray-900 text-sm flex items-center justify-center gap-2 transition-all duration-400 hover:bg-[#131313] hover:text-white cursor-pointer"
                 >
                   Finalizar Compra
                   <ArrowRight size={18} strokeWidth={2.5} className="group-hover:translate-x-1 transition-transform" />
@@ -164,7 +164,7 @@ export const FloatingCart = () => {
         <div className="fixed bottom-6 right-6 md:bottom-8 md:right-8 z-50">
           <button
             onClick={() => setMinimizado(false)}
-            className="relative flex h-14 w-14 sm:h-16 sm:w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-[#d7f250] to-[#c4e038] text-gray-900 hover:shadow-lg hover:shadow-[#d7f250]/30 hover:scale-105 transition-all duration-300 cursor-pointer"
+            className="relative flex h-14 w-14 sm:h-16 sm:w-16 items-center justify-center rounded-2xl bg-[#d7f250] text-gray-900 duration-300 cursor-pointer"
           >
             <ShoppingCart size={24} className="sm:w-[26px] sm:h-[26px]" strokeWidth={2} />
 
