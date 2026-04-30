@@ -1,6 +1,6 @@
 import { Link } from 'react-router-dom';
 import { Clock, ArrowRight, Star } from 'lucide-react';
-import { type Categoria } from '../api/categoria'; // Ajusta la ruta si es necesario
+import { type Categoria } from '../api/categoria'; 
 
 interface Props {
   servicio: Categoria;
@@ -11,11 +11,11 @@ interface Props {
 export const TarjetaClase = ({ servicio, flippedCard, setFlippedCard }: Props) => {
   return (
     <div 
-      className="relative w-full max-w-[416px] h-[512px] group [perspective:1000px] cursor-pointer shrink-0"
+      className="relative w-full h-full group [perspective:1000px] cursor-pointer shrink-0"
       onClick={() => setFlippedCard(flippedCard === servicio.id ? null : servicio.id)}
     >
       <div 
-        className={`relative w-full h-full transition-transform duration-700 [transform-style:preserve-3d] rounded-[30px] shadow-[0_15px_35px_rgba(0,0,0,0.2)] lg:group-hover:[transform:rotateY(180deg)] ${
+        className={`relative w-full h-full transition-transform duration-700 [transform-style:preserve-3d] rounded-[30px] lg:group-hover:[transform:rotateY(180deg)] ${
           flippedCard === servicio.id ? '[transform:rotateY(180deg)]' : ''
         }`}
       >
@@ -23,7 +23,7 @@ export const TarjetaClase = ({ servicio, flippedCard, setFlippedCard }: Props) =
         <div className="absolute inset-0 w-full h-full [backface-visibility:hidden] rounded-[30px] overflow-hidden z-10">
           <div 
             className="absolute inset-0 bg-cover bg-center"
-            style={{ backgroundImage: `url(${servicio.imagenTarjeta || 'https://placehold.co/400x500/1a1a1a/FFF?text=Flex+Studio'})` }}
+            style={{ backgroundImage: `url(${servicio.imagenTarjeta || servicio.imagenHero || 'https://placehold.co/400x500/1a1a1a/FFF?text=Flex+Studio'})` }}
           />
           <div 
             className="absolute inset-0"
@@ -52,7 +52,7 @@ export const TarjetaClase = ({ servicio, flippedCard, setFlippedCard }: Props) =
         </div>
 
         {/* Dorso de la Tarjeta */}
-        <div className="absolute inset-0 w-full h-full [backface-visibility:hidden] [transform:rotateY(180deg)_translateZ(1px)] z-20 rounded-[30px] overflow-hidden bg-[#161616] p-[32px] flex flex-col justify-center items-center text-center">
+        <div className="absolute inset-0 w-full h-full [backface-visibility:hidden] [transform:rotateY(180deg)_translateZ(1px)] z-20 rounded-[30px] overflow-hidden bg-[#161616] p-[32px] flex flex-col justify-center items-center text-center border border-[#d7f250]/20">
           <h4 className="text-[#d7f250] text-3xl font-bold mb-6">
             {servicio.titulo}
           </h4>

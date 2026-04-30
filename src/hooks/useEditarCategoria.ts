@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useForm, useFieldArray } from 'react-hook-form';
 import { useNavigate, useParams } from 'react-router-dom';
-import { useQuery, useQueryClient } from '@tanstack/react-query'; // 👈 Importamos
+import { useQuery, useQueryClient } from '@tanstack/react-query'; 
 import toast from 'react-hot-toast';
 import * as UpChunk from '@mux/upchunk';
 import { obtenerCategoriaPorIdRequest, actualizarCategoriaRequest } from '../api/categoria';
@@ -33,23 +33,28 @@ export const useEditarCategoria = () => {
 
   const [estadoSubida, setEstadoSubida] = useState<'IDLE' | 'ACTUALIZANDO_CATEGORIA' | 'SUBIENDO_VIDEO' | 'COMPLETADO'>('IDLE');
   const [progreso, setProgreso] = useState(0);
+  
+  // 👇 MODIFICACIÓN 1: Aceptamos string (URL de la Galería) además de File
   const [archivos, setArchivos] = useState({
-    imagenTarjeta: null as File | null,
-    imagenHero: null as File | null,
+    imagenTarjeta: null as File | string | null,
+    imagenHero: null as File | string | null,
     videoMuestra: null as File | null,
   });
+
   const [imagenesActuales, setImagenesActuales] = useState({
     imagenTarjeta: '',
     imagenHero: '',
     tieneVideo: false,
   });
   const [borrar, setBorrar] = useState({ hero: false, tarjeta: false, video: false });
+
   const { data: categoria, isLoading: cargandoDatos } = useQuery({
     queryKey: ['categoria', id],
     queryFn: () => obtenerCategoriaPorIdRequest(id!),
     enabled: !!id,
     staleTime: 1000 * 60 * 5, 
   });
+
   useEffect(() => {
     if (categoria) {
       reset({
@@ -78,6 +83,13 @@ export const useEditarCategoria = () => {
       if (tipo === 'imagenTarjeta') setBorrar(prev => ({ ...prev, tarjeta: false }));
       if (tipo === 'videoMuestra') setBorrar(prev => ({ ...prev, video: false }));
     }
+  };
+
+  // 👇 MODIFICACIÓN 2: Función para seleccionar desde Galería
+  const handleSelectFromGallery = (url: string, tipo: 'imagenTarjeta' | 'imagenHero') => {
+    setArchivos(prev => ({ ...prev, [tipo]: url }));
+    if (tipo === 'imagenHero') setBorrar(prev => ({ ...prev, hero: false }));
+    if (tipo === 'imagenTarjeta') setBorrar(prev => ({ ...prev, tarjeta: false }));
   };
 
   const handleEliminarMultimedia = (tipo: 'hero' | 'tarjeta' | 'video') => {
@@ -118,8 +130,23 @@ export const useEditarCategoria = () => {
         if (beneficiosValidos.length > 0) formData.append('beneficios', JSON.stringify(beneficiosValidos));
       }
       
-      if (archivos.imagenTarjeta) formData.append('imagenTarjeta', archivos.imagenTarjeta);
-      if (archivos.imagenHero) formData.append('imagenHero', archivos.imagenHero);
+      // 👇 MODIFICACIÓN 3: Diferenciar File local de string URL
+      if (archivos.imagenTarjeta) {
+        if (typeof archivos.imagenTarjeta === 'string') {
+          formData.append('imagenTarjetaUrl', archivos.imagenTarjeta);
+        } else {
+          formData.append('imagenTarjeta', archivos.imagenTarjeta);
+        }
+      }
+      
+      if (archivos.imagenHero) {
+        if (typeof archivos.imagenHero === 'string') {
+          formData.append('imagenHeroUrl', archivos.imagenHero);
+        } else {
+          formData.append('imagenHero', archivos.imagenHero);
+        }
+      }
+
       if (borrar.hero && !archivos.imagenHero) formData.append('eliminarImagenHero', 'true');
       if (borrar.tarjeta && !archivos.imagenTarjeta) formData.append('eliminarImagenTarjeta', 'true');
       
@@ -166,6 +193,9 @@ export const useEditarCategoria = () => {
     }
   };
 
-  return {register, handleSubmit: handleSubmit(onSubmit), errors, isSubmitting, cargandoDatos, estadoSubida, progreso, archivos, imagenesActuales,
-    handleFileChange, handleEliminarMultimedia, watch, navigate, beneficiosFields, appendBeneficio, removeBeneficio, control};
+  return {
+    register, handleSubmit: handleSubmit(onSubmit), errors, isSubmitting, cargandoDatos, 
+    estadoSubida, progreso, archivos, imagenesActuales, handleFileChange, handleSelectFromGallery, 
+    handleEliminarMultimedia, watch, navigate, beneficiosFields, appendBeneficio, removeBeneficio, control
+  };
 };

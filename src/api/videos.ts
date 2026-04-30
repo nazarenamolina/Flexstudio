@@ -56,3 +56,13 @@ export const actualizarVideoRequest = async (id: string, datos: FormData) => {
   });
   return respuesta.data;
 };
+
+export const marcarVideoCompletadoRequest = async (idVideo: string) => {
+  const respuesta = await api.post(`/videos/${idVideo}/completar`);
+  return respuesta.data;
+};
+
+export const obtenerProgresoCategoriaRequest = async (idCategoria: string): Promise<string[]> => {
+  const respuesta = await api.get(`/videos/progreso/categoria/${idCategoria}`);
+  return respuesta.data;
+};

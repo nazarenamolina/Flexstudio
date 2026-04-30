@@ -13,27 +13,23 @@ export const AdminDashboard = () => {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [periodoActivo, setPeriodoActivo] = useState<'hoy' | 'semana' | 'mes' | 'anio'>('mes');
-
-  // 👇 1. MODIFICAMOS LA QUERY PARA INCLUIR LAS CLASES TOP
-  const { data, isLoading, isError } = useQuery({
+ const { data, isLoading, isError } = useQuery({
     queryKey: ['dashboard-data'],
     queryFn: async () => {
-      const [dataEstadisticas, dataClientes, dataTopClases] = await Promise.all([
+      const [dataEstadisticas, respuestaClientes, dataTopClases] = await Promise.all([
         obtenerEstadisticasRequest(),
-        obtenerHistorialClientes(),
-        obtenerClasesMasCompradasRequest(5) // Pedimos el Top 5
+        obtenerHistorialClientes(1, 5),
+        obtenerClasesMasCompradasRequest(5) 
       ]);
       return {
         estadisticas: dataEstadisticas,
-        clientesRecientes: dataClientes.slice(0, 5),
+        clientesRecientes: respuestaClientes.data || [], 
         topClases: dataTopClases || []
       };
     },
     staleTime: 1000 * 60 * 5,
     refetchOnWindowFocus: false, 
-  });
-
-  // 👇 2. MUTACIÓN PARA EL SWITCH (Actualiza la BD sin salir del dashboard)
+  }); 
   const toggleDestacadaMutation = useMutation({
     mutationFn: async ({ id, destacada }: { id: string, destacada: boolean }) => {
       const formData = new FormData();
