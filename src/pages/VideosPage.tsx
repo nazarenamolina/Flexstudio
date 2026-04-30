@@ -1,56 +1,25 @@
-import { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
 import { useClaseDetalle } from "../hooks/useClaseDetalle";
 import { Play, Loader2, Video, Clock, CheckCircle, TextAlignStart } from "lucide-react";
 import MuxPlayer from "@mux/mux-player-react";
-import { obtenerCredencialesReproduccion } from "../api/videos";
 
 export const VideosPage = () => {
   const { id } = useParams<{ id: string }>();
-  const { clase, cargando, error } = useClaseDetalle(id);
+  
+  // Extraemos toda la "inteligencia" desde nuestro Hook
+  const { 
+    clase, 
+    cargando, 
+    error, 
+    videoActivo, 
+    setVideoActivo, 
+    credencialesSeguras, 
+    cargandoVideo,
+    videosCompletados, 
+    marcarCompletado 
+  } = useClaseDetalle(id);
 
-  const [videoActivo, setVideoActivo] = useState<any>(null);
-  const [credencialesSeguras, setCredencialesSeguras] = useState<{ playbackId: string, token: string } | null>(null);
-  const [cargandoVideo, setCargandoVideo] = useState(false);
-  const [videoCompletado, setVideoCompletado] = useState<Set<string>>(new Set());
-
-
-  useEffect(() => {
-    if (clase?.videos && clase.videos.length > 0 && !videoActivo) {
-      const videosOrdenados = [...clase.videos].sort((a, b) => a.orden - b.orden);
-      setVideoActivo(videosOrdenados[0]);
-    }
-  }, [clase, videoActivo]);
-
-  useEffect(() => {
-    const solicitarLlaves = async () => {
-      if (!videoActivo?.id) return;
-
-      setCargandoVideo(true);
-      setCredencialesSeguras(null);
-
-
-      try {
-        const credenciales = await obtenerCredencialesReproduccion(videoActivo.id);
-        setCredencialesSeguras(credenciales);
-      } catch (err) {
-        console.error("Error de seguridad en Mux:", err);
-      } finally {
-        setCargandoVideo(false);
-      }
-    };
-
-    solicitarLlaves();
-  }, [videoActivo?.id]);
-
-  const marcarCompletado = () => {
-    if (videoActivo) {
-      setVideoCompletado(prev => new Set([...prev, videoActivo.id]));
-    }
-  };
-
-
-
+  // --- ESTADO: CARGANDO ---
   if (cargando) return (
     <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-gray-50 to-gray-100">
       <div className="flex flex-col items-center gap-4">
@@ -62,6 +31,7 @@ export const VideosPage = () => {
     </div>
   );
 
+  // --- ESTADO: ERROR ---
   if (error || !clase) return (
     <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-gray-50 to-gray-100">
       <div className="flex flex-col items-center gap-4 p-8 bg-white rounded-3xl shadow-lg border border-gray-100">
@@ -73,9 +43,11 @@ export const VideosPage = () => {
     </div>
   );
 
+  // Cálculos para la UI
   const videosOrdenados = [...(clase.videos || [])].sort((a: any, b: any) => a.orden - b.orden);
   const videoIndex = videosOrdenados.findIndex((v: any) => v.id === videoActivo?.id);
 
+  // --- UI PRINCIPAL ---
   return (
     <div className="min-h-screen">
       <div className="max-w-[1600px] mx-auto px-6 lg:px-10 pt-24 pb-12">
@@ -94,7 +66,7 @@ export const VideosPage = () => {
 
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
 
-          {/* COLUMNA IZQUIERDA */}
+          {/* ================= COLUMNA IZQUIERDA (REPRODUCTOR Y DESCRIPCIÓN) ================= */}
           <div className="lg:col-span-8 flex flex-col gap-6">
 
             {/* Reproductor */}
@@ -117,14 +89,9 @@ export const VideosPage = () => {
                   metadataVideoTitle={videoActivo?.titulo || clase.titulo}
                   primaryColor="#ffffff"
                   accentColor="#d7f250"
-                  onEnded={marcarCompletado}
-                  style={{
-                    width: '100%',
-                    height: '100%',
-                    aspectRatio: '16/9',
-                  }}
+                  onEnded={() => marcarCompletado(videoActivo.id)}
+                  style={{ width: '100%', height: '100%', aspectRatio: '16/9' }}
                 >
-                  {/* 👇 SOLUCIÓN: slot="poster". MuxPlayer oculta esto solo cuando le das Play 👇 */}
                   <div slot="poster" className="absolute inset-0 w-full h-full bg-black overflow-hidden cursor-pointer">
                     {videoActivo?.imagenUrl && (
                       <img
@@ -133,7 +100,6 @@ export const VideosPage = () => {
                         className="absolute inset-0 w-full h-full object-cover blur-2xl brightness-[0.35] scale-125"
                       />
                     )}
-                    {/* Un detalle estético chiquito arriba a la izquierda para no estorbar al botón gigante de Play nativo de Mux */}
                     <div className="absolute top-6 left-6 flex items-center gap-2 bg-black/40 px-3 py-1.5 rounded-full border border-white/10">
                       <span className="w-2 h-2 rounded-full bg-[#d7f250] animate-pulse"></span>
                       <span className="text-white text-[10px] font-bold uppercase tracking-widest">
@@ -154,7 +120,7 @@ export const VideosPage = () => {
               )}
             </div>
 
-            {/* Navegación entre videos */}
+            {/* Navegación entre videos (Anterior / Siguiente) */}
             <div className="flex items-center justify-between gap-4">
               <button
                 onClick={() => videoIndex > 0 && setVideoActivo(videosOrdenados[videoIndex - 1])}
@@ -189,7 +155,9 @@ export const VideosPage = () => {
               <p className="text-gray-600 leading-relaxed">
                 {videoActivo?.descripcion || clase.descripcionDetallada || 'Sin descripción disponible para esta lección.'}
               </p>
-              {videoCompletado.has(videoActivo?.id) && (
+              
+              {/* Notificación de Video Completado */}
+              {videosCompletados.has(videoActivo?.id) && (
                 <div className="flex items-center gap-2 mt-4 p-3 bg-green-50 rounded-xl border border-green-100">
                   <CheckCircle size={18} className="text-green-500" />
                   <span className="text-sm font-semibold text-green-700">Clase completada</span>
@@ -198,36 +166,39 @@ export const VideosPage = () => {
             </div>
           </div>
 
-          {/* COLUMNA DERECHA */}
+          {/* ================= COLUMNA DERECHA (LISTA DE VIDEOS) ================= */}
           <div className="lg:col-span-4">
             <div className="bg-white bg-[url('https://res.cloudinary.com/dmp7mcwie/image/upload/v1774312699/fondo_hwrosv.png')] rounded-3xl border border-neutral-100 p-6 top-28 shadow-sm">
               <div className="flex items-center justify-between mb-6">
                 <h2 className="text-lg font-bold text-gray-900">Contenido del curso: </h2>
                 <span className="text-sm font-bold text-[#d7f250] bg-[#d7f250]/10 px-3 py-1 rounded-full">
-                  {videoCompletado.size}/{videosOrdenados.length}
+                  {videosCompletados.size}/{videosOrdenados.length}
                 </span>
               </div>
 
               <div className="flex flex-col gap-3">
                 {videosOrdenados.map((video: any, index: number) => {
                   const isActivo = videoActivo?.id === video.id;
-                  const isCompletado = videoCompletado.has(video.id);
+                  const isCompletado = videosCompletados.has(video.id);
 
                   return (
                     <div
                       key={video.id}
                       onClick={() => setVideoActivo(video)}
-                      className={`group relative flex items-center gap-4 p-4 rounded-2xl cursor-pointer transition-all duration-300 border ${isActivo
+                      className={`group relative flex items-center gap-4 p-4 rounded-2xl cursor-pointer transition-all duration-300 border ${
+                        isActivo
                         ? 'bg-[#d7f250]/80 border-[#d7f250] hover:bg-[#131313]/60 hover:border-neutral-400'
                         : 'bg-gray-50/50 hover:bg-gray-100 border-transparent hover:border-gray-200'
-                        }`}
+                      }`}
                     >
                       {/* Número o check */}
-                      <div className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold transition-all ${isActivo ? 'bg-[#131313] text-white' : isCompletado ? 'bg-green-100 text-green-600' : 'bg-gray-300 text-gray-800'}`}>
+                      <div className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold transition-all ${
+                        isActivo ? 'bg-[#131313] text-white' : isCompletado ? 'bg-green-100 text-green-600' : 'bg-gray-300 text-gray-800'
+                      }`}>
                         {isCompletado && !isActivo ? <CheckCircle size={16} /> : index + 1}
                       </div>
 
-                      {/* Info */}
+                      {/* Info del Video */}
                       <div className="flex-1 min-w-0">
                         <h4 className={`text-sm font-bold leading-tight line-clamp-2 ${isActivo ? 'text-gray-900' : 'text-gray-700 group-hover:text-gray-900'}`}>
                           {video.titulo}
@@ -244,8 +215,6 @@ export const VideosPage = () => {
                           )}
                         </div>
                       </div>
-
-                      {/* Hover play */}
                       {!isActivo && (
                         <div className="absolute inset-0 flex items-center justify-center rounded-2xl bg-gray-900/0 group-hover:bg-gray-900/10 transition-all">
                           <Play size={20} className="text-gray-900 opacity-0 group-hover:opacity-100 transition-opacity ml-87" />
@@ -257,6 +226,7 @@ export const VideosPage = () => {
               </div>
             </div>
           </div>
+          
         </div>
       </div>
     </div>

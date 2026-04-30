@@ -20,7 +20,6 @@ export interface EstadisticasDashboard {
   };
 }
 
-
 export interface ResumenCliente {
   id: string;
   nombreCompleto: string;
@@ -34,7 +33,19 @@ export interface ResumenCliente {
   fechaUltimaCompra: string | null;
 }
 
- 
+export interface PaginacionMeta {
+  totalItems: number;
+  itemCount: number;
+  itemsPerPage: number;
+  totalPages: number;
+  currentPage: number;
+}
+
+export interface RespuestaPaginadaClientes {
+  data: ResumenCliente[];
+  meta: PaginacionMeta;
+}
+
 export interface ComprobanteData {
   id: string;
   numeroRecibo: string;
@@ -48,12 +59,11 @@ export const obtenerEstadisticasRequest = async (): Promise<EstadisticasDashboar
   return respuesta.data;
 };
 
-export const obtenerHistorialClientes = async (): Promise<ResumenCliente[]> => {
-  const respuesta = await api.get('/admin/clientes');
+export const obtenerHistorialClientes = async (page: number = 1, limit: number = 5): Promise<RespuestaPaginadaClientes> => {
+  const respuesta = await api.get('/admin/clientes', { params: { page, limit } });
   return respuesta.data;
 };
 
- 
 export const obtenerClasesMasCompradasRequest = async (limite = 5) => {
   const { data } = await api.get('/admin/clases-mas-compradas', { params: { limite } });
   return data;

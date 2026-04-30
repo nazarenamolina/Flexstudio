@@ -1,9 +1,10 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { useNavigate } from 'react-router-dom';
+import { useQuery } from '@tanstack/react-query';
 import * as UpChunk from '@mux/upchunk';
 import { solicitarUrlSubidaRequest } from '../api/videos'; 
-import { obtenerCategoriasRequest, type Categoria } from '../api/categoria';
+import { obtenerCategoriasRequest} from '../api/categoria';
 import toast from 'react-hot-toast';
 
 export interface NuevoVideoForm {
@@ -17,31 +18,35 @@ export interface NuevoVideoForm {
 export const useNuevoVideo = () => {
   const navigate = useNavigate();
   const { register, handleSubmit, formState: { errors, isSubmitting } } = useForm<NuevoVideoForm>();
-  const [categorias, setCategorias] = useState<Categoria[]>([]);
+  const { data: categorias = [], isLoading: cargandoCategorias } = useQuery({
+    queryKey: ['categorias'],
+    queryFn: async () => {
+      const res = await obtenerCategoriasRequest();
+      return Array.isArray(res) ? res : (res as any).categorias || [];
+    }
+  });
   const [archivos, setArchivos] = useState({
     video: null as File | null,
-    imagen: null as File | null,
+    imagen: null as File | string | null,
   });
+
   const [estadoSubida, setEstadoSubida] = useState<'IDLE' | 'PIDIENDO_URL' | 'SUBIENDO' | 'COMPLETADO'>('IDLE');
   const [progreso, setProgreso] = useState(0);
-
-  useEffect(() => {
-    const cargarCategorias = async () => {
-      try {
-        const res = await obtenerCategoriasRequest();
-        setCategorias(Array.isArray(res) ? res : (res as any).categorias || []);
-      } catch (error) {
-        toast.error("Error al cargar categorías");
-      }
-    };
-    cargarCategorias();
-  }, []);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>, tipo: 'video' | 'imagen') => {
     if (e.target.files && e.target.files.length > 0) {
       setArchivos({ ...archivos, [tipo]: e.target.files[0] });
     }
   };
+
+  const handleSelectFromGallery = (url: string) => {
+    setArchivos({ ...archivos, imagen: url });
+  };
+
+  const handleEliminarMiniatura = () => {
+    setArchivos({ ...archivos, imagen: null });
+  };
+
   const onSubmit = async (data: NuevoVideoForm) => {
     if (!archivos.video) {
       toast.error('El video es obligatorio');
@@ -55,13 +60,18 @@ export const useNuevoVideo = () => {
       formData.append('idCategoria', data.idCategoria);
       formData.append('duracion', data.duracion.toString() || '0');
       formData.append('orden', data.orden.toString() || '1');
-      formData.append('descripcion', data.descripcion || '');
-
+      if (data.descripcion) formData.append('descripcion', data.descripcion);
       if (archivos.imagen) {
-        formData.append('imagen', archivos.imagen);  
+        if (typeof archivos.imagen === 'string') {
+          formData.append('imagenUrl', archivos.imagen);
+        } else {
+          formData.append('imagen', archivos.imagen); 
+        }
       }
+
       const { uploadUrl } = await solicitarUrlSubidaRequest(formData);
       setEstadoSubida('SUBIENDO');
+      
       const upload = UpChunk.createUpload({
         endpoint: uploadUrl,
         file: archivos.video,
@@ -94,5 +104,10 @@ export const useNuevoVideo = () => {
       setEstadoSubida('IDLE');
     }
   };
-  return {register, handleSubmit: handleSubmit(onSubmit), errors, isSubmitting, categorias, archivos, estadoSubida, progreso, handleFileChange, navigate};
+
+  return {
+    register, handleSubmit: handleSubmit(onSubmit), errors, isSubmitting, 
+    categorias, cargandoCategorias, archivos, estadoSubida, progreso, 
+    handleFileChange, handleSelectFromGallery, handleEliminarMiniatura, navigate
+  };
 };

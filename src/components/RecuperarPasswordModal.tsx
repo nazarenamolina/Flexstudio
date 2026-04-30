@@ -41,7 +41,7 @@ export const RecuperarPasswordModal = ({ isOpen, onClose }: Props) => {
   return (
     <Transition appear show={isOpen} as={Fragment}>
       <Dialog as="div" className="relative z-50" onClose={onClose}>
-        {/* Fondo oscuro con desenfoque (Backdrop) */}
+        {/* Fondo oscuro con desenfoque*/}
         <Transition.Child
           as={Fragment}
           enter="ease-out duration-300"
