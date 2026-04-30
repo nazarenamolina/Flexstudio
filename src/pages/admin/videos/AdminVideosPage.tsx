@@ -1,149 +1,154 @@
-import { Search, Plus, Loader2, Edit2, Trash2, Image as ImageIcon } from 'lucide-react';
+import { useState } from 'react';
+import { Search, Loader2, Image as ImageIcon, LayoutGrid, List, PlaySquare, ChevronDown, Filter } from 'lucide-react';
+import { Menu } from '@headlessui/react';
 import { Toaster } from 'react-hot-toast';
-import { ConfirmarEliminarModal } from '../../../components/ConfirmarEliminarModal'; 
+import { motion, AnimatePresence } from 'framer-motion';
+import { ConfirmarEliminarModal } from '../../../components/ConfirmarEliminarModal';
 import { useAdminVideos } from '../../../hooks/useAdminVideos';
+import { VideoCard } from '../../../components/VideoCard';
+import { AddVideoCard } from '../../../components/AddVideoCard';
 
 export const AdminVideosPage = () => {
-  const {navigate, cargando, categorias, busqueda, setBusqueda, filtroCategoria, setFiltroCategoria, videosFiltrados, modalAbierto, setModalAbierto, videoAEliminar, estaEliminando, abrirModalEliminacion, ejecutarEliminacion} = useAdminVideos();
+  const { navigate, cargando, categorias, busqueda, setBusqueda, filtroCategoria, setFiltroCategoria, videosFiltrados, modalAbierto, setModalAbierto, videoAEliminar, estaEliminando, abrirModalEliminacion, ejecutarEliminacion } = useAdminVideos();
+  const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
+
+  const slideVariants = {
+    hidden: { opacity: 0, x: 20 },
+    visible: { opacity: 1, x: 0 },
+    exit: { opacity: 0, x: -20 }
+  };
 
   return (
-    <div className="w-full h-full flex flex-col font-sans overflow-hidden relative">
+    <div className="max-w-7xl mx-auto p-4 sm:p-6 md:p-8 overflow-hidden font-sans relative">
       <Toaster position="top-right" />
 
-      {/* CABECERA */}
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-8 shrink-0">
-        <div>
-          <h1 className="text-3xl md:text-4xl font-extrabold text-white mb-1 tracking-tight">Librería de Videos</h1>
-          <p className="text-gray-400 text-sm md:text-base">Gestiona, organiza y publica el contenido de tus clases.</p>
+      {/* CABECERA Y SWITCHER */}
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 mb-8">
+        <div className="space-y-1">
+          <h1 className="text-3xl md:text-5xl font-black text-white flex items-center gap-3 tracking-tighter uppercase italic">
+            <PlaySquare className="text-[#d7f250] w-8 h-8 md:w-12 md:h-12 shrink-0" />
+            <span className="leading-none mt-1">Librería de videos</span>
+          </h1>
+          <p className="text-gray-500 text-sm font-medium tracking-wide">
+            Organizando <span className="text-gray-300">{videosFiltrados.length}</span> videos en tu plataforma.
+          </p>
         </div>
-        <button
-          onClick={() => navigate('/admin/videos/nuevo')}
-          className="bg-[#d7f250] hover:bg-[#c4dd46] text-[#131313] px-6 py-3 rounded-full font-bold flex items-center gap-2 transition-transform duration-200 hover:scale-105 shadow-lg whitespace-nowrap"
-        >
-          <Plus size={20} /> Subir Nuevo Video
-        </button>
+
+        {/* SWITCHER */}
+        <div className="flex bg-zinc-900/80 p-1 rounded-full border border-white/5 backdrop-blur-md shadow-2xl">
+          <button
+            onClick={() => setViewMode('grid')}
+            className={`p-2 px-4 rounded-full transition-all duration-300 flex items-center gap-2 ${viewMode === 'grid' ? 'bg-[#d7f250] text-[#131313] shadow-lg scale-95' : 'text-gray-500 hover:text-white'}`}
+          >
+            <LayoutGrid size={16} />
+            <span className="text-[10px] font-bold uppercase tracking-widest hidden sm:inline">Galeria</span>
+          </button>
+          <button
+            onClick={() => setViewMode('list')}
+            className={`p-2 px-4 rounded-full transition-all duration-300 flex items-center gap-2 ${viewMode === 'list' ? 'bg-[#d7f250] text-[#131313] shadow-lg scale-95' : 'text-gray-500 hover:text-white'}`}
+          >
+            <List size={16} />
+            <span className="text-[10px] font-bold uppercase tracking-widest hidden sm:inline">Lista</span>
+          </button>
+        </div>
       </div>
 
       {/* BARRA DE FILTROS */}
-      <div className="flex flex-col xl:flex-row gap-4 mb-8 shrink-0">
+      <div className="flex flex-col xl:flex-row gap-4 mb-10 items-start xl:items-center">
         <div className="relative w-full xl:w-80 shrink-0">
-          <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 w-5 h-5" />
+          <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 w-4 h-4" />
           <input
             type="text"
-            placeholder="Buscar videos por título..."
+            placeholder="Buscar por título..."
             value={busqueda}
             onChange={(e) => setBusqueda(e.target.value)}
-            className="w-full bg-[#131313] border border-gray-800 focus:border-[#d7f250] rounded-full pl-12 pr-4 py-3 text-white outline-none transition-all shadow-sm"
+            className="w-full bg-[#131313] border border-white/10 focus:border-[#d7f250] rounded-full pl-11 pr-4 py-3 text-white text-sm outline-none transition-all shadow-sm focus:shadow-[0_0_15px_rgba(215,242,80,0.15)]"
           />
         </div>
 
-        <div className="flex gap-2 overflow-x-auto pb-2 xl:pb-0 custom-scrollbar flex-1">
-          {['Todos los Videos', ...categorias.map(c => c.titulo)].map(cat => (
-            <button
-              key={cat}
-              onClick={() => setFiltroCategoria(cat)}
-              className={`px-5 py-2.5 rounded-full border text-sm font-bold whitespace-nowrap transition-all duration-200 ${filtroCategoria === cat
-                ? 'bg-[#d7f250] border-[#d7f250] text-[#131313] shadow-md'
-                : 'bg-[#131313] border-gray-800 text-gray-400 hover:border-gray-600 hover:text-white'
-                }`}
-            >
-              {cat}
-            </button>
-          ))}
-        </div>
-      </div>
+        {/* DROPDOWN DE CATEGORÍAS */}
+        <Menu as="div" className="relative">
+          <Menu.Button className="flex items-center gap-2 px-5 py-2.5 rounded-full border text-[11px] uppercase tracking-widest font-black transition-all duration-300 bg-[#131313] border-white/5 text-gray-400 hover:border-white/20 hover:text-white">
+            <Filter size={14} />
+            <span className="hidden sm:inline">{filtroCategoria === 'Todos los Videos' ? 'Todas las Categorías' : filtroCategoria.split('|')[1]?.trim() || filtroCategoria}</span>
+            <span className="sm:hidden">Categoría</span>
+            <ChevronDown size={14} className="transition-transform ui-open:rotate-180" />
+          </Menu.Button>
 
-      {/* GRILLA DE VIDEOS */}
-      <div className="flex-1 overflow-y-auto custom-scrollbar pr-2 pb-10">
-        {cargando ? (
-          <div className="w-full py-20 flex flex-col items-center justify-center text-[#d7f250]">
-            <Loader2 className="w-10 h-10 animate-spin mb-4" />
-            <p className="font-bold animate-pulse">Cargando librería...</p>
-          </div>
-        ) : videosFiltrados.length === 0 ? (
-          <div className="w-full py-20 text-center border-2 border-dashed border-gray-800 rounded-2xl flex flex-col items-center">
-            <ImageIcon className="w-12 h-12 text-gray-700 mb-3" />
-            <p className="text-gray-500 font-medium text-lg">No hay videos para mostrar.</p>
-            <p className="text-gray-600 text-sm mt-1">Intenta cambiar los filtros o sube uno nuevo.</p>
-          </div>
-        ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-            {videosFiltrados.map(video => (
-              <div key={video.id} className="bg-[#131313] rounded-[30px] overflow-hidden border border-gray-800 shadow-sm flex flex-col hover:border-gray-700 transition-colors group">
-                
-                {/* REPRODUCTOR / MINIATURA */}
-                <div className="w-full aspect-video bg-[#0a0a0a] relative flex items-center justify-center overflow-hidden">
-                  
-                  {/* ESTADO: PROCESANDO */}
-                  {(video as any).estado === 'PROCESANDO' || !video.playbackId ? (
-                    <div className="relative w-full h-full flex flex-col items-center justify-center">
-                      {video.imagenUrl && (
-                        <img src={video.imagenUrl} alt="Fondo" className="absolute inset-0 w-full h-full object-cover opacity-20" />
-                      )}
-                      <Loader2 className="w-8 h-8 animate-spin text-[#d7f250] relative z-10 mb-2" />
-                      <p className="text-[10px] text-gray-400 font-black uppercase tracking-[0.2em] relative z-10">Procesando</p>
-                    </div>
-                  ) : (
-                    /* ESTADO: LISTO */
-                    <div className="absolute inset-0 w-full h-full">
-                      {video.imagenUrl ? (
-                        <img 
-                          src={video.imagenUrl} 
-                          alt={video.titulo} 
-                          className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" 
-                        />
-                      ) : (
-                        <div className="w-full h-full bg-gray-900 flex items-center justify-center text-gray-700">
-                           <ImageIcon size={40} />
-                        </div>
-                      )}
-                      
-                      <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                      </div>
-
-                      {/* BADGE DE DURACIÓN */}
-                      {video.duracionFormateada && (
-                        <span className="absolute bottom-3 right-3 bg-black/80 text-white text-[10px] font-bold px-2 py-1 rounded backdrop-blur-sm z-20">
-                          {video.duracionFormateada}
-                        </span>
-                      )}
-                    </div>
+          <Menu.Items className="absolute left-0 mt-2 w-56 origin-top-left rounded-xl bg-[#1a1a1a] border border-white/10 shadow-xl overflow-hidden z-50 focus:outline-none">
+            <Menu.Item>
+              {({ active }) => (
+                <button
+                  onClick={() => setFiltroCategoria('Todos los Videos')}
+                  className={`w-full px-4 py-3 text-left text-xs uppercase tracking-widest font-black transition-colors flex items-center gap-2 ${
+                    active ? 'bg-[#d7f250] text-[#131313]' : filtroCategoria === 'Todos los Videos' ? 'bg-white/5 text-[#d7f250]' : 'text-gray-400'
+                  }`}
+                >
+                  Todas las Categorías
+                  {filtroCategoria === 'Todos los Videos' && <span className="ml-auto">✓</span>}
+                </button>
+              )}
+            </Menu.Item>
+            {categorias.map(cat => {
+              const tituloCorto = cat.titulo.includes('|') ? cat.titulo.split('|')[1].trim() : cat.titulo;
+              return (
+                <Menu.Item key={cat.id}>
+                  {({ active }) => (
+                    <button
+                      onClick={() => setFiltroCategoria(cat.titulo)}
+                      className={`w-full px-4 py-3 text-left text-xs uppercase tracking-widest font-black transition-colors flex items-center gap-2 ${
+                        active ? 'bg-[#d7f250] text-[#131313]' : filtroCategoria === cat.titulo ? 'bg-white/5 text-[#d7f250]' : 'text-gray-400'
+                      }`}
+                    >
+                      {tituloCorto}
+                      {filtroCategoria === cat.titulo && <span className="ml-auto">✓</span>}
+                    </button>
                   )}
-
-                  {/* BADGE DE CATEGORÍA */}
-                  <span className="absolute top-3 left-3 z-20 bg-[#d7f250] text-[#131313] text-[10px] font-black px-2 py-1 rounded uppercase tracking-wider shadow-md pointer-events-none">
-                    {video.categoria?.titulo || 'Sin categoría'}
-                  </span>
-                </div>
-
-                <div className="p-5 flex-1 flex flex-col">
-                  <h3 className="text-white font-bold text-lg leading-tight line-clamp-2 mb-4">
-                    {video.titulo}
-                  </h3>
-
-                  <div className="mt-auto flex items-center gap-3">
-                    <button
-                      onClick={() => navigate(`/admin/videos/editar/${video.id}`)}
-                      className="flex-1 bg-[#d7f250] hover:bg-[#c4dd46] text-[#131313] py-2.5 px-4 rounded-xl font-bold flex items-center justify-center gap-2 transition-transform duration-200 hover:-translate-y-1 text-sm shadow-md"
-                    >
-                      <Edit2 size={18} /> Editar
-                    </button>
-
-                    <button
-                      onClick={() => abrirModalEliminacion(video.id, video.titulo)}
-                      className="p-2.5 bg-[#1a1a1a] hover:bg-red-500 text-gray-400 hover:text-white border border-gray-700 hover:border-red-500 rounded-xl transition-all duration-200 hover:-translate-y-1 shadow-md"
-                      title="Eliminar Video"
-                    >
-                      <Trash2 size={18} />
-                    </button>
-                  </div>
-                </div>
-
-              </div>
-            ))}
-          </div>
-        )}
+                </Menu.Item>
+              );
+            })}
+          </Menu.Items>
+        </Menu>
       </div>
+
+      {/* ZONA DE CARGA O VACÍO */}
+      {cargando ? (
+        <div className="w-full py-20 flex flex-col items-center justify-center text-[#d7f250]">
+          <Loader2 className="w-10 h-10 animate-spin mb-4" />
+          <p className="font-bold tracking-widest uppercase text-sm animate-pulse">Cargando librería de videos...</p>
+        </div>
+      ) : videosFiltrados.length === 0 ? (
+        <div className="w-full py-20 text-center border-2 border-dashed border-white/10 rounded-[32px] flex flex-col items-center bg-[#131313]/50">
+          <ImageIcon className="w-12 h-12 text-gray-700 mb-4" />
+          <p className="text-gray-400 font-bold tracking-widest uppercase text-sm">No hay videos encontrados</p>
+          <p className="text-gray-600 text-xs mt-2 max-w-sm">Ajusta los filtros de búsqueda o haz clic en "Subir Nuevo Video" para agregar contenido.</p>
+        </div>
+      ) : (
+        /* GRILLA / LISTA CONTENEDORA (Animada) */
+        <AnimatePresence mode="wait">
+          <motion.div 
+            key={viewMode}
+            variants={slideVariants}
+            initial="hidden"
+            animate="visible"
+            exit="exit"
+            transition={{ duration: 0.25, ease: "easeInOut" }}
+            className={`grid gap-6 ${viewMode === 'grid' ? 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4' : 'grid-cols-1'}`}
+          >
+            <AddVideoCard viewMode={viewMode} onClick={() => navigate('/admin/videos/nuevo')} />
+
+            {videosFiltrados.map(video => (
+              <VideoCard
+                key={video.id}
+                video={video}
+                viewMode={viewMode}
+                onEdit={(id) => navigate(`/admin/videos/editar/${id}`)}
+                onDelete={abrirModalEliminacion}
+              />
+            ))}
+          </motion.div>
+        </AnimatePresence>
+      )}
 
       <ConfirmarEliminarModal
         isOpen={modalAbierto}

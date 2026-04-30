@@ -1,75 +1,23 @@
 import { useState } from 'react';
-import { Plus, Edit2, Trash2, ArrowRight, PencilLine } from 'lucide-react';
+import { PencilLine, LayoutGrid, List } from 'lucide-react';
 import { useCategorias } from '../../../hooks/useCategorias';
 import { ConfirmarEliminarModal } from '../../../components/ConfirmarEliminarModal';
+import { motion, AnimatePresence } from 'framer-motion';
+import { CategoriaCard } from '../../../components/CategoriaCard';
+import { AddCategoriaCard } from '../../../components/AddCategoriaCard';
 
 export const CategoriasPage = () => {
-  const {
-    categorias,
-    isLoading,
-    estaEliminando,
-    // 👇 Eliminamos 'abrirModalEliminacion' de aquí porque ya no se usa
-    handleEliminar,
-    navigateANueva,
-    navigateAEditar,
-  } = useCategorias();
-
-  // 👇 Agregamos el useState que faltaba aquí
+  const { categorias, isLoading, estaEliminando, handleEliminar, navigateANueva, navigateAEditar } = useCategorias();
   const [modalAbierto, setModalAbierto] = useState(false);
   const [categoriaAEliminar, setCategoriaAEliminar] = useState<{ id: string, titulo: string } | null>(null);
-
-  // 👇 PATRÓN BENTO GRID
-  const getBentoClasses = (index: number) => {
-    const pos = index % 5;
-
-    if (pos === 0) return 'md:col-span-1 md:row-span-1';
-    if (pos === 1) return 'md:col-span-1 md:row-span-2';
-    if (pos === 2) return 'md:col-span-1 md:row-span-2';
-    if (pos === 3) return 'md:col-span-1 md:row-span-2';
-
-    return 'col-span-1 row-span-1';
-  };
+  const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
 
   if (isLoading) {
     return (
-      <div className="min-h-screen rounded-2xl p-6 md:p-20 font-sans">
-        <div className="flex flex-col xl:flex-row justify-between items-start xl:items-end gap-6 mb-12">
-          <div className="max-w-2xl">
-            <div className="h-20 w-64 bg-gray-800 rounded animate-pulse" />
-          </div>
-          <div className="h-12 w-40 bg-gray-800 rounded-full animate-pulse" />
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 pb-10 auto-rows-[280px] grid-flow-row-dense">
-          {[...Array(6)].map((_, i) => (
-            <div
-              key={i}
-              className={`relative rounded-[32px] overflow-hidden bg-gray-800/50 animate-pulse ${getBentoClasses(i)}`}
-            />
-          ))}
-        </div>
-      </div>
-    );
-  }
-
-  if (!isLoading && categorias.length === 0) {
-    return (
-      <div className="w-full min-h-screen rounded-2xl p-9 md:p-10 font-sans flex items-center justify-center">
-        <div className="text-center max-w-md">
-          <div className="w-20 h-20 mx-auto mb-6 rounded-full bg-gray-800 flex items-center justify-center">
-            <Plus className="w-10 h-10 text-gray-600" />
-          </div>
-          <h2 className="text-3xl font-black text-white mb-3">Sin categorías</h2>
-          <p className="text-gray-400 mb-8">
-            No hay categorías aún. Comienza añadiendo la primera categoría para organizar tus videos.
-          </p>
-          <button
-            onClick={navigateANueva}
-            className="bg-[#d7f250] hover:bg-[#c4dd46] text-[#131313] px-8 py-4 rounded-full font-bold text-sm tracking-widest inline-flex items-center gap-2 transition-all duration-300 hover:scale-105 shadow-lg"
-          >
-            Crear primera categoría <Plus size={18} />
-          </button>
-        </div>
+      <div className="min-h-screen p-6 md:p-20 flex flex-col items-center justify-center">
+        <motion.div animate={{ rotate: 360 }} transition={{ repeat: Infinity, duration: 1 }}>
+          <PencilLine className="text-[#d7f250] w-12 h-12 opacity-20" />
+        </motion.div>
       </div>
     );
   }
@@ -85,78 +33,71 @@ export const CategoriasPage = () => {
     setModalAbierto(false);
   };
 
+  const slideVariants = {
+    hidden: { opacity: 0, x: 20 },
+    visible: { opacity: 1, x: 0 },
+    exit: { opacity: 0, x: -20 }
+  };
+
   return (
-    <>
-        <div className="p-3 sm:p-6 md:p-8 max-w-7xl mx-auto flex flex-row justify-between">
-           <h1 className="text-3xl sm:text-5xl font-principal font-bold text-white flex items-center gap-2 sm:gap-3"> <PencilLine className="text-[#d7f250]" size={40} />Editar Categorías
+    <div className="max-w-7xl mx-auto p-4 sm:p-6 md:p-8 overflow-hidden">
+      
+      {/* HEADER */}
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 mb-10">
+        <motion.div layout className="space-y-1">
+          <h1 className="text-3xl md:text-5xl font-black text-white flex items-center gap-3 font-principal">
+            <PencilLine className="text-[#d7f250] w-8 h-8 md:w-10 md:h-10 shrink-0" />
+            <span className="leading-none mt-1">Categorias</span>
           </h1>
+          <p className="text-gray-500 text-sm font-medium tracking-wide">
+            Administrando <span className="text-gray-300">{categorias.length}</span> categorías activas.
+          </p>
+        </motion.div>
+
+        {/* SWITCHER */}
+        <div className="flex bg-zinc-900/80 p-1 rounded-full border border-white/5 backdrop-blur-md shadow-2xl">
           <button
-          onClick={navigateANueva}
-          className="bg-[#d7f250] text-[#131313] px-3 py-3 sm:px-8 sm:py-4 rounded-full font-bold text-sm tracking-widest flex  items-center transition-all duration-300 hover:scale-105 shadow-lg hover:bg-[#fff] cursor-pointer"
-        >
-          <span className="sm:hidden"></span>
-          <span className="hidden sm:block px-4">AÑADIR CATEGORÍA</span>
-        <Plus size={18} />
-        </button>
+            onClick={() => setViewMode('grid')}
+            className={`p-2 px-4 rounded-full transition-all duration-300 flex items-center gap-2 ${viewMode === 'grid' ? 'bg-[#d7f250] text-[#131313] shadow-lg scale-95' : 'text-gray-500 hover:text-white'}`}
+          >
+            <LayoutGrid size={16} />
+            <span className="text-[10px] font-bold uppercase tracking-widest hidden sm:inline">Galeria</span>
+          </button>
+          <button
+            onClick={() => setViewMode('list')}
+            className={`p-2 px-4 rounded-full transition-all duration-300 flex items-center gap-2 ${viewMode === 'list' ? 'bg-[#d7f250] text-[#131313] shadow-lg scale-95' : 'text-gray-500 hover:text-white'}`}
+          >
+            <List size={16} />
+            <span className="text-[10px] font-bold uppercase tracking-widest hidden sm:inline">Lista</span>
+          </button>
         </div>
-
-      <div className="mx-auto lg:mx-15 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 auto-rows-[280px] grid-flow-row-dense">
-        {categorias.map((cat, index) => {
-          const tituloMostrar = cat.titulo.includes('|')
-            ? cat.titulo.split('|').map((s) => s.trim())
-            : cat.titulo;
-
-          return (
-            <div
-              key={cat.id}
-              onClick={() => navigateAEditar(cat.id)}
-              className={`relative rounded-3xl overflow-hidden group cursor-pointer border border-white/5 hover:border-[#d7f250]/50 transition-all duration-500 ${getBentoClasses(index)}`}
-            >
-              <div
-                className="absolute inset-0 bg-cover bg-center transition-transform duration-700 group-hover:scale-110"
-                style={{
-                  backgroundImage: cat.imagenTarjeta ? `url(${cat.imagenTarjeta})` : 'none',
-                }}
-              />
-
-              <div className="absolute inset-0 bg-gradient-to-t from-[#050505] via-[#050505]/60 to-transparent opacity-90 transition-opacity duration-300 group-hover:opacity-100" />
-
-              <div className="absolute top-3 right-3 flex gap-2 z-20 opacity-100 lg:opacity-0 lg:group-hover:opacity-100 transition-opacity duration-300">
-                <button
-                  onClick={(e) => { e.stopPropagation(); navigateAEditar(cat.id); }}
-                  className="bg-black/50 hover:bg-white border border-white/20 hover:border-white p-2.5 rounded-full cursor-pointer transition-colors group/edit" title="Editar">
-                  <Edit2 size={16} className="text-white group-hover/edit:text-black" />
-                </button>
-                <button
-                  onClick={(e) => { e.stopPropagation(); abrirModalConConfirmacion(`${cat.id}`, `${tituloMostrar}`); }}
-                  className="bg-black/50 backdrop-blur-md hover:bg-red-500 border border-white/20 hover:border-red-500 p-2.5 rounded-full cursor-pointer transition-colors" title="Eliminar">
-                  <Trash2 size={16} className="text-white" />
-                </button>
-              </div>
-
-              <div className="absolute p-8 flex flex-col z-10">
-                <div className="mb-4">
-                  <span className="inline-block px-3 py-1 rounded-full border border-[#d7f250]/50 bg-[#d7f250]/10 text-[#d7f250] text-[10px] font-bold tracking-widest uppercase backdrop-blur-sm shadow-black/50">
-                    {cat.videos?.length || 0} VIDEOS
-                  </span>
-                </div>
-
-                <h3 className="text-3xl md:text-4xl font-black text-white uppercase tracking-tight leading-none mb-3 drop-shadow-md">
-                  {tituloMostrar}
-                </h3>
-
-                <p className="text-gray-400 text-sm md:text-base line-clamp-2 max-w-[85%] font-light drop-shadow-md">
-                  Edita los contenidos, videos de muestra y beneficios de esta categoría.
-                </p>
-
-                <div className="mt-6 flex items-center text-[#d7f250] text-xs font-bold tracking-widest uppercase">
-                  Ver Categoría <ArrowRight size={16} className="ml-2 group-hover:translate-x-2 transition-transform duration-300" />
-                </div>
-              </div>
-            </div>
-          );
-        })}
       </div>
+
+      {/* GRILLA / LISTA CONTENEDORA */}
+      <AnimatePresence mode="wait">
+        <motion.div 
+          key={viewMode}
+          variants={slideVariants}
+          initial="hidden"
+          animate="visible"
+          exit="exit"
+          transition={{ duration: 0.25, ease: "easeInOut" }}
+          className={`grid gap-6 ${viewMode === 'grid' ? 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3' : 'grid-cols-1'}`}
+        >
+          <AddCategoriaCard viewMode={viewMode} onClick={navigateANueva} />
+
+          {categorias.map((cat) => (
+            <CategoriaCard
+              key={cat.id}
+              categoria={cat}
+              viewMode={viewMode}
+              onEdit={navigateAEditar}
+              onDelete={abrirModalConConfirmacion}
+            />
+          ))}
+        </motion.div>
+      </AnimatePresence>
+
       <ConfirmarEliminarModal
         isOpen={modalAbierto}
         onClose={() => !estaEliminando && setModalAbierto(false)}
@@ -164,6 +105,6 @@ export const CategoriasPage = () => {
         tituloItem={categoriaAEliminar?.titulo || ''}
         estaEliminando={estaEliminando}
       />
-</>
+    </div>
   );
 };

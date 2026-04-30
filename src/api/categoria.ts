@@ -14,6 +14,7 @@ export interface Categoria {
   beneficios?: { titulo: string; descripcion: string; icono?: string }[];
   fechaCreacion?: string | Date;
   destacada?: boolean;
+  cantidadVideos?: number;
 }
 
 
