@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { User, Mail, ChevronLeft, ChevronRight, Loader2 } from 'lucide-react';
+import { User, Mail, ChevronLeft, ChevronRight, Loader2, Instagram, Clock, GraduationCap, BicepsFlexed} from 'lucide-react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
@@ -99,8 +99,6 @@ const HomePage = () => {
 
   return (
     <main className="min-h-screen font-sans text-[#161616] pt-[52px]">
-
-      {/* --- SECCIÓN SLIDER --- */}
       <section
         className=" bg-white relative w-full h-[50vh] sm:h-[60vh] md:h-[70vh] lg:h-[80vh] xl:h-[100vh] overflow-hidden group"
         onTouchStart={handleTouchStart}
@@ -136,53 +134,80 @@ const HomePage = () => {
           ))}
         </div>
       </section>
- {/* --- SECCIÓN BIOGRAFÍA --- */}
-      <section className="container mx-auto px-6 pt-16 pb-4">
-        <article className="w-full max-w-6xl mx-auto flex flex-col lg:flex-row items-center gap-10 lg:gap-16 p-6 md:p-10 lg:p-12 rounded-[30px]">
-          <div className="w-full lg:w-1/2 ">
-            <div className="relative w-full aspect-[4/5] sm:aspect-square lg:aspect-[4/5] overflow-hidden rounded-[24px] border border-gray-800 shadow-inner group">
-              <img
-                src="https://res.cloudinary.com/dmp7mcwie/image/upload/v1777342798/flex-studio/videos/dsgzc42aoeigsmxpvb3f.png"
-                alt="Cande Imbaud"
-                className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
-              />
-              <div className="absolute inset-0 bg-gradient-to-t from-[#131313]/60 via-transparent to-transparent pointer-events-none"></div>
-            </div>
+
+      {/* SECCIÓN BIOGRAFÍA */}
+      <section className="w-full flex flex-col lg:flex-row bg-[#FDFDF8] overflow-hidden">
+        <div className="w-full lg:w-1/2 relative min-h-[50vh] lg:min-h-full">
+          <img
+            src="https://res.cloudinary.com/dmp7mcwie/image/upload/v1775007736/flex-studio/categorias/yjtki7chv3jsy2z8hlfb.jpg"
+            alt="Cande Imbaud - Profesora de Flexibilidad"
+            className="absolute inset-0 w-full h-full object-cover object-center"
+          />
+        </div>
+
+        <div className="w-full lg:w-1/2 flex flex-col justify-center items-center px-8 py-10 md:px-16 lg:px-24 text-center font-principal text-[#131313]">
+
+          <h2 className="text-7xl md:text-9xl tracking-tight uppercase leading-none mb-10 lg:mb-16 text-[#d7f250] opacity-90">
+            Cande Imbaud
+          </h2>
+
+          <div className="text-sm md:text-base font-normal leading-loose space-y-6 max-w-md mb-10 opacity-90">
+            <p>
+              Hola, soy Cande, tengo 27 años y soy profesora de educación física, acróbata y entrenadora especializada en flexibilidad para deportistas de todas las disciplinas.
+            </p>
+            <p>
+              Con más de 8 años de experiencia, he acompañado a patinadoras, bailarinas, gimnastas y deportistas a mejorar su rendimiento y prevenir lesiones a través de la flexibilidad, compartiendo también el movimiento con los más pequeños.
+            </p>
           </div>
 
-          <div className="w-full lg:w-1/2 flex flex-col justify-center space-y-6">
-            <div>
-              <span className="text-[#d7f250] text-xs md:text-sm font-black tracking-[0.2em] uppercase mb-3 block">
-                Sobre la instructora
+          {/* --- BADGES DE EXPERIENCIA --- */}
+          <div className="flex flex-wrap items-center justify-center gap-x-6 gap-y-4 w-full max-w-3xl">
+            
+            <div className="flex items-center gap-2.5">
+              <Clock className="w-6 h-6 text-[#d7f250] shrink-0" strokeWidth={2} />
+              <span className="text-[12px] sm:text-[13px] md:text-sm font-bold tracking-wide text-[#131313] uppercase text-left">
+                8+ Años de Experiencia
               </span>
-              <h2 className="text-3xl md:text-5xl font-black text-white leading-[1.1] uppercase italic tracking-tight">
-                Conocé a <span className="text-[#d7f250]">Cande</span>
-              </h2>
             </div>
-            <div className="space-y-4 text-[#131313] text-base md:text-lg leading-relaxed font-medium">
-              <p>Hola, soy Cande, tengo 27 años y soy profesora de educación física, acróbata y entrenadora especializada en flexibilidad para deportistas de todas las disciplinas.</p>
-              <p>Con más de 8 años de experiencia en clases de fitness grupal, flexibilidad y acrobacias, he acompañado a patinadoras, bailarinas, gimnastas y deportistas a mejorar su rendimiento y prevenir lesiones a través de la flexibilidad. Además, me encanta compartir el movimiento con los más pequeños, dando clases para niños desde hace más de 3 años, siempre con creatividad y respeto por cada proceso.</p>
-              <p>Mi misión es que descubras que trabajar tu flexibilidad no es solo estirar, sino entrenar tu cuerpo con inteligencia para que se mueva con libertad, fuerza y control.</p>
+
+            <div className="hidden sm:block w-[1px] h-6 bg-[#302B1B]/10"></div>
+
+            <div className="flex items-center gap-2.5">
+              <GraduationCap className="w-6 h-6 text-[#d7f250] shrink-0" strokeWidth={2} />
+              <span className="text-[12px] sm:text-[13px] md:text-sm font-bold tracking-wide text-[#131313] uppercase text-left">
+                Profesora de Ed. Física
+              </span>
+            </div>
+
+            <div className="hidden sm:block w-[1px] h-6 bg-[#302B1B]/10"></div>
+
+            <div className="flex items-center gap-2.5">
+              <BicepsFlexed className="w-6 h-6 text-[#d7f250] shrink-0 -mr-0.5" strokeWidth={2} />
+              <span className="text-[12px] sm:text-[13px] md:text-sm font-bold tracking-wide text-[#131313] uppercase text-left">
+                Especialista en Flexibilidad
+              </span>
             </div>
           </div>
-        </article>
 
+        </div>
+      </section>
 
- {/* --- TÍTULO EXPLORAR CLASES --- */}
-        <div className="flex justify-center mt-0 mb-16">
+      <section className="container mx-auto px-6 py-6">
+        <div className="flex justify-center mt-0 -mx-6 md:mx-0">
           <img
             src="https://res.cloudinary.com/dmp7mcwie/image/upload/v1774312501/titulo_rue8kw.png"
             alt="Explorar Clases"
-            className="w-full md:h-60"
+            className="w-full h-auto object-cover"
           />
         </div>
-     <CarruselDestacadas
-        categorias={categorias}
-        flippedCard={flippedCard}
-        setFlippedCard={setFlippedCard}
-      />
-        {/* --- GRILLA TODAS LAS CATEGORÍAS --- */}
-        <article className="flex flex-wrap justify-center gap-[25px]">
+
+        <CarruselDestacadas
+          categorias={categorias}
+          flippedCard={flippedCard}
+          setFlippedCard={setFlippedCard}
+        />
+
+        <article className="flex flex-wrap justify-center gap-[25px] mt-10">
           {cargando ? (
             <div className="w-full text-center py-10">
               <h4 className="text-xl text-gray-400 font-bold animate-pulse">Cargando clases disponibles...</h4>
@@ -203,8 +228,7 @@ const HomePage = () => {
           )}
         </article>
 
-        {/* --- SECCIÓN CONTACTO --- */}
-        <article className="mt-24 w-[100%] sm:w-[50%] mx-auto bg-white bg-[url('https://res.cloudinary.com/dmp7mcwie/image/upload/v1774312699/fondo_hwrosv.png')] bg-cover bg-center border-2 border-[#161616]/60 rounded-2xl p-10">
+        <article className="w-[100%] sm:w-[80%] lg:w-[60%] xl:w-[50%] mx-auto bg-white bg-[url('https://res.cloudinary.com/dmp7mcwie/image/upload/v1774312699/fondo_hwrosv.png')] bg-cover border border-[#161616]/60 rounded-2xl p-6 md:p-10 shadow-lg">
           <div className="text-center mb-6">
             <h3 className="text-3xl font-black text-[#161616] tracking-tight mb-2">¿Tenés una consulta?</h3>
             <p className="text-gray-500 text-sm">Completa con tus datos y te respondo lo antes posible.</p>
@@ -261,29 +285,26 @@ const HomePage = () => {
                 'Enviar'
               )}
             </button>
-
-            <p className="text-[10px] text-gray-500 text-center leading-tight mt-2">
+            <p className="text-[10px] text-gray-500 text-center leading-tight mt-4">
               Protegido por reCAPTCHA - <a href="https://policies.google.com/privacy" target="_blank" rel="noopener noreferrer" className="underline hover:text-[#161616]">Privacidad</a> y <a href="https://policies.google.com/terms" target="_blank" rel="noopener noreferrer" className="underline hover:text-[#161616]">Términos</a>.
             </p>
+            <div className="mt-20 flex justify-center items-center gap-2">
+                <Instagram className="w-5 h-5" /> 
+                <a
+                  href="https://www.instagram.com/flex_studioc/"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-[#161616] hover:text-[#d7f250] font-black transition-all duration-300"
+                >
+                  @FLEX_STUDIOC
+                </a>
+            </div>
+            
           </form>
         </article>
 
-        {/* --- FOOTER DE INSTAGRAM --- */}
-        <div className="mt-20 text-center">
-          <h2 className="text-xl md:text-2xl p-[40px] font-bold uppercase bg-gradient-to-b from-transparent via-transparent to-black/5 rounded-2xl">
-            Seguime en Instagram:{' '}
-            <a
-              href="https://www.instagram.com/flex_studioc/"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-[#161616] hover:text-[#d7f250] hover:scale-110 font-black transition-all duration-300"
-            >
-              @FLEX_STUDIOC
-            </a>
-          </h2>
-        </div>
-
       </section>
+
     </main>
   );
 };
