@@ -215,7 +215,7 @@ export const HeaderComponent = () => {
                   </Link>
                   <Link
                     to="/registro"
-                    className="rounded-full bg-[#d7f250] px-4 py-2 text-sm font-bold text-gray-900 hover:bg-[#c4e038] transition-colors"
+                    className="flex items-center text-sm font-medium text-gray-700 hover:text-[#d7f250] transition-colors"
                   >
                     Registrate
                   </Link>
