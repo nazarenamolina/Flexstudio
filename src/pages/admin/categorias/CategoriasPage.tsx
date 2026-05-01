@@ -49,9 +49,6 @@ export const CategoriasPage = () => {
             <PencilLine className="text-[#d7f250] w-8 h-8 md:w-10 md:h-10 shrink-0" />
             <span className="leading-none mt-1">Categorias</span>
           </h1>
-          <p className="text-gray-500 text-sm font-medium tracking-wide">
-            Administrando <span className="text-gray-300">{categorias.length}</span> categorías activas.
-          </p>
         </motion.div>
 
         {/* SWITCHER */}

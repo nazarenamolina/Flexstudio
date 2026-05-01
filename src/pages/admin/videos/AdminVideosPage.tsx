@@ -1,7 +1,6 @@
 import { useState } from 'react';
-import { Search, Loader2, Image as ImageIcon, LayoutGrid, List, PlaySquare, ChevronDown, Filter } from 'lucide-react';
+import { Search, Loader2, LayoutGrid, List, PlaySquare, ChevronDown, Filter, Plus, Video } from 'lucide-react';
 import { Menu } from '@headlessui/react';
-import { Toaster } from 'react-hot-toast';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ConfirmarEliminarModal } from '../../../components/ConfirmarEliminarModal';
 import { useAdminVideos } from '../../../hooks/useAdminVideos';
@@ -20,18 +19,13 @@ export const AdminVideosPage = () => {
 
   return (
     <div className="max-w-7xl mx-auto p-4 sm:p-6 md:p-8 overflow-hidden font-sans relative">
-      <Toaster position="top-right" />
-
       {/* CABECERA Y SWITCHER */}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 mb-8">
         <div className="space-y-1">
-          <h1 className="text-3xl md:text-5xl font-black text-white flex items-center gap-3 tracking-tighter uppercase italic">
+          <h1 className="text-3xl md:text-5xl font-black text-white flex items-center gap-3 tracking-tighter font-principal">
             <PlaySquare className="text-[#d7f250] w-8 h-8 md:w-12 md:h-12 shrink-0" />
             <span className="leading-none mt-1">Librería de videos</span>
           </h1>
-          <p className="text-gray-500 text-sm font-medium tracking-wide">
-            Organizando <span className="text-gray-300">{videosFiltrados.length}</span> videos en tu plataforma.
-          </p>
         </div>
 
         {/* SWITCHER */}
@@ -80,9 +74,8 @@ export const AdminVideosPage = () => {
               {({ active }) => (
                 <button
                   onClick={() => setFiltroCategoria('Todos los Videos')}
-                  className={`w-full px-4 py-3 text-left text-xs uppercase tracking-widest font-black transition-colors flex items-center gap-2 ${
-                    active ? 'bg-[#d7f250] text-[#131313]' : filtroCategoria === 'Todos los Videos' ? 'bg-white/5 text-[#d7f250]' : 'text-gray-400'
-                  }`}
+                  className={`w-full px-4 py-3 text-left text-xs uppercase tracking-widest font-black transition-colors flex items-center gap-2 ${active ? 'bg-[#d7f250] text-[#131313]' : filtroCategoria === 'Todos los Videos' ? 'bg-white/5 text-[#d7f250]' : 'text-gray-400'
+                    }`}
                 >
                   Todas las Categorías
                   {filtroCategoria === 'Todos los Videos' && <span className="ml-auto">✓</span>}
@@ -96,9 +89,8 @@ export const AdminVideosPage = () => {
                   {({ active }) => (
                     <button
                       onClick={() => setFiltroCategoria(cat.titulo)}
-                      className={`w-full px-4 py-3 text-left text-xs uppercase tracking-widest font-black transition-colors flex items-center gap-2 ${
-                        active ? 'bg-[#d7f250] text-[#131313]' : filtroCategoria === cat.titulo ? 'bg-white/5 text-[#d7f250]' : 'text-gray-400'
-                      }`}
+                      className={`w-full px-4 py-3 text-left text-xs uppercase tracking-widest font-black transition-colors flex items-center gap-2 ${active ? 'bg-[#d7f250] text-[#131313]' : filtroCategoria === cat.titulo ? 'bg-white/5 text-[#d7f250]' : 'text-gray-400'
+                        }`}
                     >
                       {tituloCorto}
                       {filtroCategoria === cat.titulo && <span className="ml-auto">✓</span>}
@@ -111,22 +103,16 @@ export const AdminVideosPage = () => {
         </Menu>
       </div>
 
-      {/* ZONA DE CARGA O VACÍO */}
+      {/* ZONA DE CARGA O CONTENIDO */}
       {cargando ? (
         <div className="w-full py-20 flex flex-col items-center justify-center text-[#d7f250]">
           <Loader2 className="w-10 h-10 animate-spin mb-4" />
           <p className="font-bold tracking-widest uppercase text-sm animate-pulse">Cargando librería de videos...</p>
         </div>
-      ) : videosFiltrados.length === 0 ? (
-        <div className="w-full py-20 text-center border-2 border-dashed border-white/10 rounded-[32px] flex flex-col items-center bg-[#131313]/50">
-          <ImageIcon className="w-12 h-12 text-gray-700 mb-4" />
-          <p className="text-gray-400 font-bold tracking-widest uppercase text-sm">No hay videos encontrados</p>
-          <p className="text-gray-600 text-xs mt-2 max-w-sm">Ajusta los filtros de búsqueda o haz clic en "Subir Nuevo Video" para agregar contenido.</p>
-        </div>
       ) : (
         /* GRILLA / LISTA CONTENEDORA (Animada) */
         <AnimatePresence mode="wait">
-          <motion.div 
+          <motion.div
             key={viewMode}
             variants={slideVariants}
             initial="hidden"
@@ -135,17 +121,41 @@ export const AdminVideosPage = () => {
             transition={{ duration: 0.25, ease: "easeInOut" }}
             className={`grid gap-6 ${viewMode === 'grid' ? 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4' : 'grid-cols-1'}`}
           >
-            <AddVideoCard viewMode={viewMode} onClick={() => navigate('/admin/videos/nuevo')} />
 
-            {videosFiltrados.map(video => (
-              <VideoCard
-                key={video.id}
-                video={video}
-                viewMode={viewMode}
-                onEdit={(id) => navigate(`/admin/videos/editar/${id}`)}
-                onDelete={abrirModalEliminacion}
-              />
-            ))}
+            {/* SI HAY VIDEOS, MOSTRAMOS ADDCARD + VIDEOS */}
+            {videosFiltrados.length > 0 ? (
+              <>
+                <AddVideoCard viewMode={viewMode} onClick={() => navigate('/admin/videos/nuevo')} />
+                {videosFiltrados.map(video => (
+                  <VideoCard
+                    key={video.id}
+                    video={video}
+                    viewMode={viewMode}
+                    onEdit={(id) => navigate(`/admin/videos/editar/${id}`)}
+                    onDelete={abrirModalEliminacion}
+                  />
+                ))}
+              </>
+            ) : (
+
+              <div className={`w-full flex flex-col items-center justify-center text-center border-2 border-dashed border-white/10 rounded-[32px] bg-[#131313]/50 p-6 md:col-span-full
+                ${viewMode === 'grid' ? 'h-[350px] sm:h-[400px]' : 'h-[250px]'}`}>
+
+                <div className="w-16 h-16 rounded-full bg-white/5 flex items-center justify-center mb-5 border border-white/5 shadow-inner">
+                  <Video className="w-8 h-8 text-gray-500" />
+                </div>
+
+                <p className="text-white font-black tracking-widest uppercase text-lg sm:text-xl mb-2">No hay videos aquí</p>
+                <p className="text-gray-500 text-xs sm:text-sm max-w-sm mb-8">No se encontraron videos para esta búsqueda o categoría. ¿Deseas subir uno nuevo?</p>
+
+                <button
+                  onClick={() => navigate('/admin/videos/nuevo')}
+                  className="bg-[#d7f250] text-[#131313] px-8 py-4 rounded-full font-bold flex items-center gap-2 transition-transform duration-200 hover:scale-105 uppercase tracking-widest text-xs cursor-pointer hover:bg-[#fff] hover:text-[#1a1a1a] "
+                >
+                  <Plus size={18} /> Subir Nuevo Video
+                </button>
+              </div>
+            )}
           </motion.div>
         </AnimatePresence>
       )}
