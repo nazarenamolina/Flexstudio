@@ -137,8 +137,7 @@ export const EditarCategoriaPage = () => {
               <textarea rows={4} {...register('descripcionDetallada')} placeholder="Texto largo que acompaña al video hero..." className={`${inputClass} resize-none scrollbar-hide`} />
             </div>
           </div>
-
-          <div className="bg-[#1a1a1a] p-6 md:p-8 rounded-[24px] border border-neutral-800 shadow-sm">
+          <div className="bg-[#1a1a1a] bg-[url('https://res.cloudinary.com/dmp7mcwie/image/upload/v1774312699/fondo_hwrosv.png')] p-6 md:p-8 rounded-[24px] border border-neutral-800 shadow-sm">
             <h3 className="text-xl font-bold text-white mb-6 border-b border-neutral-800 pb-4">Editar Beneficios</h3>
 
             <div className="mb-8">
@@ -154,23 +153,26 @@ export const EditarCategoriaPage = () => {
             <div className="space-y-4">
               <label className={labelClass}>Lista de Beneficios</label>
               {beneficiosFields.map((field, index) => (
-                <div key={field.id} className="relative p-5 bg-[#d7f250]/70 rounded-xl flex flex-col md:flex-row gap-4 group">
+                <div key={field.id} className="relative p-5 bg-[#131313] border-l-4 border-[#d7f250] rounded-xl flex flex-col md:flex-row gap-4 group hover:bg-[#222] transition-colors">
                   <div className="flex-1 space-y-4">
-                    <div>
-                      <label className="text-xs font-bold text-[#131313] uppercase tracking-wider mb-2 block">Ícono del beneficio</label>
-                      <Controller
-                        control={control}
-                        name={`beneficios.${index}.icono`}
-                        defaultValue="CheckCircle"
-                        render={({ field }) => (
-                          <IconPicker value={field.value || 'CheckCircle'} onChange={field.onChange} />
-                        )}
-                      />
+                    <div className="flex items-center gap-2 mb-2">
+                      <div className="p-1.5 bg-[#d7f250] rounded-lg">
+                        <Library size={14} className="text-[#131313] shrink-2"/>
+                      </div>
+                      <label className="text-xs font-bold text-gray-400 uppercase tracking-wider">Ícono del beneficio</label>
                     </div>
-                    <div className="pt-2 border-t border-neutral-600 mt-2">
+                    <Controller
+                      control={control}
+                      name={`beneficios.${index}.icono`}
+                      defaultValue="CheckCircle"
+                      render={({ field }) => (
+                        <IconPicker value={field.value || 'CheckCircle'} onChange={field.onChange} />
+                      )}
+                    />
+                    <div className="pt-4 border-t border-neutral-800 mt-2">
                       <input type="text" {...register(`beneficios.${index}.titulo`)} placeholder="Título del beneficio" className={inputClass} />
                     </div>
-                    <div>
+                    <div className="pt-2">
                       <textarea rows={2} {...register(`beneficios.${index}.descripcion`)} placeholder="Descripción del beneficio..." className={`${inputClass} resize-none scrollbar-hide`} />
                     </div>
                   </div>
@@ -178,10 +180,10 @@ export const EditarCategoriaPage = () => {
                   <button
                     type="button"
                     onClick={() => setItemAEliminar({ tipo: 'beneficio', indexBeneficio: index, tituloMostrar: 'este beneficio' })}
-                    className="w-11.5 self-start p-3 text-gray-500 hover:text-white hover:bg-red-500 rounded-full transition-colors border border-gray-800 hover:border-red-500 bg-[#131313] cursor-pointer"
+                    className="w-11 self-start p-3 text-gray-500 hover:text-white hover:bg-red-500/20 rounded-xl transition-all border border-neutral-800 hover:border-red-500/50 bg-[#131313] cursor-pointer"
                     title="Eliminar beneficio"
                   >
-                    <Trash2 size={20} />
+                    <Trash2 size={18} />
                   </button>
                 </div>
               ))}
@@ -190,6 +192,8 @@ export const EditarCategoriaPage = () => {
           </div>
 
         </div>
+
+        {/* CONFIGURACION */}
 
         <div className="w-full xl:w-[400px] flex flex-col gap-6 shrink-0">
 

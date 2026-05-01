@@ -1,12 +1,12 @@
 import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { obtenerCategoriaPorIdRequest, type Categoria } from "../api/categoria";
-import { CheckCircle2, ShoppingCart, Check, PlayCircle } from "lucide-react";
+import {ShoppingCart, Check, PlayCircle } from "lucide-react";
 import MuxPlayer from "@mux/mux-player-react";
 import { DynamicIcon } from "../components/IconPicker";
 import { useMoneda } from "../hooks/useMoneda";
-import { useCartStore } from "../store/cartStore"; 
-import { useMisClases } from "../hooks/useMisClases"; 
+import { useCartStore } from "../store/cartStore";
+import { useMisClases } from "../hooks/useMisClases";
 
 const CategoriaDetailPage = () => {
   const { id } = useParams<{ id: string }>();
@@ -71,19 +71,19 @@ const CategoriaDetailPage = () => {
 
   const handleAgregarAlCarrito = () => {
     if (!categoria) return;
-    
+
     addToCart({
       id: categoria.id,
       titulo: categoria.titulo,
       precioArs: categoria.precioArs,
       imagenTarjeta: categoria.imagenTarjeta,
-      precioUsd:categoria.precioUsd,
+      precioUsd: categoria.precioUsd,
     });
   };
 
   return (
     <main className="min-h-screen w-full overflow-x-hidden">
-      <section className="relative flex min-h-[50em] w-full items-start pt-25 md:pt-30 lg:pt-30 overflow-hidden">
+  <section className="relative flex min-h-[50em] w-full items-start pt-25 pb-20 md:pt-30 lg:pt-30 overflow-hidden">
         <div className="absolute inset-0 z-0">
           <img
             src={categoria.imagenHero}
@@ -92,6 +92,7 @@ const CategoriaDetailPage = () => {
           />
           <div className="absolute inset-0 bg-gradient-to-r from-[#131313] via-[#131313]/80 to-transparent"></div>
         </div>
+        
         <div className="relative z-10 mx-auto w-full px-6 lg:ml-24 xl:ml-32">
           <span className="inline-block tracking-[3px] text-neon-pink font-bold uppercase text-[0.6rem] md:text-[1rem]">
             ELITE TRAINING PROGRAM
@@ -107,24 +108,24 @@ const CategoriaDetailPage = () => {
           <p className="mb-10 max-w-[80%] text-[1.1rem] leading-[1.6] text-[#a1a1aa]">
             {categoria.descripcionDetallada || "Descripción no disponible."}
           </p>
-          <div className="flex flex-col gap-4 sm:flex-row">
-            
+        
+          <div className="mt-8 flex flex-col sm:flex-row gap-4 w-full">
+
             {yaComprado ? (
-              <button 
+              <button
                 onClick={() => navigate(`/mis-clases/${categoria.id}`)}
-                className="mt-8 flex items-center justify-center gap-2 rounded-full bg-[#ffffff] px-8 py-4 font-principal text-xl font-bold text-[#131313] shadow-[0_0_20px_rgba(255,255,255,0.3)] transition duration-700 hover:-translate-y-1 hover:bg-[#d7f250] cursor-pointer"
+                className="w-full sm:w-auto flex items-center justify-center gap-2 rounded-full bg-[#ffffff] px-8 py-4 font-principal text-xl font-bold text-[#131313] shadow-[0_0_20px_rgba(255,255,255,0.3)] transition duration-700 hover:-translate-y-1 hover:bg-[#d7f250] cursor-pointer"
               >
                 <PlayCircle size={22} /> VER MASTERCLASS
               </button>
             ) : (
-              <button 
+              <button
                 onClick={handleAgregarAlCarrito}
                 disabled={estaEnCarrito || cargandoMoneda || cargandoMisClases}
-                className={`mt-8 flex items-center justify-center gap-2 rounded-full px-8 py-4 font-principal text-xl font-bold cursor-pointer transition duration-700 hover:-translate-y-1 ${
-                  estaEnCarrito 
-                    ? 'bg-[#ffffff] text-[#131313] cursor-not-allowed opacity-80' 
-                    : 'bg-neon-pink text-[#131313] hover:bg-[#ffffff] hover:text-[#131313]'
-                }`}
+                className={`w-full sm:w-auto flex items-center justify-center gap-2 rounded-full px-8 py-4 font-principal text-xl font-bold cursor-pointer transition duration-700 hover:-translate-y-1 ${estaEnCarrito
+                  ? 'bg-[#ffffff] text-[#131313] cursor-not-allowed opacity-80'
+                  : 'bg-neon-pink text-[#131313] hover:bg-[#ffffff] hover:text-[#131313]'
+                  }`}
               >
                 {cargandoMoneda ? 'CALCULANDO PRECIO...' : (
                   estaEnCarrito ? (
@@ -135,9 +136,12 @@ const CategoriaDetailPage = () => {
                 )}
               </button>
             )}
-            
+
             {categoria.playbackIdMuestra && (
-              <a href="#trailer" className="mt-8 rounded-full bg-neon-pink px-8 py-4 font-principal text-xl font-bold text-[#131313] cursor-pointer transition hover:bg-[#ffffff] hover:text-[#131313] duration-700 hover:-translate-y-1 text-center">
+              <a 
+                href="#trailer" 
+                className="w-full sm:w-auto flex items-center justify-center gap-2 rounded-full bg-neon-pink px-8 py-4 font-principal text-xl font-bold text-[#131313] cursor-pointer transition hover:bg-[#ffffff] hover:text-[#131313] duration-700 hover:-translate-y-1 text-center"
+              >
                 PREVIEW
               </a>
             )}
@@ -145,7 +149,7 @@ const CategoriaDetailPage = () => {
         </div>
       </section>
 
-      <section className="mx-auto mt-20 flex max-w-7xl flex-col gap-12 px-6 lg:flex-row lg:px-8">
+      <section className="mx-auto mt-20 mb-10 flex max-w-7xl flex-col gap-12 px-6 lg:flex-row lg:px-8">
         <div className="flex flex-col items-start lg:w-1/3">
           <span className="mb-2 font-principal font-bold tracking-widest text-neon-pink">SUMATE!</span>
           <h2 className="mb-6 font-principal text-4xl uppercase leading-tight md:text-5xl text-[#131313]">
@@ -176,74 +180,44 @@ const CategoriaDetailPage = () => {
         </div>
       </section>
 
+      {/* SECCIÓN PREVIEW (Diseño Asimétrico Editorial) */}
       {categoria.playbackIdMuestra && (
-        <section className="bg-[#131313] my-15 py-1">
-          <div id="trailer" className="mx-auto my-10 flex max-w-5xl flex-col items-center px-6 text-center">
-            <span className="mb-2 font-principal font-bold tracking-widest text-neon-pink">PREVIEW</span>
-            <h2 className="mb-10 font-principal text-4xl text-white uppercase md:text-5xl">VIDEO DE MUESTRA</h2>
+        <section id="trailer" className="relative w-full bg-[#131313] py-20 lg:py-32 overflow-hidden border-t border-white/5">
+          <div className="absolute top-1/2 left-1/2 -translate-y-1/2 -translate-x-1/2 w-[600px] h-[600px] bg-[#d7f250] opacity-[0.03] blur-[100px] rounded-full pointer-events-none" />
 
-            <div className="w-full overflow-hidden rounded-2xl bg-black shadow-[0_0_30px_rgba(215,242,80,0.2)] transition-shadow duration-500 hover:shadow-[0_0_40px_rgba(215,242,80,0.4)]">
-              <MuxPlayer
-                playbackId={categoria.playbackIdMuestra}
-                metadataVideoTitle={`Trailer - ${categoria.titulo}`}
-                primaryColor="#ffffff"
-                accentColor="#d7f250"
-                style={{ width: '100%', aspectRatio: '16/9', ['--mux-player-control-bar-base-color' as any]: 'rgba(19, 19, 19, 0.85)' }}
-              />
+          <div className="relative z-10 mx-auto max-w-[90%] px-6 lg:px-8">
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-16 items-center">
+              <div className="flex flex-col items-start text-left order-2 lg:order-1 lg:col-span-4">
+                <span className="mb-4 font-principal font-bold tracking-[0.3em] text-neon-pink text-xs sm:text-sm uppercase">
+                  Adelanto Exclusivo
+                </span>
+                <h2 className="mb-6 font-principal text-4xl sm:text-5xl lg:text-6xl font-black text-white uppercase leading-[0.95]">
+                  Potencia <br />
+                  <span className="text-transparent bg-clip-text bg-gradient-to-r from-white to-gray-500">Tus Capacidades</span>
+                </h2>
+                <p className="text-[#a1a1aa] text-base sm:text-lg leading-relaxed mb-8 max-w-md">
+                  Una experiencia diseñada para mejorar tu técnica, control y rendimiento.
+                </p>
+                <div className="w-12 h-1.5 bg-[#d7f250] rounded-full" />
+              </div>
+              <div className="relative order-2 lg:order-1 lg:col-span-8 w-full">
+                <div className="absolute -inset-4 md:-inset-6 bg-gradient-to-br from-[#1a1a1a] to-[#0a0a0a] rounded-[32px] border border-white/5 transform rotate-2 md:rotate-3 scale-105 opacity-70 hidden sm:block" />
+
+                <div className="relative w-full overflow-hidden rounded-2xl bg-[#0a0a0a] shadow-[0_0_40px_rgba(215,242,80,0.15)] transition-all duration-500 hover:shadow-[0_0_50px_rgba(215,242,80,0.3)] hover:-translate-y-2 border border-white/10 z-10">
+                  <MuxPlayer
+                    playbackId={categoria.playbackIdMuestra}
+                    metadataVideoTitle={`Trailer - ${categoria.titulo}`}
+                    primaryColor="#ffffff"
+                    accentColor="#d7f250"
+                    style={{ width: '100%', aspectRatio: '16/9', ['--mux-player-control-bar-base-color' as any]: 'rgba(19, 19, 19, 0.85)' }}
+                  />
+                </div>
+              </div>
+
             </div>
           </div>
         </section>
       )}
-
-      <section className="mx-auto w-[90%] my-15 flex max-w-4xl flex-col items-center rounded-[2rem] bg-[#1a1a1a] p-10 text-center md:p-16">
-        <h2 className="mb-8 font-principal text-4xl text-neon-pink uppercase leading-tight md:text-5xl">
-          LISTA PARA ELEVAR TU <br /> POTENCIAL?
-        </h2>
-
-        <div className="mb-8 flex flex-col items-center rounded-2xl bg-neon-pink/40 p-8 md:w-2/3">
-          <span className="mb-4 rounded-full bg-[#131313]/50 px-4 py-1 text-sm font-bold text-white">
-            OFERTA DE LANZAMIENTO
-          </span>
-          
-          <div className="font-principal text-white text-4xl sm:text-5xl md:text-6xl font-bold w-full text-center tracking-tight">
-            {cargandoMoneda ? '...' : `${simbolo}${precioAMostrar}`}
-          </div>
-          
-          {yaComprado ? (
-            <button 
-              onClick={() => navigate(`/mis-clases/${categoria.id}`)}
-              className="mt-8 w-full flex items-center justify-center gap-2 rounded-full bg-[#ffffff] px-4 sm:px-8 py-3 sm:py-4 font-principal text-lg sm:text-xl font-bold text-[#131313] shadow-[0_0_20px_rgba(255,255,255,0.3)] transition duration-700 hover:-translate-y-1 hover:bg-[#d7f250] cursor-pointer"
-            >
-              <PlayCircle size={22} /> YA TIENES ESTA CLASE - VER AHORA
-            </button>
-          ) : (
-            <button 
-              onClick={handleAgregarAlCarrito}
-              disabled={estaEnCarrito || cargandoMoneda || cargandoMisClases}
-              className={`mt-8 w-full flex items-center justify-center gap-2 rounded-full px-4 sm:px-8 py-3 sm:py-4 font-principal text-lg sm:text-xl font-bold cursor-pointer transition duration-700 hover:-translate-y-1 ${
-                estaEnCarrito 
-                  ? 'bg-[#ffffff] text-[#131313] cursor-not-allowed opacity-80' 
-                  : 'bg-neon-pink text-[#131313] hover:bg-[#ffffff] hover:text-[#131313]'
-              }`}
-            >
-               {cargandoMoneda ? 'CALCULANDO...' : (
-                 estaEnCarrito ? (
-                   <><Check size={20} /> YA ESTÁ EN TU CARRITO</>
-                 ) : (
-                   <><ShoppingCart size={20} /> COMPRAR AHORA</>
-                 )
-               )}
-            </button>
-          )}
-        </div>
-
-        <div className="flex flex-col flex-wrap justify-center gap-4 text-sm font-medium text-[#a1a1aa] md:flex-row md:gap-8">
-          <span className="flex items-center gap-2"><CheckCircle2 size={18} className="text-neon-pink" /> SECURE PAYMENT</span>
-          <span className="flex items-center gap-2"><CheckCircle2 size={18} className="text-neon-pink" /> INSTANT ACCESS</span>
-          <span className="flex items-center gap-2"><CheckCircle2 size={18} className="text-neon-pink" /> 30-DAY GUARANTEE</span>
-        </div>
-      </section>
-
     </main>
   );
 };

@@ -18,7 +18,7 @@ export const AddCategoriaCard = ({ viewMode, onClick }: Props) => {
                 </div>
 
                 {/* Texto */}
-                <span className={`mt-4 font-bold text-white/40 group-hover:text-[#d7f250]/80 uppercase tracking-[0.15em] transition-colors duration-300 ${viewMode === 'grid' ? 'text-[10px]' : 'text-xs'}`}>{viewMode === 'grid' ? 'Nueva Disciplina' : 'Crear Categoría'} </span>
+                <span className={`mt-4 font-bold text-white/40 group-hover:text-[#d7f250]/80 uppercase tracking-[0.15em] transition-colors duration-300 ${viewMode === 'grid' ? 'text-[10px]' : 'text-xs'}`}>{viewMode === 'grid' ? 'Nueva Categoria' : 'Crear Categoría'} </span>
                 <div className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-0 h-0.5 bg-[#d7f250]/0 group-hover:bg-[#d7f250]/60 group-hover:w-16 transition-all duration-00" />
             </div>
         </div>
