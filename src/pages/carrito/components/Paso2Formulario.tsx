@@ -1,5 +1,5 @@
 import { useForm } from 'react-hook-form';
-import { MailCheck, AlertCircle } from 'lucide-react';
+import { AlertCircle } from 'lucide-react';
 import { type CheckoutPerfilData } from '../../../api/usuario';  
 
 interface Props {
@@ -9,35 +9,24 @@ interface Props {
   onNext: (datosValidados: CheckoutPerfilData) => void;
 }
 
-type FormValues = CheckoutPerfilData & { tipoDocumento: 'DNI' | 'CUIT' };
+type FormValues = CheckoutPerfilData;
+
 const Paso2Formulario = ({ formData, usuario, onPrev, onNext }: Props) => {
 
-  const { register, handleSubmit, watch, setValue, clearErrors, formState: { errors } } = useForm<FormValues>({
-    defaultValues: { 
-      ...formData, 
-      tipoDocumento: formData.documentoIdentidad?.length === 11 ? 'CUIT' : 'DNI' 
-    },
+  const { register, handleSubmit, formState: { errors } } = useForm<FormValues>({
+    defaultValues: formData,
     mode: 'onTouched'
   });
-
-  const tipoDocActual = watch('tipoDocumento');
 
   const inputClass = "border-[1px] border-neutral-400 rounded-md px-4 py-3 text-sm focus:outline-none focus:border-[#d7f250] transition-colors w-full text-[#131313]";
   const inputErrorClass = "bg-red-500/5 border-[1px] border-red-500 rounded-md px-4 py-3 text-sm focus:outline-none transition-colors w-full text-white";
   const disabledInputClass = "border-[1px] border-neutral-400 rounded-md px-4 py-3 text-sm cursor-not-allowed w-full";
 
   const onSubmit = (data: FormValues) => {
-    const { tipoDocumento, ...datosLimpios } = data;
-    onNext(datosLimpios);
+    onNext(data);
   };
 
   const esArgentina = usuario?.pais === 'Argentina';
-
-  const cambiarTipoDocumento = (tipo: 'DNI' | 'CUIT') => {
-    setValue('tipoDocumento', tipo);
-    setValue('documentoIdentidad', '');
-    clearErrors('documentoIdentidad');
-  };
 
   return (
     <div className="bg-white bg-[url('https://res.cloudinary.com/dmp7mcwie/image/upload/v1774312699/fondo_hwrosv.png')] border border-neutral-100 w-full sm:w-[70%] mx-auto p-6 md:p-8 rounded-[24px] shadow-[0_8px_30px_rgb(0,0,0,0.04)] flex flex-col transition-shadow hover:shadow-[0_8px_30px_rgba(215,242,80,0.15)]">
@@ -56,51 +45,29 @@ const Paso2Formulario = ({ formData, usuario, onPrev, onNext }: Props) => {
 
         <div className="flex flex-col gap-2 md:col-span-2 relative">
           <label className="font-principal font-semibold text-neutral-800">Correo Electrónico</label>
-          <div className="flex items-center">
-            <input type="email" value={usuario?.correo || ''} disabled className={`${disabledInputClass} pr-24`} />
-            <button type="button" className="absolute right-2 text-xs bg-[#2a2a2a] hover:bg-[#333] text-white px-3 py-1.5 rounded transition-colors flex items-center gap-1 cursor-pointer">
-              <MailCheck size={14} /> Verificar
-            </button>
-          </div>
+          <input type="email" value={usuario?.correo || ''} disabled className={disabledInputClass} />
         </div>
 
         {esArgentina && (
           <div className="flex flex-col gap-2">
             <label className="font-principal font-semibold text-neutral-800">Datos de facturación: </label>
             <div className="flex flex-col gap-3 md:col-span-2 p-5 border-[1px] border-neutral-400 rounded-xl">
-            <div className="flex gap-2 p-1 rounded-lg border border-neutral-400 w-full md:w-1/2">
-              <button type="button" onClick={() => cambiarTipoDocumento('DNI')} className={`flex-1 py-2 rounded-md text-xs font-bold transition-all ${tipoDocActual === 'DNI' ? 'bg-[#d7f250] text-neutral-800 shadow-md' : 'text-neutral-600 hover:text-black'}`}>DNI </button>
-              <button
-                type="button"
-                onClick={() => cambiarTipoDocumento('CUIT')}
-                className={`flex-1 py-2 rounded-md text-xs font-bold transition-all ${tipoDocActual === 'CUIT' ? 'bg-[#d7f250] text-neutral-800 shadow-md' : 'text-neutral-600 hover:text-black'}`}
-              >
-                CUIT / CUIL
-              </button>
-            </div>
-
-            {/* El Input Dinámico */}
-            <div className="flex flex-col gap-1 mt-1">
-              <input 
-                type="text" 
-                placeholder={tipoDocActual === 'DNI' ? "Ej: 20123456" : "Ej: 20123456789"}
-                className={errors.documentoIdentidad ? inputErrorClass : inputClass}
-                {...register('documentoIdentidad', { 
-                  required: `El ${tipoDocActual} es obligatorio.`,
-                  validate: (value) => {
-                    if (!value) return true;
-                    
-                    // Lógica si eligió DNI
-                    if (tipoDocActual === 'DNI') {
-                      if (value.length < 7 || value.length > 8) return 'El DNI debe tener 7 u 8 números.';
-                      if (!/^\d+$/.test(value)) return 'El DNI sólo debe contener números.';
-                      return true;
-                    }
-                    
-                    // Lógica si eligió CUIT
-                    if (tipoDocActual === 'CUIT') {
+              
+              <label className="font-bold text-sm text-neutral-800">CUIT / CUIL</label>
+              
+              {/* Input exclusivo de CUIT/CUIL */}
+              <div className="flex flex-col gap-1">
+                <input 
+                  type="text" 
+                  placeholder="Ej: 20123456789"
+                  className={errors.documentoIdentidad ? inputErrorClass : inputClass}
+                  {...register('documentoIdentidad', { 
+                    required: 'El CUIT/CUIL es obligatorio.',
+                    validate: (value) => {
+                      if (!value) return true;
+                      
                       if (value.length !== 11) return 'El CUIT/CUIL debe tener exactamente 11 números.';
-                      if (!/^\d+$/.test(value)) return 'El CUIT sólo debe contener números.';
+                      if (!/^\d+$/.test(value)) return 'El CUIT/CUIL sólo debe contener números.';
                       
                       const base = value.slice(0, -1);
                       const digitoVerificador = parseInt(value.slice(-1));
@@ -116,20 +83,18 @@ const Paso2Formulario = ({ formData, usuario, onPrev, onNext }: Props) => {
                       
                       return calculado === digitoVerificador || 'El CUIT/CUIL ingresado es inválido.';
                     }
-                  }
-                })}
-              />
-              {errors.documentoIdentidad && (
-                <span className="text-red-400 text-xs flex items-center gap-1 mt-1">
-                  <AlertCircle size={12} /> {errors.documentoIdentidad.message}
-                </span>
-              )}
+                  })}
+                />
+                {errors.documentoIdentidad && (
+                  <span className="text-red-400 text-xs flex items-center gap-1 mt-1">
+                    <AlertCircle size={12} /> {errors.documentoIdentidad.message}
+                  </span>
+                )}
+              </div>
             </div>
-          </div>
           </div>
         )}
 
-        {/* RESTO DEL FORMULARIO... */}
         <div className="flex flex-col gap-2">
           <label className="font-principal font-semibold text-neutral-800">Número de teléfono</label>
           <input 

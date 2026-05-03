@@ -93,10 +93,6 @@ export const NuevoVideoPage = () => {
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
-              <label className={labelClass}>Duración (minutos)</label>
-              <input type="number" {...register('duracion')} min="0" placeholder="Ej: 45" className={inputClass} />
-            </div>
-            <div>
               <label className={labelClass}>N° de Orden</label>
               <input type="number" {...register('orden')} min="1" placeholder="Ej: 1" className={inputClass} />
             </div>

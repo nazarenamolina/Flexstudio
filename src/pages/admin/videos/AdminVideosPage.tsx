@@ -29,7 +29,7 @@ export const AdminVideosPage = () => {
         </div>
 
         {/* SWITCHER */}
-        <div className="flex bg-zinc-900/80 p-1 rounded-full border border-white/5 backdrop-blur-md shadow-2xl">
+        <div className="flex bg-zinc-900/80 p-1 rounded-full border border-white/5 blur-s shadow-2xl">
           <button
             onClick={() => setViewMode('grid')}
             className={`p-2 px-4 rounded-full transition-all duration-300 flex items-center gap-2 ${viewMode === 'grid' ? 'bg-[#d7f250] text-[#131313] shadow-lg scale-95' : 'text-gray-500 hover:text-white'}`}
