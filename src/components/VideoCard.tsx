@@ -1,18 +1,32 @@
 import { useState } from 'react';
 import { Edit2, Trash2, Image as ImageIcon, Loader2, ChevronDown, ChevronUp } from 'lucide-react';
+import { type VideoData } from '../api/videos';
+
 
 interface Props {
-  video: any;
+  video: VideoData;
   viewMode: 'grid' | 'list';
   onEdit: (id: string) => void;
   onDelete: (id: string, titulo: string) => void;
 }
+
+const formatearDuracionVideo = (segundosTotales?: number) => {
+  if (!segundosTotales || segundosTotales === 0) return null;
+  const horas = Math.floor(segundosTotales / 3600);
+  const minutos = Math.floor((segundosTotales % 3600) / 60);
+  const segundos = segundosTotales % 60;
+  if (horas > 0) {
+    return `${horas}:${minutos.toString().padStart(2, '0')}:${segundos.toString().padStart(2, '0')}`;
+  }
+  return `${minutos}:${segundos.toString().padStart(2, '0')}`;
+};
 
 export const VideoCard = ({ video, viewMode, onEdit, onDelete }: Props) => {
   const [expanded, setExpanded] = useState(false);
   const isGrid = viewMode === 'grid';
   const estaProcesando = video.estado === 'PROCESANDO' || !video.playbackId;
   const descripcion = video.descripcion || 'Sin descripción.';
+  const duracionReloj = formatearDuracionVideo(video.duracion);
 
   return (
     <div onClick={() => onEdit(video.id)} className={`relative rounded-2xl overflow-hidden group cursor-pointer bg-gradient-to-br from-[#1a1a1a] to-[#0f0f0f] border border-white/5 hover:border-[#d7f250]/40 hover:shadow-[0_0_20px_rgba(215,242,80,0.08)] transition-all duration-300 ease-out ${isGrid ? 'flex flex-col h-[280px] sm:h-[320px]' : 'flex flex-row sm:h-[120px] sm:max-h-[120px]'}`}>
@@ -51,10 +65,10 @@ export const VideoCard = ({ video, viewMode, onEdit, onDelete }: Props) => {
         </div>
       )}
 
-      {/* BADGE DE DURACIÓN (Abajo a la derecha de la imagen) */}
-      {!estaProcesando && video.duracionFormateada && (
-        <span className={`absolute bottom-3 right-3 bg-black/80 text-white text-[9px] font-bold px-2 py-1 rounded-md backdrop-blur-md z-20 shadow-lg ${isGrid ? '' : 'sm:bottom-2 sm:right-2'}`}>
-          {video.duracionFormateada}
+      {/* 👇 4. BADGE DE DURACIÓN (Muestra duracionReloj calculado arriba) */}
+      {!estaProcesando && duracionReloj && (
+        <span className={`absolute bottom-3 right-3 bg-black/80 text-white text-[9px] font-bold px-2 py-1 rounded-md blur-s z-20 shadow-lg ${isGrid ? '' : 'sm:bottom-2 sm:right-2'}`}>
+          {duracionReloj}
         </span>
       )}
 
@@ -103,7 +117,7 @@ export const VideoCard = ({ video, viewMode, onEdit, onDelete }: Props) => {
             </div>
           )}
 
-          </div>
+        </div>
 
         {/* BOTONES ACCIÓN */}
         <div className={`flex items-center gap-2 shrink-0 ${isGrid ? 'mt-4' : ''}`}>

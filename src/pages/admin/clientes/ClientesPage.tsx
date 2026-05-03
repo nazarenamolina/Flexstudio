@@ -111,10 +111,7 @@ export const ClientesPage = () => {
             <Users className="text-[#d7f250]" size={40} />
             <span className="hidden xs:inline">Historial de</span>Clientes
           </h1>
-          <p className="text-[#a1a1aa] mt-1 text-sm md:text-base">
-            {cargando ? 'Cargando...' : `${clientesFiltrados.length} cliente${clientesFiltrados.length !== 1 ? 's' : ''}`}
-            Administra a tus alumnas
-          </p>
+ 
         </div>
 
         {/* Buscador */}

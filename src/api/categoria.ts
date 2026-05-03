@@ -15,6 +15,7 @@ export interface Categoria {
   fechaCreacion?: string | Date;
   destacada?: boolean;
   cantidadVideos?: number;
+  duracionTotalFormateada?: string;
 }
 
 

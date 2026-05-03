@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { User, Mail, ChevronLeft, ChevronRight, Loader2, Instagram, Clock, GraduationCap, BicepsFlexed} from 'lucide-react';
+import { User, Mail, ChevronLeft, ChevronRight, Loader2, Clock, GraduationCap, BicepsFlexed} from 'lucide-react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
@@ -9,6 +9,7 @@ import { obtenerCategoriasRequest, type Categoria } from '../api/categoria';
 import { enviarConsultaRequest } from '../api/contacto';
 import { TarjetaClase } from '../components/TarjetaClase';
 import { CarruselDestacadas } from '../components/CarruselDestacadas';
+import { Tiktok, Instagram } from 'react-bootstrap-icons';
 
 const contactoSchema = z.object({
   nombre: z.string().min(2, 'El nombre debe tener al menos 2 caracteres'),
@@ -228,13 +229,13 @@ const HomePage = () => {
           )}
         </article>
 
-        <article className="w-[100%] sm:w-[80%] lg:w-[60%] xl:w-[50%] mx-auto bg-white bg-[url('https://res.cloudinary.com/dmp7mcwie/image/upload/v1774312699/fondo_hwrosv.png')] bg-cover border border-[#161616]/60 rounded-2xl p-6 md:p-10 shadow-lg">
+        <article className="w-[100%] sm:w-[80%] lg:w-[60%] xl:w-[50%] mx-auto border border-gray-300 bg-white/80 bg-[url('https://res.cloudinary.com/dmp7mcwie/image/upload/v1774312699/fondo_hwrosv.png')] bg-cover rounded-2xl p-6 md:p-10 shadow-inner">
           <div className="text-center mb-6">
-            <h3 className="text-3xl font-black text-[#161616] tracking-tight mb-2">¿Tenés una consulta?</h3>
+            <h3 className="text-3xl font-black text-[#161616] tracking-tight mb-2 font-principal">¿Tenés una consulta?</h3>
             <p className="text-gray-500 text-sm">Completa con tus datos y te respondo lo antes posible.</p>
           </div>
 
-          <form onSubmit={handleSubmit(onSubmitContacto)} className="space-y-4">
+        <form onSubmit={handleSubmit(onSubmitContacto)} className="space-y-6">
             <div>
               <label className="block text-sm font-principal font-semibold text-[#161616] mb-1">Nombre</label>
               <div className="relative">
@@ -242,7 +243,7 @@ const HomePage = () => {
                 <input
                   type="text"
                   placeholder="Tu nombre"
-                  className={`w-full bg-white border ${errors.nombre ? 'border-red-500 focus:ring-red-500/15' : 'border-[#dee2e6] focus:border-[#d7f250] focus:ring-[#d7f250]/15'} focus:ring-[3px] rounded-lg pl-10 pr-3 py-2.5 text-[#161616] placeholder-[#adb5bd] outline-none transition-all`}
+                  className={`w-full bg-white/50 border border-[#dee2e6]/50 ${errors.nombre ? 'border-red-500/70 focus:ring-red-500/20' : 'border-[#d7f250]/30 focus:border-[#d7f250]/50 focus:ring-[#d7f250]/20'} focus:ring-[3px] rounded-xl pl-10 pr-3 py-3 text-[#161616] placeholder-[#adb5bd]/80 outline-none transition-all duration-200`}
                   {...register('nombre')}
                 />
               </div>
@@ -256,7 +257,7 @@ const HomePage = () => {
                 <input
                   type="email"
                   placeholder="correo@ejemplo.com"
-                  className={`w-full bg-white border ${errors.correo ? 'border-red-500 focus:ring-red-500/15' : 'border-[#dee2e6] focus:border-[#d7f250] focus:ring-[#d7f250]/15'} focus:ring-[3px] rounded-lg pl-10 pr-3 py-2.5 text-[#161616] placeholder-[#adb5bd] outline-none transition-all`}
+                  className={`w-full bg-white/50  border border-[#dee2e6]/50 ${errors.correo ? 'border-red-500/70 focus:ring-red-500/20' : 'border-[#d7f250]/30 focus:border-[#d7f250]/50 focus:ring-[#d7f250]/20'} focus:ring-[3px] rounded-xl pl-10 pr-3 py-3 text-[#161616] placeholder-[#adb5bd]/80 outline-none transition-all duration-200`}
                   {...register('correo')}
                 />
               </div>
@@ -266,9 +267,9 @@ const HomePage = () => {
             <div>
               <label className="block text-sm font-principal font-semibold text-[#161616] mb-1">Consulta</label>
               <textarea
-                rows={3}
+                rows={4}
                 placeholder="Mensaje"
-                className={`w-full bg-white border ${errors.mensaje ? 'border-red-500 focus:ring-red-500/15' : 'border-[#dee2e6] focus:border-[#d7f250] focus:ring-[#d7f250]/15'} focus:ring-[3px] rounded-lg p-3 text-[#161616] placeholder-[#adb5bd] outline-none transition-all resize-none`}
+                className={`w-full bg-white/50 border border-[#dee2e6]/50 ${errors.mensaje ? 'border-red-500/70 focus:ring-red-500/20' : 'border-[#d7f250]/30 focus:border-[#d7f250]/50 focus:ring-[#d7f250]/20'} focus:ring-[3px] rounded-xl p-4 text-[#161616] placeholder-[#adb5bd]/80 outline-none transition-all duration-200 resize-none`}
                 {...register('mensaje')}
               />
               {errors.mensaje && <p className="mt-1 text-xs text-red-500 font-medium">{errors.mensaje.message}</p>}
@@ -277,7 +278,7 @@ const HomePage = () => {
             <button
               type="submit"
               disabled={isSubmitting}
-              className="w-full flex items-center justify-center gap-3 rounded-full bg-[#d7f250] px-6 sm:px-8 py-3 sm:py-4 font-principal text-lg sm:text-xl font-bold text-[#131313] shadow-sm transition-all duration-400 hover:-translate-y-1 hover:bg-[#131313] hover:text-[#d7f250] hover:shadow-md cursor-pointer disabled:opacity-70 disabled:cursor-not-allowed"
+              className="w-full flex items-center justify-center gap-3 rounded-xl bg-[#d7f250] px-6 py-3.5 text-lg font-principal font-bold text-[#131313] shadow-sm transition-all duration-300 hover:-translate-y-0.5 hover:bg-[#131313] hover:text-[#d7f250] hover:shadow-md active:scale-[0.98] disabled:opacity-70 disabled:cursor-not-allowed"
             >
               {isSubmitting ? (
                 <><Loader2 className="animate-spin w-5 h-5" /> Enviando...</>
@@ -288,16 +289,42 @@ const HomePage = () => {
             <p className="text-[10px] text-gray-500 text-center leading-tight mt-4">
               Protegido por reCAPTCHA - <a href="https://policies.google.com/privacy" target="_blank" rel="noopener noreferrer" className="underline hover:text-[#161616]">Privacidad</a> y <a href="https://policies.google.com/terms" target="_blank" rel="noopener noreferrer" className="underline hover:text-[#161616]">Términos</a>.
             </p>
-            <div className="mt-20 flex justify-center items-center gap-2">
-                <Instagram className="w-5 h-5" /> 
+
+            {/* =========================================
+                SECCIÓN DE REDES SOCIALES
+            ========================================= */}
+            <div className="mt-10 pt-6 border-t border-gray-200/50 flex flex-col items-center">
+              <h4 className="text-[20px] font-semibold text-black uppercase font-principal tracking-wider mb-4">
+                O escribime <span className='text-[#d7f250]'>a mis redes</span>
+              </h4>
+
+              <div className="flex flex-wrap justify-center items-center gap-5">
+                {/* Botón Instagram */}
                 <a
-                  href="https://www.instagram.com/flex_studioc/"
+                  href="https://www.instagram.com/flex_studioc"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="text-[#161616] hover:text-[#d7f250] font-black transition-all duration-300"
+                  className="group flex items-center gap-3 text-[#161616] transition-all duration-300 hover:-translate-y-1"
                 >
-                  @FLEX_STUDIOC
+                  <div className="flex items-center justify-center w-9 h-9 rounded-full bg-gray-50/50 group-hover:bg-[#161616]/10 group-hover:text-[#d7f250] transition-all duration-300">
+                    <Instagram className="w-4 h-4" />
+                  </div>
+                  <span className="font-bold text-sm tracking-wide uppercase">@flex_studioc</span>
                 </a>
+
+                {/* Botón TikTok */}
+                 <a
+                  href="https://www.tiktok.com/@flexstudioc?_t=ZM-8xQeZpOUQ3c&_r=1&fbclid=PAZXh0bgNhZW0CMTEAc3J0YwZhcHBfaWQMMjU2MjgxMDQwNTU4AAGnn52UOWCv_RZIzoPJ5lpjY1-HE565wQnrS9gWcvwhaVJ0GJvvZLkqzq90gac_aem_9KRbLQ8q9Cr1Gno9nK8vNQ"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="group flex items-center gap-3 text-[#161616] transition-all duration-300 hover:-translate-y-1"
+                >
+                  <div className="flex items-center justify-center w-10 h-10 rounded-full bg-gray-50 group-hover:bg-[#161616] group-hover:text-[#d7f250] transition-colors duration-300">
+                    <Tiktok className="w-5 h-5" />
+                  </div>
+                  <span className="font-bold text-sm tracking-wide uppercase">@flexstudioc</span>
+                </a>
+              </div>
             </div>
             
           </form>

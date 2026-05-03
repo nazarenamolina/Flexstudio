@@ -11,7 +11,6 @@ export interface NuevoVideoForm {
   titulo: string;
   descripcion?: string;  
   idCategoria: string;
-  duracion: number | string;
   orden: number | string;
 }
 
@@ -58,7 +57,6 @@ export const useNuevoVideo = () => {
       const formData = new FormData();
       formData.append('titulo', data.titulo);
       formData.append('idCategoria', data.idCategoria);
-      formData.append('duracion', data.duracion.toString() || '0');
       formData.append('orden', data.orden.toString() || '1');
       if (data.descripcion) formData.append('descripcion', data.descripcion);
       if (archivos.imagen) {

@@ -16,6 +16,19 @@ export interface Video {
   categoria?: Categoria;
 }
 
+export interface VideoData {
+  id: string;
+  titulo: string;
+  descripcion?: string;
+  estado?: string;
+  playbackId?: string;
+  imagenUrl?: string;
+  duracion?: number;
+  categoria?: {
+    titulo: string;
+  };
+}
+
 export const obtenerCredencialesReproduccion = async (idVideo: string) => {
   const respuesta = await api.get(`/videos/reproducir/${idVideo}`);
   return respuesta.data;  
