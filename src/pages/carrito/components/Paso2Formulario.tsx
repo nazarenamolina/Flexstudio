@@ -19,7 +19,7 @@ const Paso2Formulario = ({ formData, usuario, onPrev, onNext }: Props) => {
   });
 
   const inputClass = "border-[1px] border-neutral-400 rounded-md px-4 py-3 text-sm focus:outline-none focus:border-[#d7f250] transition-colors w-full text-[#131313]";
-  const inputErrorClass = "bg-red-500/5 border-[1px] border-red-500 rounded-md px-4 py-3 text-sm focus:outline-none transition-colors w-full text-white";
+  const inputErrorClass = "bg-red-500/5 border-[1px] border-red-500 rounded-md px-4 py-3 text-sm focus:outline-none transition-colors w-full text-black";
   const disabledInputClass = "border-[1px] border-neutral-400 rounded-md px-4 py-3 text-sm cursor-not-allowed w-full";
 
   const onSubmit = (data: FormValues) => {
