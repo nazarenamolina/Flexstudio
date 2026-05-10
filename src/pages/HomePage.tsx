@@ -10,6 +10,7 @@ import { enviarConsultaRequest } from '../api/contacto';
 import { TarjetaClase } from '../components/TarjetaClase';
 import { CarruselDestacadas } from '../components/CarruselDestacadas';
 import { Tiktok, Instagram } from 'react-bootstrap-icons';
+import { ScrollReveal } from '../components/ScrollReveal';
 
 const contactoSchema = z.object({
   nombre: z.string().min(2, 'El nombre debe tener al menos 2 caracteres'),
@@ -100,54 +101,54 @@ const HomePage = () => {
 
   return (
     <main className="min-h-screen font-sans text-[#161616] pt-[52px]">
-      <section
-        className=" bg-white relative w-full h-[50vh] sm:h-[60vh] md:h-[70vh] lg:h-[80vh] xl:h-[100vh] overflow-hidden group"
-        onTouchStart={handleTouchStart}
-        onTouchMove={handleTouchMove}
-        onTouchEnd={handleTouchEnd}
-      >
-        <div
-          className="flex h-full w-full transition-transform duration-700 ease-in-out"
-          style={{ transform: `translateX(-${currentSlide * 100}%)` }}
+      <ScrollReveal direction="none">
+        <section
+          className=" bg-white relative w-full h-[50vh] sm:h-[60vh] md:h-[70vh] lg:h-[80vh] xl:h-[100vh] overflow-hidden group"
+          onTouchStart={handleTouchStart}
+          onTouchMove={handleTouchMove}
+          onTouchEnd={handleTouchEnd}
         >
-          {slides.map((slide, index) => (
-            <div key={index} className="w-full h-full shrink-0 relative ">
-              <img src={slide} alt={`Slide ${index}`} className="w-full h-full" />
-            </div>
-          ))}
-        </div>
+          <div
+            className="flex h-full w-full transition-transform duration-700 ease-in-out"
+            style={{ transform: `translateX(-${currentSlide * 100}%)` }}
+          >
+            {slides.map((slide, index) => (
+              <div key={index} className="w-full h-full shrink-0 relative ">
+                <img src={slide} alt={`Slide ${index}`} className="w-full h-full" />
+              </div>
+            ))}
+          </div>
 
-        <button onClick={prevSlide} className="absolute left-4 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-[#d7f250] hover:text-black text-white p-3 rounded-full transition-all opacity-0 group-hover:opacity-100 focus:opacity-100 z-10">
-          <ChevronLeft className="w-6 h-6 cursor-pointer" />
-        </button>
-        <button onClick={nextSlide} className="absolute right-4 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-[#d7f250] hover:text-black text-white p-3 rounded-full transition-all opacity-0 group-hover:opacity-100 focus:opacity-100 z-10">
-          <ChevronRight className="w-6 h-6 cursor-pointer" />
-        </button>
+          <button onClick={prevSlide} className="absolute left-4 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-[#d7f250] hover:text-black text-white p-3 rounded-full transition-all opacity-0 group-hover:opacity-100 focus:opacity-100 z-10">
+            <ChevronLeft className="w-6 h-6 cursor-pointer" />
+          </button>
+          <button onClick={nextSlide} className="absolute right-4 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-[#d7f250] hover:text-black text-white p-3 rounded-full transition-all opacity-0 group-hover:opacity-100 focus:opacity-100 z-10">
+            <ChevronRight className="w-6 h-6 cursor-pointer" />
+          </button>
 
-        <div className="absolute bottom-6 left-1/2 -translate-x-1/2 flex gap-3 z-10">
-          {slides.map((_, index) => (
-            <button
-              key={index}
-              onClick={() => setCurrentSlide(index)}
-              className={`w-3 h-3 rounded-full transition-all duration-300 ${currentSlide === index ? "bg-[#d7f250] w-8" : "bg-white/50 hover:bg-white"}`}
-              aria-label={`Ir a la diapositiva ${index + 1}`}
-            />
-          ))}
-        </div>
-      </section>
-
-      {/* SECCIÓN BIOGRAFÍA */}
+          <div className="absolute bottom-6 left-1/2 -translate-x-1/2 flex gap-3 z-10">
+            {slides.map((_, index) => (
+              <button
+                key={index}
+                onClick={() => setCurrentSlide(index)}
+                className={`w-3 h-3 rounded-full transition-all duration-300 ${currentSlide === index ? "bg-[#d7f250] w-8" : "bg-white/50 hover:bg-white"}`}
+                aria-label={`Ir a la diapositiva ${index + 1}`}
+              />
+            ))}
+          </div>
+        </section>
+      </ScrollReveal>
       <section className="w-full flex flex-col lg:flex-row bg-[#FDFDF8] overflow-hidden">
-        <div className="w-full lg:w-1/2 relative min-h-[50vh] lg:min-h-full">
+        <ScrollReveal direction="right" className="w-full lg:w-1/2 relative min-h-[50vh] lg:min-h-full">
           <img
             src="https://res.cloudinary.com/dmp7mcwie/image/upload/v1775007736/flex-studio/categorias/yjtki7chv3jsy2z8hlfb.jpg"
             alt="Cande Imbaud - Profesora de Flexibilidad"
             className="absolute inset-0 w-full h-full object-cover object-center"
           />
-        </div>
+        </ScrollReveal>
 
-        <div className="w-full lg:w-1/2 flex flex-col justify-center items-center px-8 py-10 md:px-16 lg:px-24 text-center font-principal text-[#131313]">
-
+        {/* Texto de Cande - Entra desde la derecha */}
+        <ScrollReveal direction="left" className="w-full lg:w-1/2 flex flex-col justify-center items-center px-8 py-10 md:px-16 lg:px-24 text-center font-principal text-[#131313]">
           <h2 className="text-7xl md:text-9xl tracking-tight uppercase leading-none mb-10 lg:mb-16 text-[#d7f250] opacity-90">
             Cande Imbaud
           </h2>
@@ -161,27 +162,21 @@ const HomePage = () => {
             </p>
           </div>
 
-          {/* --- BADGES DE EXPERIENCIA --- */}
           <div className="flex flex-wrap items-center justify-center gap-x-6 gap-y-4 w-full max-w-3xl">
-            
             <div className="flex items-center gap-2.5">
               <Clock className="w-6 h-6 text-[#d7f250] shrink-0" strokeWidth={2} />
               <span className="text-[12px] sm:text-[13px] md:text-sm font-bold tracking-wide text-[#131313] uppercase text-left">
                 8+ Años de Experiencia
               </span>
             </div>
-
             <div className="hidden sm:block w-[1px] h-6 bg-[#302B1B]/10"></div>
-
             <div className="flex items-center gap-2.5">
               <GraduationCap className="w-6 h-6 text-[#d7f250] shrink-0" strokeWidth={2} />
               <span className="text-[12px] sm:text-[13px] md:text-sm font-bold tracking-wide text-[#131313] uppercase text-left">
                 Profesora de Ed. Física
               </span>
             </div>
-
             <div className="hidden sm:block w-[1px] h-6 bg-[#302B1B]/10"></div>
-
             <div className="flex items-center gap-2.5">
               <BicepsFlexed className="w-6 h-6 text-[#d7f250] shrink-0 -mr-0.5" strokeWidth={2} />
               <span className="text-[12px] sm:text-[13px] md:text-sm font-bold tracking-wide text-[#131313] uppercase text-left">
@@ -189,25 +184,27 @@ const HomePage = () => {
               </span>
             </div>
           </div>
+        </ScrollReveal>
 
-        </div>
       </section>
 
-      <section className="container mx-auto px-6 py-6">
-        <div className="flex justify-center mt-0 -mx-6 md:mx-0">
-          <img
-            src="https://res.cloudinary.com/dmp7mcwie/image/upload/v1774312501/titulo_rue8kw.png"
-            alt="Explorar Clases"
-            className="w-full h-auto object-cover"
+      <section className="container mx-auto px-6 py-6 overflow-hidden">
+        <ScrollReveal direction="down">
+          <div className="flex justify-center mt-0 -mx-6 md:mx-0">
+            <img
+              src="https://res.cloudinary.com/dmp7mcwie/image/upload/v1774312501/titulo_rue8kw.png"
+              alt="Explorar Clases"
+              className="w-full h-auto object-cover"
+            />
+          </div>
+        </ScrollReveal>
+        <ScrollReveal direction="up" delay={0.2}>
+          <CarruselDestacadas
+            categorias={categorias}
+            flippedCard={flippedCard}
+            setFlippedCard={setFlippedCard}
           />
-        </div>
-
-        <CarruselDestacadas
-          categorias={categorias}
-          flippedCard={flippedCard}
-          setFlippedCard={setFlippedCard}
-        />
-
+        </ScrollReveal>
         <article className="flex flex-wrap justify-center gap-[25px] mt-10">
           {cargando ? (
             <div className="w-full text-center py-10">
@@ -218,120 +215,115 @@ const HomePage = () => {
               <p className="text-gray-400">Aún no hay categorías disponibles.</p>
             </div>
           ) : (
-            regulares.map((servicio) => (
-              <TarjetaClase
-                key={servicio.id}
-                servicio={servicio}
-                flippedCard={flippedCard}
-                setFlippedCard={setFlippedCard}
-              />
+            regulares.map((servicio, index) => (
+              <ScrollReveal key={servicio.id} direction="up" delay={index * 0.15}>
+                <TarjetaClase
+                  servicio={servicio}
+                  flippedCard={flippedCard}
+                  setFlippedCard={setFlippedCard}
+                />
+              </ScrollReveal>
             ))
           )}
         </article>
+        <ScrollReveal direction="up" delay={0.3}>
+          <article className="w-[100%] sm:w-[80%] lg:w-[60%] xl:w-[50%] mx-auto border border-gray-300 bg-white/80 bg-[url('https://res.cloudinary.com/dmp7mcwie/image/upload/v1774312699/fondo_hwrosv.png')] bg-cover rounded-2xl p-6 md:p-10 shadow-inner">
+            <div className="text-center mb-6">
+              <h3 className="text-3xl font-black text-[#161616] tracking-tight mb-2 font-principal">¿Tenés una consulta?</h3>
+              <p className="text-gray-500 text-sm">Completa con tus datos y te respondo lo antes posible.</p>
+            </div>
 
-        <article className="w-[100%] sm:w-[80%] lg:w-[60%] xl:w-[50%] mx-auto border border-gray-300 bg-white/80 bg-[url('https://res.cloudinary.com/dmp7mcwie/image/upload/v1774312699/fondo_hwrosv.png')] bg-cover rounded-2xl p-6 md:p-10 shadow-inner">
-          <div className="text-center mb-6">
-            <h3 className="text-3xl font-black text-[#161616] tracking-tight mb-2 font-principal">¿Tenés una consulta?</h3>
-            <p className="text-gray-500 text-sm">Completa con tus datos y te respondo lo antes posible.</p>
-          </div>
+            <form onSubmit={handleSubmit(onSubmitContacto)} className="space-y-6">
+              <div>
+                <label className="block text-sm font-principal font-semibold text-[#161616] mb-1">Nombre</label>
+                <div className="relative">
+                  <User className="absolute left-4 top-1/2 -translate-y-1/2 text-[#adb5bd] w-4 h-4" />
+                  <input
+                    type="text"
+                    placeholder="Tu nombre"
+                    className={`w-full bg-white/50 border border-[#dee2e6]/50 ${errors.nombre ? 'border-red-500/70 focus:ring-red-500/20' : 'border-[#d7f250]/30 focus:border-[#d7f250]/50 focus:ring-[#d7f250]/20'} focus:ring-[3px] rounded-xl pl-10 pr-3 py-3 text-[#161616] placeholder-[#adb5bd]/80 outline-none transition-all duration-200`}
+                    {...register('nombre')}
+                  />
+                </div>
+                {errors.nombre && <p className="mt-1 text-xs text-red-500 font-medium">{errors.nombre.message}</p>}
+              </div>
 
-        <form onSubmit={handleSubmit(onSubmitContacto)} className="space-y-6">
-            <div>
-              <label className="block text-sm font-principal font-semibold text-[#161616] mb-1">Nombre</label>
-              <div className="relative">
-                <User className="absolute left-4 top-1/2 -translate-y-1/2 text-[#adb5bd] w-4 h-4" />
-                <input
-                  type="text"
-                  placeholder="Tu nombre"
-                  className={`w-full bg-white/50 border border-[#dee2e6]/50 ${errors.nombre ? 'border-red-500/70 focus:ring-red-500/20' : 'border-[#d7f250]/30 focus:border-[#d7f250]/50 focus:ring-[#d7f250]/20'} focus:ring-[3px] rounded-xl pl-10 pr-3 py-3 text-[#161616] placeholder-[#adb5bd]/80 outline-none transition-all duration-200`}
-                  {...register('nombre')}
+              <div>
+                <label className="block text-sm font-principal font-semibold text-[#161616] mb-1">E-mail</label>
+                <div className="relative">
+                  <Mail className="absolute left-4 top-1/2 -translate-y-1/2 text-[#adb5bd] w-4 h-4" />
+                  <input
+                    type="email"
+                    placeholder="correo@ejemplo.com"
+                    className={`w-full bg-white/50  border border-[#dee2e6]/50 ${errors.correo ? 'border-red-500/70 focus:ring-red-500/20' : 'border-[#d7f250]/30 focus:border-[#d7f250]/50 focus:ring-[#d7f250]/20'} focus:ring-[3px] rounded-xl pl-10 pr-3 py-3 text-[#161616] placeholder-[#adb5bd]/80 outline-none transition-all duration-200`}
+                    {...register('correo')}
+                  />
+                </div>
+                {errors.correo && <p className="mt-1 text-xs text-red-500 font-medium">{errors.correo.message}</p>}
+              </div>
+
+              <div>
+                <label className="block text-sm font-principal font-semibold text-[#161616] mb-1">Consulta</label>
+                <textarea
+                  rows={4}
+                  placeholder="Mensaje"
+                  className={`w-full bg-white/50 border border-[#dee2e6]/50 ${errors.mensaje ? 'border-red-500/70 focus:ring-red-500/20' : 'border-[#d7f250]/30 focus:border-[#d7f250]/50 focus:ring-[#d7f250]/20'} focus:ring-[3px] rounded-xl p-4 text-[#161616] placeholder-[#adb5bd]/80 outline-none transition-all duration-200 resize-none`}
+                  {...register('mensaje')}
                 />
+                {errors.mensaje && <p className="mt-1 text-xs text-red-500 font-medium">{errors.mensaje.message}</p>}
               </div>
-              {errors.nombre && <p className="mt-1 text-xs text-red-500 font-medium">{errors.nombre.message}</p>}
-            </div>
 
-            <div>
-              <label className="block text-sm font-principal font-semibold text-[#161616] mb-1">E-mail</label>
-              <div className="relative">
-                <Mail className="absolute left-4 top-1/2 -translate-y-1/2 text-[#adb5bd] w-4 h-4" />
-                <input
-                  type="email"
-                  placeholder="correo@ejemplo.com"
-                  className={`w-full bg-white/50  border border-[#dee2e6]/50 ${errors.correo ? 'border-red-500/70 focus:ring-red-500/20' : 'border-[#d7f250]/30 focus:border-[#d7f250]/50 focus:ring-[#d7f250]/20'} focus:ring-[3px] rounded-xl pl-10 pr-3 py-3 text-[#161616] placeholder-[#adb5bd]/80 outline-none transition-all duration-200`}
-                  {...register('correo')}
-                />
+              <button
+                type="submit"
+                disabled={isSubmitting}
+                className="w-full flex items-center justify-center gap-3 rounded-xl bg-[#d7f250] px-6 py-3.5 text-lg font-principal font-bold text-[#131313] shadow-sm transition-all duration-300 hover:-translate-y-0.5 hover:bg-[#131313] hover:text-[#d7f250] hover:shadow-md active:scale-[0.98] disabled:opacity-70 disabled:cursor-not-allowed"
+              >
+                {isSubmitting ? (
+                  <><Loader2 className="animate-spin w-5 h-5" /> Enviando...</>
+                ) : (
+                  'Enviar'
+                )}
+              </button>
+              <p className="text-[10px] text-gray-500 text-center leading-tight mt-4">
+                Protegido por reCAPTCHA - <a href="https://policies.google.com/privacy" target="_blank" rel="noopener noreferrer" className="underline hover:text-[#161616]">Privacidad</a> y <a href="https://policies.google.com/terms" target="_blank" rel="noopener noreferrer" className="underline hover:text-[#161616]">Términos</a>.
+              </p>
+
+              <div className="mt-10 pt-6 border-t border-gray-200/50 flex flex-col items-center">
+                <h4 className="text-[20px] font-semibold text-black uppercase font-principal tracking-wider mb-4">
+                  O escribime <span className='text-[#d7f250]'>a mis redes</span>
+                </h4>
+
+                <div className="flex flex-wrap justify-center items-center gap-5">
+                  <a
+                    href="https://www.instagram.com/flex_studioc"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="group flex items-center gap-3 text-[#161616] transition-all duration-300 hover:-translate-y-1"
+                  >
+                    <div className="flex items-center justify-center w-9 h-9 rounded-full bg-gray-50/50 group-hover:bg-[#161616] group-hover:text-[#d7f250] transition-all duration-300">
+                      <Instagram className="w-5 h-5" />
+                    </div>
+                    <span className="font-bold text-sm tracking-wide uppercase">@flex_studioc</span>
+                  </a>
+
+                  <a
+                    href="https://www.tiktok.com/@flexstudioc?_t=ZM-8xQeZpOUQ3c&_r=1&fbclid=PAZXh0bgNhZW0CMTEAc3J0YwZhcHBfaWQMMjU2MjgxMDQwNTU4AAGnn52UOWCv_RZIzoPJ5lpjY1-HE565wQnrS9gWcvwhaVJ0GJvvZLkqzq90gac_aem_9KRbLQ8q9Cr1Gno9nK8vNQ"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="group flex items-center gap-3 text-[#161616] transition-all duration-300 hover:-translate-y-1"
+                  >
+                    <div className="flex items-center justify-center w-10 h-10 rounded-full bg-gray-50 group-hover:bg-[#161616] group-hover:text-[#d7f250] transition-colors duration-300">
+                      <Tiktok className="w-5 h-5" />
+                    </div>
+                    <span className="font-bold text-sm tracking-wide uppercase">@flexstudioc</span>
+                  </a>
+                </div>
               </div>
-              {errors.correo && <p className="mt-1 text-xs text-red-500 font-medium">{errors.correo.message}</p>}
-            </div>
-
-            <div>
-              <label className="block text-sm font-principal font-semibold text-[#161616] mb-1">Consulta</label>
-              <textarea
-                rows={4}
-                placeholder="Mensaje"
-                className={`w-full bg-white/50 border border-[#dee2e6]/50 ${errors.mensaje ? 'border-red-500/70 focus:ring-red-500/20' : 'border-[#d7f250]/30 focus:border-[#d7f250]/50 focus:ring-[#d7f250]/20'} focus:ring-[3px] rounded-xl p-4 text-[#161616] placeholder-[#adb5bd]/80 outline-none transition-all duration-200 resize-none`}
-                {...register('mensaje')}
-              />
-              {errors.mensaje && <p className="mt-1 text-xs text-red-500 font-medium">{errors.mensaje.message}</p>}
-            </div>
-
-            <button
-              type="submit"
-              disabled={isSubmitting}
-              className="w-full flex items-center justify-center gap-3 rounded-xl bg-[#d7f250] px-6 py-3.5 text-lg font-principal font-bold text-[#131313] shadow-sm transition-all duration-300 hover:-translate-y-0.5 hover:bg-[#131313] hover:text-[#d7f250] hover:shadow-md active:scale-[0.98] disabled:opacity-70 disabled:cursor-not-allowed"
-            >
-              {isSubmitting ? (
-                <><Loader2 className="animate-spin w-5 h-5" /> Enviando...</>
-              ) : (
-                'Enviar'
-              )}
-            </button>
-            <p className="text-[10px] text-gray-500 text-center leading-tight mt-4">
-              Protegido por reCAPTCHA - <a href="https://policies.google.com/privacy" target="_blank" rel="noopener noreferrer" className="underline hover:text-[#161616]">Privacidad</a> y <a href="https://policies.google.com/terms" target="_blank" rel="noopener noreferrer" className="underline hover:text-[#161616]">Términos</a>.
-            </p>
-
-            {/* =========================================
-                SECCIÓN DE REDES SOCIALES
-            ========================================= */}
-            <div className="mt-10 pt-6 border-t border-gray-200/50 flex flex-col items-center">
-              <h4 className="text-[20px] font-semibold text-black uppercase font-principal tracking-wider mb-4">
-                O escribime <span className='text-[#d7f250]'>a mis redes</span>
-              </h4>
-
-              <div className="flex flex-wrap justify-center items-center gap-5">
-                {/* Botón Instagram */}
-                <a
-                  href="https://www.instagram.com/flex_studioc"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="group flex items-center gap-3 text-[#161616] transition-all duration-300 hover:-translate-y-1"
-                >
-                  <div className="flex items-center justify-center w-9 h-9 rounded-full bg-gray-50/50 group-hover:bg-[#161616]/10 group-hover:text-[#d7f250] transition-all duration-300">
-                    <Instagram className="w-4 h-4" />
-                  </div>
-                  <span className="font-bold text-sm tracking-wide uppercase">@flex_studioc</span>
-                </a>
-
-                {/* Botón TikTok */}
-                 <a
-                  href="https://www.tiktok.com/@flexstudioc?_t=ZM-8xQeZpOUQ3c&_r=1&fbclid=PAZXh0bgNhZW0CMTEAc3J0YwZhcHBfaWQMMjU2MjgxMDQwNTU4AAGnn52UOWCv_RZIzoPJ5lpjY1-HE565wQnrS9gWcvwhaVJ0GJvvZLkqzq90gac_aem_9KRbLQ8q9Cr1Gno9nK8vNQ"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="group flex items-center gap-3 text-[#161616] transition-all duration-300 hover:-translate-y-1"
-                >
-                  <div className="flex items-center justify-center w-10 h-10 rounded-full bg-gray-50 group-hover:bg-[#161616] group-hover:text-[#d7f250] transition-colors duration-300">
-                    <Tiktok className="w-5 h-5" />
-                  </div>
-                  <span className="font-bold text-sm tracking-wide uppercase">@flexstudioc</span>
-                </a>
-              </div>
-            </div>
-            
-          </form>
-        </article>
+            </form>
+          </article>
+        </ScrollReveal>
 
       </section>
-
     </main>
   );
 };
