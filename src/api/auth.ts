@@ -3,6 +3,12 @@ import { api } from './axios';
 export interface LoginCredentials {
   correo: string;
   contrasena: string;
+  captchaToken:string;
+}
+
+export interface VerificarOtpData {
+  correo: string;
+  codigo: string;
 }
 
 export interface Usuario {
@@ -11,6 +17,7 @@ export interface Usuario {
   apellido: string;
   correo: string;
   rol: string;
+  pais?:string;
 }
 
 export interface LoginResponse {
@@ -30,6 +37,7 @@ export interface RegistroData {
   ciudad?: string;
   direccion?: string;
   codigoPostal?: string;
+  captchaToken?: string;
 }
 
 export const registroRequest = async (datos: RegistroData) => {
@@ -37,6 +45,10 @@ export const registroRequest = async (datos: RegistroData) => {
   return response.data;
 };
 
+export const verificarEmailRequest = async (datos: VerificarOtpData) => {
+  const response = await api.post('/auth/verificar-email', datos);
+  return response.data;
+};
 
 export const loginRequest = async (credentials: LoginCredentials): Promise<LoginResponse> => {
   const response = await api.post<LoginResponse>('/auth/login', credentials);
@@ -45,5 +57,15 @@ export const loginRequest = async (credentials: LoginCredentials): Promise<Login
 
 export const logoutRequest = async (): Promise<{ mensaje: string }> => {
   const response = await api.post('/auth/logout');
+  return response.data;
+};
+
+export const solicitarRecuperacionRequest = async (data: { correo: string, captchaToken: string }) => {
+  const response = await api.post('/auth/solicitar-recuperacion', data);
+  return response.data;
+};
+
+export const cambiarContrasenaRequest = async (data: { token: string, nuevaContrasena: string }) => {
+  const response = await api.post('/auth/cambiar-contrasena', data);
   return response.data;
 };

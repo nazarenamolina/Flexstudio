@@ -46,7 +46,7 @@ export const ConfirmarEliminarModal = ({ isOpen, onClose, onConfirm, tituloItem,
                     <AlertTriangle className="w-6 h-6 text-red-500" />
                   </div>
                   <Dialog.Title as="h3" className="text-xl font-extrabold text-white leading-tight">
-                    Eliminar Disciplina
+                    Eliminar
                   </Dialog.Title>
                 </div>
 

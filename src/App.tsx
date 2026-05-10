@@ -4,7 +4,7 @@ import { AppRouter } from './router/AppRouter';
 function App() {
   return (
     <>
-      {/* Nuestro enrutador principal */}
+ 
       <AppRouter />
       <Toaster 
         position="top-right" 

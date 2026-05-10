@@ -7,32 +7,46 @@ import { crearCategoriaRequest } from '../api/categoria';
 
 export interface NuevaCategoriaForm {
   titulo: string;
-  precio: number;
+  precioArs: number;
+  precioUsd: number;
   descripcionCard: string;
   descripcionBreve: string;
   descripcionDetallada: string;
   beneficios: { titulo: string; descripcion: string; icono?: string }[];
+  destacada: boolean;
 }
 
 export const useNuevaCategoria = () => {
   const navigate = useNavigate();
-  
-  const {register, handleSubmit, control, watch, formState: { errors, isSubmitting }} = useForm<NuevaCategoriaForm>({defaultValues: {beneficios: []}});
+
+  const {register, handleSubmit, control, watch, formState: { errors, isSubmitting }} = useForm<NuevaCategoriaForm>({
+    defaultValues: { 
+      beneficios: [],
+      destacada: false  
+    }
+  });
+
   const { fields: beneficiosFields, append: appendBeneficio, remove: removeBeneficio } = useFieldArray({
     control,
     name: "beneficios",
   });
+
   const [estadoSubida, setEstadoSubida] = useState<'IDLE' | 'CREANDO_CATEGORIA' | 'SUBIENDO_VIDEO' | 'COMPLETADO'>('IDLE');
   const [progreso, setProgreso] = useState(0);
   const [archivos, setArchivos] = useState({
-    imagenTarjeta: null as File | null,
-    imagenHero: null as File | null,
+    imagenTarjeta: null as File | string | null,
+    imagenHero: null as File | string | null,
     videoMuestra: null as File | null,
   });
+
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>, tipo: keyof typeof archivos) => {
     if (e.target.files && e.target.files.length > 0) {
       setArchivos({ ...archivos, [tipo]: e.target.files[0] });
     }
+  };
+ 
+  const handleSelectFromGallery = (url: string, tipo: 'imagenTarjeta' | 'imagenHero') => {
+    setArchivos(prev => ({ ...prev, [tipo]: url }));
   };
 
   const handleEliminarMultimedia = (tipo: 'hero' | 'tarjeta' | 'video') => {
@@ -48,33 +62,49 @@ export const useNuevaCategoria = () => {
     try {
       const formData = new FormData();
       formData.append('titulo', data.titulo);
-      formData.append('precio', data.precio.toString());
+      formData.append('precioArs', data.precioArs.toString());
+      formData.append('precioUsd', data.precioUsd.toString());
+      formData.append('destacada', String(data.destacada));
       if (data.descripcionCard) formData.append('descripcionCard', data.descripcionCard);
       if (data.descripcionBreve) formData.append('descripcionBreve', data.descripcionBreve);
       if (data.descripcionDetallada) formData.append('descripcionDetallada', data.descripcionDetallada);
-      
+
       if (data.beneficios && data.beneficios.length > 0) {
         const beneficiosValidos = data.beneficios.filter(b => b.titulo.trim() !== '');
         if (beneficiosValidos.length > 0) {
           formData.append('beneficios', JSON.stringify(beneficiosValidos));
         }
       }
-      
-      if (archivos.imagenTarjeta) formData.append('imagenTarjeta', archivos.imagenTarjeta);
-      if (archivos.imagenHero) formData.append('imagenHero', archivos.imagenHero);
+ 
+      if (archivos.imagenTarjeta) {
+        if (typeof archivos.imagenTarjeta === 'string') {
+          formData.append('imagenTarjetaUrl', archivos.imagenTarjeta);  
+        } else {
+          formData.append('imagenTarjeta', archivos.imagenTarjeta); 
+        }
+      }
+
+      if (archivos.imagenHero) {
+        if (typeof archivos.imagenHero === 'string') {
+          formData.append('imagenHeroUrl', archivos.imagenHero); 
+        } else {
+          formData.append('imagenHero', archivos.imagenHero) 
+        }
+      }
+
       if (archivos.videoMuestra) formData.append('necesitaVideoMuestra', 'true');
 
       const respuestaBackend = await crearCategoriaRequest(formData);
       const uploadUrl = respuestaBackend.uploadUrl;
 
       toast.success('¡Categoría base creada!', { id: loadingToast });
-      
+
       if (archivos.videoMuestra && uploadUrl) {
         setEstadoSubida('SUBIENDO_VIDEO');
         const upload = UpChunk.createUpload({
           endpoint: uploadUrl,
           file: archivos.videoMuestra,
-          chunkSize: 5120, 
+          chunkSize: 5120,
         });
 
         upload.on('progress', (e) => setProgreso(Math.floor(e.detail)));
@@ -89,7 +119,7 @@ export const useNuevaCategoria = () => {
           setEstadoSubida('IDLE');
           navigate('/admin/categorias');
         });
-        return; 
+        return;
       }
 
       navigate('/admin/categorias');
@@ -100,5 +130,23 @@ export const useNuevaCategoria = () => {
       setEstadoSubida('IDLE');
     }
   };
-  return {register, handleSubmit: handleSubmit(onSubmit), errors, isSubmitting, estadoSubida, progreso, archivos, handleFileChange, handleEliminarMultimedia, watch, navigate, beneficiosFields, appendBeneficio, removeBeneficio, control};
+
+  return { 
+    register, 
+    handleSubmit: handleSubmit(onSubmit), 
+    errors, 
+    isSubmitting, 
+    estadoSubida, 
+    progreso, 
+    archivos, 
+    handleFileChange, 
+    handleSelectFromGallery, 
+    handleEliminarMultimedia, 
+    watch, 
+    navigate, 
+    beneficiosFields, 
+    appendBeneficio, 
+    removeBeneficio, 
+    control 
+  };
 };

@@ -12,7 +12,48 @@
   --font-principal: "Oswald", sans-serif;
   --font-cursiva: "Caveat", cursive;
 }
+
 body {
   background-color: #ffff;
-  background-image: url("https://res.cloudinary.com/dmp7mcwie/image/upload/v1774312699/fondo_hwrosv.png");
+  background-image: url("https://res.cloudinary.com/dmp7mcwie/image/upload/v1776544346/bg-card_dfxwsn.png");
+}
+
+.phone-wrapper {
+  @apply w-full;
+}
+.phone-input {
+  @apply flex items-center w-full bg-transparent border border-[#d7f250] rounded-md h-[38px] transition-all;
+}
+
+.phone-input .PhoneInputCountry {
+  @apply flex items-center justify-center px-3 h-full border-r border-[#333] mr-0;
+}
+
+ 
+.phone-input .PhoneInputInput {
+  @apply flex-1 w-full bg-transparent px-3 py-2 text-white outline-none border-none shadow-none h-full rounded-r-md;
+}
+
+
+.phone-input:focus-within {
+  @apply border-white ring-1 ring-white/20 ;
+}
+
+.PhoneInputCountrySelect {
+  @apply bg-[#131313] text-white cursor-pointer;
+}
+
+.PhoneInputCountrySelect option {
+  @apply bg-[#131313] text-white;
+}
+.grecaptcha-badge { 
+    visibility: hidden !important; 
+}
+ 
+.scrollbar-hide::-webkit-scrollbar {
+    display: none;
+}
+.scrollbar-hide {
+    -ms-overflow-style: none;   
+    scrollbar-width: none;  
 }

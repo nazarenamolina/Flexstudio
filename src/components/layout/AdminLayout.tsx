@@ -1,19 +1,26 @@
-import { Link, Navigate, Outlet, useLocation, useNavigate } from 'react-router-dom';
-import { LayoutDashboard, Tags, Video, LogOut, Menu } from 'lucide-react';
+import { useState } from 'react';
+import { Navigate, Outlet, useLocation, useNavigate, Link } from 'react-router-dom';
+import { Home, Menu, X, Users, LayoutDashboard, Video, LogOut, ChartNoAxesCombined } from 'lucide-react';
+import { useAuthStore } from '../../store/authStore';
+import { Sidebar } from './Sidebar';
+import { motion, AnimatePresence } from 'framer-motion';
+import { logoutRequest } from '../../api/auth';
 import toast from 'react-hot-toast';
 
-import { useAuthStore } from '../../store/authStore';
-import { logoutRequest } from '../../api/auth';
-
 export const AdminLayout = () => {
-  const { isAuthenticated, usuario, logout } = useAuthStore();
+  const { isAuthenticated, logout } = useAuthStore();
   const location = useLocation();
   const navigate = useNavigate();
-  if (!isAuthenticated) {
-    return <Navigate to="/login" replace />;
-  }
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
-  // 2. LÓGICA DE CERRAR SESIÓN
+  const menuItems = [
+    { name: 'Inicio', path: '/', icon: Home },
+    { name: 'Dashboard', path: '/admin', icon: ChartNoAxesCombined },
+    { name: 'Clientes', path: '/admin/clientes', icon: Users },
+    { name: 'Categorías', path: '/admin/categorias', icon: LayoutDashboard },
+    { name: 'Videos', path: '/admin/videos', icon: Video },
+  ];
+
   const handleLogout = async () => {
     try {
       await logoutRequest();
@@ -25,89 +32,121 @@ export const AdminLayout = () => {
     }
   };
 
-  // 3. MENÚ DE NAVEGACIÓN
-  const menuItems = [
-    { name: 'Dashboard', path: '/admin', icon: LayoutDashboard },
-    { name: 'Clientes', path: '#', icon: Tags },
-    { name: 'categorias', path: '/admin/categorias', icon: Tags },
-    { name: 'videos', path: '/admin/videos', icon: Video },
-  ];
+  if (!isAuthenticated) {
+    return <Navigate to="/login" replace />;
+  }
 
   return (
-    <div className="min-h-screen flex bg-[#0a0a0a] text-white font-sans">
+    <div className="min-h-screen bg-[url('https://res.cloudinary.com/dmp7mcwie/image/upload/v1776644116/bgoscuro_vxdjim.png')] text-white font-sans flex relative">
+      <Sidebar />
+      <main className="flex flex-col overflow-hidden w-full pl-0 md:pl-28 relative">
 
-      <aside className="w-64 bg-bg-card border-r border-gray-800 hidden md:flex flex-col">
-        {/* Logo */}
-        <div className="h-20 flex items-center justify-center border-b border-gray-800 px-4">
-          <Link to="/" className="transition-transform duration-200 hover:scale-105 block">
-            <img src={'https://res.cloudinary.com/dmp7mcwie/image/upload/v1774490155/logofooter_u3j6cz.png'} alt="Flex Studio Logo" className="h-18 w-auto object-contain"/>
+        <header className="h-16 bg-[#131313] border-b border-neutral-800 flex md:hidden items-center justify-between px-3 z-40">
+          <Link to="/" className="flex-shrink-3">
+            <img src="https://res.cloudinary.com/dmp7mcwie/image/upload/v1774490155/logofooter_u3j6cz.png" className="w-30 object-contain" alt="Logo" />
           </Link>
-        </div>
-
-        {/* Links de Navegación */}
-        <nav className="flex-1 py-6 px-4 space-y-2">
-          {menuItems.map((item) => {
-            const Icon = item.icon;
-            // Verificamos si la ruta actual coincide con el link para pintarlo de verde lima
-            const isActive = location.pathname === item.path ||
-              (item.path !== '/admin' && location.pathname.startsWith(item.path));
-
-            return (
-              <Link
-                key={item.name}
-                to={item.path}
-                className={`flex items-center gap-3 px-4 py-3 rounded-lg font-medium transition-all duration-200 ${isActive
-                    ? 'bg-[#d7f250]/10 text-[#d7f250] border border-[#d7f250]/20'
-                    : 'text-gray-400 hover:bg-gray-800 hover:text-white'
-                  }`}
-              >
-                <Icon size={20} className={isActive ? 'text-[#d7f250]' : 'text-gray-400'} />
-                {item.name}
-              </Link>
-            );
-          })}
-        </nav>
-
-        {/* Perfil Inferior en el Sidebar */}
-        <div className="p-4 border-t border-gray-800">
-          <div className="flex items-center gap-3 mb-4 px-2">
-            <div className="h-10 w-10 rounded-full bg-[#d7f250] flex items-center justify-center text-bg-card font-bold text-lg">
-              {usuario?.nombre?.charAt(0).toUpperCase() || 'A'}
-            </div>
-            <div className="overflow-hidden">
-              <p className="text-sm font-bold truncate">{usuario?.nombre} {usuario?.apellido}</p>
-              <p className="text-xs text-gray-400 truncate">{usuario?.correo}</p>
-            </div>
-          </div>
           <button
-            onClick={handleLogout}
-            className="w-full flex items-center justify-center gap-2 px-4 py-2 bg-red-500/10 text-red-500 hover:bg-red-500 hover:text-white rounded-lg transition-colors text-sm font-bold"
+            onClick={() => setIsMobileMenuOpen(true)}
+            className="text-gray-400 hover:text-white transition-colors"
+            aria-label="Toggle menu"
           >
-            <LogOut size={16} />
-            Cerrar Sesión
-          </button>
-        </div>
-      </aside>
-
-      {/* === ÁREA PRINCIPAL (Derecha) === */}
-      <main className="flex-1 flex flex-col h-screen overflow-hidden">
-
-        {/* Cabecera Móvil (Solo se ve en pantallas pequeñas) */}
-        <header className="h-16 bg-bg-card border-b border-gray-800 flex md:hidden items-center justify-between px-4">
-          <h2 className="text-xl font-black">
-            FLEX <span className="text-[#d7f250]">STUDIO</span>
-          </h2>
-          <button className="text-gray-400 hover:text-white">
-            <Menu size={24} />
+            <Menu size={28} />
           </button>
         </header>
 
-        {/* CONTENIDO DINÁMICO: Aquí se inyectan las páginas (Dashboard, Categorias, etc) */}
-        <div className="flex-1 overflow-y-auto p-4 md:p-8">
-          <Outlet /> {/* 👈 ¡LA MAGIA DE REACT ROUTER ESTÁ AQUÍ! */}
-        </div>
-      </main>
+        <AnimatePresence>
+          {isMobileMenuOpen && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="fixed inset-0 z-50 bg-[#131313] flex flex-col"
+            >
+              <div className="h-16 flex items-center justify-between px-4">
+                <Link to="/" className="flex-shrink-3">
+                  <img src="https://res.cloudinary.com/dmp7mcwie/image/upload/v1774490155/logofooter_u3j6cz.png" className="w-30 object-contain" alt="Logo" />
+                </Link>
+                <button
+                  onClick={() => setIsMobileMenuOpen(false)}
+                  className="text-gray-400 hover:text-[#d7f250] transition-colors"
+                >
+                  <X size={28} />
+                </button>
+              </div>
 
+              <div className="flex-1 flex flex-col py-8 px-6 overflow-y-auto border-t border-neutral-800">
+                {menuItems.map((item) => {
+                  const isActive = (item.path === '/' || item.path === '/admin')
+                    ? location.pathname === item.path
+                    : location.pathname.startsWith(item.path);
+                  return (
+                    <MobileMenuItem
+                      key={item.name}
+                      item={item}
+                      isActive={isActive}
+                      onClick={() => setIsMobileMenuOpen(false)}
+                    />
+                  );
+                })}
+
+                <div className="mt-auto pt-5 border-t border-neutral-800">
+                  <motion.div whileTap={{ scale: 0.92 }} className="w-full flex justify-center">
+                    <button
+                      onClick={handleLogout}
+                      className="relative flex items-center justify-center gap-3 h-14 rounded-2xl overflow-hidden transition-all duration-300 w-full bg-red-500/10 border border-red-500/20 text-red-500"
+                    >
+                      <LogOut size={22} strokeWidth={2.5} />
+                      <span className="font-principal font-black tracking-widest uppercase text-sm">
+                        Cerrar Sesión
+                      </span>
+                    </button>
+                  </motion.div>
+                </div>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        <div className="flex-1 overflow-y-auto p-4 md:p-8">
+          <Outlet />
+        </div>
+
+      </main>
     </div>
+  );
+};
+
+
+const MobileMenuItem = ({ item, isActive, onClick }: { item: any, isActive: boolean, onClick: () => void }) => {
+  const Icon = item.icon;
+
+  return (
+    <motion.div
+      whileTap={{ scale: 0.92 }}
+      className="w-full flex justify-center mb-4"
+    >
+      <Link
+        to={item.path}
+        onClick={onClick}
+        className={`relative flex items-center h-14 rounded-2xl overflow-hidden transition-all duration-300 ease-out ${isActive
+          ? "bg-[#d7f250] border border-[#d7f250] w-full"
+          : "bg-[#393838]/40 border border-neutral-700 w-full"
+          }`}
+      >
+        <div className="w-14 h-14 shrink-0 flex items-center justify-center">
+          <Icon
+            size={22}
+            strokeWidth={isActive ? 2.5 : 2}
+            className={isActive ? 'text-black' : 'text-neutral-300'}
+          />
+        </div>
+
+        <span
+          className={`font-principal font-black tracking-widest uppercase text-xs whitespace-nowrap pr-6 transition-colors duration-300 ${isActive ? 'text-black' : 'text-neutral-300'}`}
+        >
+          {item.name}
+        </span>
+      </Link>
+    </motion.div>
   );
 };

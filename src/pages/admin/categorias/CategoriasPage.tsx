@@ -1,157 +1,107 @@
-import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { Plus, Edit2, Trash2, ChevronRight } from 'lucide-react';
-import toast from 'react-hot-toast';
-import { obtenerCategoriasRequest, eliminarCategoriaRequest, type Categoria } from '../../../api/categoria';
+import { useState } from 'react';
+import { PencilLine, LayoutGrid, List } from 'lucide-react';
+import { useCategorias } from '../../../hooks/useCategorias';
 import { ConfirmarEliminarModal } from '../../../components/ConfirmarEliminarModal';
-interface CategoriaConVideos extends Categoria {
-  videos?: any[];
-}
+import { motion, AnimatePresence } from 'framer-motion';
+import { CategoriaCard } from '../../../components/CategoriaCard';
+import { AddCategoriaCard } from '../../../components/AddCategoriaCard';
 
 export const CategoriasPage = () => {
-  const [categorias, setCategorias] = useState<CategoriaConVideos[]>([]);
-  const [cargando, setCargando] = useState(true);
-  const navigate = useNavigate();
-  const colores = ['#1f2937', '#374151', '#111827', '#0f172a', '#1e293b'];
+  const { categorias, isLoading, estaEliminando, handleEliminar, navigateANueva, navigateAEditar } = useCategorias();
   const [modalAbierto, setModalAbierto] = useState(false);
   const [categoriaAEliminar, setCategoriaAEliminar] = useState<{ id: string, titulo: string } | null>(null);
-  const [estaEliminando, setEstaEliminando] = useState(false);
+  const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
 
-  const cargarCategorias = async () => {
-    try {
-      const data = await obtenerCategoriasRequest();
-      if (Array.isArray(data)) setCategorias(data);
-      else if (data && Array.isArray((data as any).categorias)) setCategorias((data as any).categorias);
-      else setCategorias([]);
-    } catch (error) {
-      toast.error('No se pudieron cargar las categorías.');
-    } finally {
-      setCargando(false);
-    }
-  };
-
-  useEffect(() => { 
-    cargarCategorias(); 
-  }, []);
-  const abrirModalEliminacion = (id: string, titulo: string) => {
-    setCategoriaAEliminar({ id, titulo });
-    setModalAbierto(true);
-  };
-  const ejecutarEliminacion = async () => {
-    if (!categoriaAEliminar) return;
-    setEstaEliminando(true);
-    try {
-      await eliminarCategoriaRequest(categoriaAEliminar.id);
-      setCategorias(categorias.filter(cat => cat.id !== categoriaAEliminar.id));
-      toast.success('Categoría eliminada exitosamente'); 
-      setModalAbierto(false);
-    } catch (error) {
-      toast.error('Ocurrió un error al eliminar la categoría');
-    } finally {
-      setEstaEliminando(false);
-      setTimeout(() => setCategoriaAEliminar(null), 300); 
-    }
-  };
-
-  const totalVideosSubidos = categorias.reduce((total, cat) => total + (cat.videos?.length || 0), 0);
-  if (cargando) {
+  if (isLoading) {
     return (
-      <div className="w-full h-full flex items-center justify-center">
-        <div className="text-[#d7f250] text-xl font-bold animate-pulse">Cargando disciplinas...</div>
+      <div className="min-h-screen p-6 md:p-20 flex flex-col items-center justify-center">
+        <motion.div animate={{ rotate: 360 }} transition={{ repeat: Infinity, duration: 1 }}>
+          <PencilLine className="text-[#d7f250] w-12 h-12 opacity-20" />
+        </motion.div>
       </div>
     );
   }
 
+  const abrirModalConConfirmacion = (id: string, titulo: string) => {
+    setCategoriaAEliminar({ id, titulo });
+    setModalAbierto(true);
+  };
+
+  const ejecutarEliminacion = async () => {
+    if (!categoriaAEliminar) return;
+    handleEliminar(categoriaAEliminar.id);
+    setModalAbierto(false);
+  };
+
+  const slideVariants = {
+    hidden: { opacity: 0, x: 20 },
+    visible: { opacity: 1, x: 0 },
+    exit: { opacity: 0, x: -20 }
+  };
+
   return (
-    <div className="w-full h-full flex flex-col gap-8 font-sans overflow-y-auto [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:bg-gray-800 [&::-webkit-scrollbar-thumb]:rounded-full hover:[&::-webkit-scrollbar-thumb]:bg-[#d7f250]/50 pr-2 relative">
+    <div className="max-w-7xl mx-auto p-4 sm:p-6 md:p-8 overflow-hidden">
+      
+      {/* HEADER */}
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 mb-10">
+        <motion.div layout className="space-y-1">
+          <h1 className="text-3xl md:text-5xl font-black text-white flex items-center gap-3 font-principal">
+            <PencilLine className="text-[#d7f250] w-8 h-8 md:w-10 md:h-10 shrink-0" />
+            <span className="leading-none mt-1">Categorias</span>
+          </h1>
+        </motion.div>
 
-      {/* CABECERA PRINCIPAL */}
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-        <div>
-          <h1 className="text-3xl md:text-4xl font-extrabold text-white mb-1 tracking-tight">Disciplinas Flex Studio</h1>
-          <p className="text-gray-400 text-sm md:text-base">Administra las categorías de tu estudio.</p>
+        {/* SWITCHER */}
+        <div className="flex bg-zinc-900/80 p-1 rounded-full border border-white/5 blur-s shadow-2xl">
+          <button
+            onClick={() => setViewMode('grid')}
+            className={`p-2 px-4 rounded-full transition-all duration-300 flex items-center gap-2 ${viewMode === 'grid' ? 'bg-[#d7f250] text-[#131313] shadow-lg scale-95' : 'text-gray-500 hover:text-white'}`}
+          >
+            <LayoutGrid size={16} />
+            <span className="text-[10px] font-bold uppercase tracking-widest hidden sm:inline">Galeria</span>
+          </button>
+          <button
+            onClick={() => setViewMode('list')}
+            className={`p-2 px-4 rounded-full transition-all duration-300 flex items-center gap-2 ${viewMode === 'list' ? 'bg-[#d7f250] text-[#131313] shadow-lg scale-95' : 'text-gray-500 hover:text-white'}`}
+          >
+            <List size={16} />
+            <span className="text-[10px] font-bold uppercase tracking-widest hidden sm:inline">Lista</span>
+          </button>
         </div>
+      </div>
 
-        <button
-          onClick={() => navigate('/admin/categorias/nueva')}
-          className="bg-[#d7f250] hover:bg-[#c4dd46] text-[#131313] px-6 py-3 rounded-full font-bold flex items-center gap-2 transition-transform duration-200 hover:scale-105 shadow-lg"
+      {/* GRILLA / LISTA CONTENEDORA */}
+      <AnimatePresence mode="wait">
+        <motion.div 
+          key={viewMode}
+          variants={slideVariants}
+          initial="hidden"
+          animate="visible"
+          exit="exit"
+          transition={{ duration: 0.25, ease: "easeInOut" }}
+          className={`grid gap-6 ${viewMode === 'grid' ? 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3' : 'grid-cols-1'}`}
         >
-          <Plus size={20} /> Añadir Nueva Categoría
-        </button>
-      </div>
+          <AddCategoriaCard viewMode={viewMode} onClick={navigateANueva} />
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-        <div className="bg-[#131313] p-6 rounded-[20px] border border-gray-800 shadow-sm">
-          <span className="text-gray-400 text-sm font-medium uppercase tracking-wider">Categorías Registradas</span>
-          <h2 className="text-4xl font-extrabold text-white mt-2">{categorias.length}</h2>
-        </div>
-        <div className="bg-[#131313] p-6 rounded-[20px] border border-gray-800 shadow-sm">
-          <span className="text-gray-400 text-sm font-medium uppercase tracking-wider">Total Videos Subidos</span>
-          <h2 className="text-4xl font-extrabold text-white mt-2">{totalVideosSubidos}</h2>
-        </div>
-      </div>
-
-      {/* CUADRÍCULA TARJETAS */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6 mt-2 pb-10">
-        {categorias.map((cat, index) => {
-          const tituloMostrar = cat.titulo.includes('|')
-            ? cat.titulo.split('|')[0].trim()
-            : cat.titulo;
-
-          return (
-            <div
+          {categorias.map((cat) => (
+            <CategoriaCard
               key={cat.id}
-              className="bg-[#131313] rounded-[24px] overflow-hidden border border-gray-800 shadow-sm hover:shadow-xl transition-all duration-300 hover:-translate-y-1 cursor-pointer relative group flex flex-col"
-            >
-              {/* BOTONES FLOTANTES */}
-              <div className="absolute top-3 right-3 flex gap-2 z-10 opacity-100 lg:opacity-0 lg:group-hover:opacity-100 transition-opacity duration-200">
-                <button
-                  onClick={(e) => {e.stopPropagation(); navigate(`/admin/categorias/editar/${cat.id}`);}} className="bg-white/10 hover:bg-white border border-white/20 hover:border-white p-2 rounded-lg cursor-pointer transition-colors shadow-lg group/edit" title="Editar">
-                  <Edit2 size={16} className="text-white group-hover/edit:text-[#131313]" />
-                </button>
-                <button onClick={(e) => {e.stopPropagation(); abrirModalEliminacion(cat.id, tituloMostrar);}} className="bg-red-500/80 hover:bg-red-500 border border-red-500/20 p-2 rounded-lg cursor-pointer transition-colors shadow-lg" title="Eliminar">
-                  <Trash2 size={16} className="text-white" />
-                </button>
-              </div>
+              categoria={cat}
+              viewMode={viewMode}
+              onEdit={navigateAEditar}
+              onDelete={abrirModalConConfirmacion}
+            />
+          ))}
+        </motion.div>
+      </AnimatePresence>
 
-              {/* IMAGEN DE LA CATEGORÍA */}
-              <div
-                className="h-[140px] w-full rounded-t-[24px] bg-cover bg-center"
-                style={{
-                  backgroundImage: cat.imagenTarjeta ? `url(${cat.imagenTarjeta})` : 'none',
-                  backgroundColor: cat.imagenTarjeta ? 'transparent' : colores[index % colores.length],
-                }}
-              >
-                <div className="w-full h-full bg-gradient-to-b from-black/50 to-transparent opacity-0 lg:group-hover:opacity-100 transition-opacity"></div>
-              </div>
-
-              {/* INFO DE LA CATEGORÍA */}
-              <div 
-                className="p-5 flex justify-between items-center flex-1"
-                onClick={() => navigate(`/admin/categorias/editar/${cat.id}`)}
-              >
-                <div>
-                  <h4 className="m-0 text-lg font-bold text-white leading-tight">{tituloMostrar}</h4>
-                  <span className="text-[13px] text-gray-400 mt-1 block font-medium">
-                    {cat.videos ? cat.videos.length : 0} Videos
-                  </span>
-                </div>
-                <ChevronRight size={20} className="text-gray-500 group-hover:text-[#d7f250] transition-colors" />
-              </div>
-            </div>
-          );
-        })}
-      </div>
-
-      {/* 👇 5. RENDERIZAMOS EL MODAL AQUÍ ABAJO */}
-      <ConfirmarEliminarModal 
+      <ConfirmarEliminarModal
         isOpen={modalAbierto}
         onClose={() => !estaEliminando && setModalAbierto(false)}
         onConfirm={ejecutarEliminacion}
         tituloItem={categoriaAEliminar?.titulo || ''}
         estaEliminando={estaEliminando}
       />
-
     </div>
   );
 };

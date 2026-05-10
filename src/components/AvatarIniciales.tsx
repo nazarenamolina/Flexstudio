@@ -11,11 +11,11 @@ export const AvatarIniciales = ({ nombre, apellido = '', size = 'md', className 
   const iniciales = `${inicialNombre}${inicialApellido}`;
   const colores = [
     'bg-[#d7f250] text-[#131313]', 
-    'bg-[#ff1493] text-white',     
-    'bg-purple-500 text-white',
-    'bg-blue-500 text-white',
-    'bg-orange-500 text-white',
-    'bg-cyan-500 text-[#131313]',
+    'bg-[#7d39eb] text-[#fff]',     
+    'bg-[#1f4072] text-[#fff3b4]',
+    'bg-[#c69fd5] text-[#5d1451]',
+    'bg-[#9a0002] text-[#efe6de]',
+    'bg-[#e36887] text-[#f3d98f]',
   ];
 
   const textoCompleto = `${nombre}${apellido}`;

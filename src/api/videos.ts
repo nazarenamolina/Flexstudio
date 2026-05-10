@@ -5,15 +5,34 @@ import { type Categoria } from './categoria';
 export interface Video {
   id: string;
   titulo: string;
+  descripcion?: string; 
   assetId: string;
   playbackId: string;
   imagenUrl?: string;
   orden: number;
   duracion?: number;
+  duracionFormateada?: string; 
   idCategoria: string;
   categoria?: Categoria;
 }
 
+export interface VideoData {
+  id: string;
+  titulo: string;
+  descripcion?: string;
+  estado?: string;
+  playbackId?: string;
+  imagenUrl?: string;
+  duracion?: number;
+  categoria?: {
+    titulo: string;
+  };
+}
+
+export const obtenerCredencialesReproduccion = async (idVideo: string) => {
+  const respuesta = await api.get(`/videos/reproducir/${idVideo}`);
+  return respuesta.data;  
+};
 
 export const obtenerTodosLosVideosRequest = async (): Promise<Video[]> => {
   const respuesta = await api.get('/videos');
@@ -48,5 +67,15 @@ export const actualizarVideoRequest = async (id: string, datos: FormData) => {
   const respuesta = await api.patch(`/videos/${id}`, datos, {
     headers: { 'Content-Type': 'multipart/form-data' }
   });
+  return respuesta.data;
+};
+
+export const marcarVideoCompletadoRequest = async (idVideo: string) => {
+  const respuesta = await api.post(`/videos/${idVideo}/completar`);
+  return respuesta.data;
+};
+
+export const obtenerProgresoCategoriaRequest = async (idCategoria: string): Promise<string[]> => {
+  const respuesta = await api.get(`/videos/progreso/categoria/${idCategoria}`);
   return respuesta.data;
 };
