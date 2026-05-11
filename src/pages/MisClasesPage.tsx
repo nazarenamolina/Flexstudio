@@ -4,8 +4,6 @@ import { Link } from 'react-router-dom';
 
 export const MisClasesPage = () => {
   const { clases, cargando, error } = useMisClases();
-
-  // Estado 1: Cargando
   if (cargando) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-gray-50">
@@ -13,8 +11,7 @@ export const MisClasesPage = () => {
       </div>
     );
   }
-
-  // Estado 2: Error de red o servidor
+ 
   if (error) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-gray-50 p-6 text-center">
@@ -25,7 +22,6 @@ export const MisClasesPage = () => {
     );
   }
 
-  // Estado 3: Renderizado exitoso
   return (
     <main className="px-4 md:px-8 pb-10 pt-25">
       <div className="mx-auto max-w-7xl">
@@ -33,11 +29,8 @@ export const MisClasesPage = () => {
         {/* Cabecera */}
         <div className="mb-10">
           <h1 className="text-3xl font-extrabold tracking-tight text-gray-900 sm:text-4xl">
-            Mis Clases
+            Clases Compradas 
           </h1>
-          <p className="mt-2 text-lg text-gray-600">
-            Tu acceso vitalicio al programa Elite de Flex Studio.
-          </p>
         </div>
 
         {/* Grilla de Clases */}
@@ -48,7 +41,7 @@ export const MisClasesPage = () => {
             ))}
           </div>
         ) : (
-          /* Estado 4: Aún no ha comprado nada */
+ 
           <div className="flex flex-col items-center justify-center rounded-2xl bg-white py-20 text-center shadow-sm">
             <svg xmlns="http://www.w3.org/2000/svg" className="mb-4 h-16 w-16 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
@@ -56,8 +49,8 @@ export const MisClasesPage = () => {
             <h2 className="mb-2 text-xl font-semibold text-gray-900">Aún no tienes clases disponibles</h2>
             <p className="mb-6 text-gray-500">Explora nuestro catálogo y comienza tu entrenamiento.</p>
             <Link 
-              to="/cursos" // Ajusta a la ruta donde vendes tus clases
-              className="rounded-lg bg-indigo-600 px-6 py-3 font-semibold text-white transition hover:bg-indigo-700"
+              to="/cursos" 
+              className="rounded-lg bg-[#d7f250] px-6 py-3 font-semibold text-[#131313] transition hover:bg-[#131313] hover:text-[#d7f250]"
             >
               Ir a la Tienda
             </Link>

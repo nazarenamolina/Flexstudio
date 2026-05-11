@@ -53,6 +53,10 @@ export const TarjetaClase = ({ servicio, flippedCard, setFlippedCard }: Props) =
             </div>
           </div>
         </div>
+
+        {/* =======================
+            REVERSO DE LA TARJETA 
+        ======================= */}
         <div className="absolute inset-0 w-full h-full [backface-visibility:hidden] [transform:rotateY(180deg)_translateZ(1px)] z-20 rounded-[32px] overflow-hidden bg-[#0a0a0a]">
           <div
             className="absolute inset-0 bg-cover bg-center blur-xs scale-125 opacity-100 mix-blend-screen"
@@ -65,28 +69,32 @@ export const TarjetaClase = ({ servicio, flippedCard, setFlippedCard }: Props) =
 
             {/* Bloque superior que desliza hacia arriba */}
             <div className={`flex-1 flex flex-col justify-center transition-all duration-800 delay-100 ${isFlipped ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8 lg:group-hover:opacity-100 lg:group-hover:translate-y-0'}`}>
-              <h4 className="text-[#d7f250] text-2xl sm:text-3xl font-black mb-4 leading-tight text-center drop-shadow-md">
+              <h4 className="text-[#d7f250] text-2xl sm:text-3xl font-black mb-2 sm:mb-4 leading-tight text-center drop-shadow-md">
                 {servicio.titulo}
               </h4>
-              <p className="text-gray-200 text-sm sm:text-[15px] mb-6 line-clamp-4 leading-relaxed font-medium drop-shadow-md wrap-break-word">
+              <p className="text-gray-200 text-xs sm:text-[15px] mb-4 sm:mb-6 line-clamp-4 sm:line-clamp-4 leading-relaxed font-medium drop-shadow-md wrap-break-word">
                 {servicio.descripcionCard || 'Descripción no disponible.'}
               </p>
 
-              <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 sm:gap-3 mt-auto mb-6 sm:mb-10">
-                <div className="flex flex-col justify-center bg-white/5 border border-white/10 rounded-[14px] sm:rounded-2xl p-2.5 sm:p-3 blur-s">
-                  <PlaySquare className="text-[#d7f250] w-3.5 h-3.5 sm:w-4 sm:h-4 mb-1 sm:mb-1.5" />
-                  <span className="text-white font-black text-xs sm:text-sm">{cantidadVideos} VIDEOS</span>
-                  <span className="text-gray-400 text-[8px] sm:text-[9px] uppercase tracking-widest font-bold">Contenido</span>
+              {/* 👇 SOLUCIÓN: Grilla de 3 columnas para todas las pantallas y contenido centrado 👇 */}
+              <div className="grid grid-cols-3 gap-2 sm:gap-3 mt-auto mb-4 sm:mb-8">
+                
+                <div className="flex flex-col items-center justify-center bg-white/5 border border-white/10 rounded-xl sm:rounded-2xl p-2 sm:p-3 backdrop-blur-sm text-center">
+                  <PlaySquare className="text-[#d7f250] w-4 h-4 mb-1 sm:mb-1.5" />
+                  <span className="text-white font-black text-[10px] sm:text-sm leading-none mb-1">{cantidadVideos}</span>
+                  <span className="text-gray-400 text-[7px] sm:text-[9px] uppercase tracking-widest font-bold">Videos</span>
                 </div>
-                <div className="flex flex-col justify-center bg-white/5 border border-white/10 rounded-[14px] sm:rounded-2xl p-2.5 sm:p-3 blur-s">
-                  <Clock className="text-[#d7f250] w-3.5 h-3.5 sm:w-4 sm:h-4 mb-1 sm:mb-1.5" />
-                  <span className="text-white font-black text-xs sm:text-sm">{duracionTotal}</span>
-                  <span className="text-gray-400 text-[8px] sm:text-[9px] uppercase tracking-widest font-bold">Duración Total</span>
+                
+                <div className="flex flex-col items-center justify-center bg-white/5 border border-white/10 rounded-xl sm:rounded-2xl p-2 sm:p-3 backdrop-blur-sm text-center">
+                  <Clock className="text-[#d7f250] w-4 h-4 mb-1 sm:mb-1.5" />
+                  <span className="text-white font-black text-[10px] sm:text-sm leading-none mb-1">{duracionTotal}</span>
+                  <span className="text-gray-400 text-[7px] sm:text-[9px] uppercase tracking-widest font-bold">Total</span>
                 </div>
-                <div className="flex flex-col justify-center bg-white/5 border border-white/10 rounded-[14px] sm:rounded-2xl p-2.5 sm:p-3 blur-s col-span-2 sm:col-span-1">
-                  <InfinityIcon className="text-[#d7f250] w-3.5 h-3.5 sm:w-4 sm:h-4 mb-1 sm:mb-1.5" />
-                  <span className="text-white font-black text-xs sm:text-sm">24/7</span>
-                  <span className="text-gray-400 text-[8px] sm:text-[9px] uppercase tracking-widest font-bold">Acceso</span>
+                
+                <div className="flex flex-col items-center justify-center bg-white/5 border border-white/10 rounded-xl sm:rounded-2xl p-2 sm:p-3 backdrop-blur-sm text-center">
+                  <InfinityIcon className="text-[#d7f250] w-4 h-4 mb-1 sm:mb-1.5" />
+                  <span className="text-white font-black text-[10px] sm:text-sm leading-none mb-1">24/7</span>
+                  <span className="text-gray-400 text-[7px] sm:text-[9px] uppercase tracking-widest font-bold">Acceso</span>
                 </div>
 
               </div>
@@ -97,10 +105,10 @@ export const TarjetaClase = ({ servicio, flippedCard, setFlippedCard }: Props) =
               <Link
                 to={`/categorias/${servicio.id}`}
                 onClick={(e) => e.stopPropagation()}
-                className="group/btn flex items-center justify-center w-full bg-[#d7f250] text-[#131313] font-black rounded-2xl px-6 py-4 sm:py-5 transition-all duration-300 hover:bg-white hover:shadow-[0_0_30px_rgba(215,242,80,0.3)] uppercase tracking-widest text-xs sm:text-sm"
+                className="group/btn flex items-center justify-center w-full bg-[#d7f250] text-[#131313] font-black rounded-2xl px-6 py-3 sm:py-5 transition-all duration-300 hover:bg-white hover:shadow-[0_0_30px_rgba(215,242,80,0.3)] uppercase tracking-widest text-xs sm:text-sm"
               >
                 Ver Masterclass
-                <ArrowRight className="w-5 h-5 ml-2 transition-transform duration-300 group-hover/btn:translate-x-2" />
+                <ArrowRight className="w-4 h-4 sm:w-5 sm:h-5 ml-2 transition-transform duration-300 group-hover/btn:translate-x-2" />
               </Link>
             </div>
 
@@ -109,4 +117,4 @@ export const TarjetaClase = ({ servicio, flippedCard, setFlippedCard }: Props) =
       </div>
     </div>
   );
-};
+};  

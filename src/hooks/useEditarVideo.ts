@@ -10,7 +10,6 @@ export interface EditarVideoForm {
   titulo: string;
   descripcion?: string;
   idCategoria: string;
-  duracion: number | string;
   orden: number | string;
 }
 
@@ -40,7 +39,6 @@ export const useEditarVideo = () => {
         titulo: video.titulo || '',
         descripcion: video.descripcion || '',
         idCategoria: video.categoria?.id || video.idCategoria || '',
-        duracion: video.duracion || '0',
         orden: video.orden || '1',
       });
       setImagenActual(video.imagenUrl || '');
@@ -68,7 +66,6 @@ export const useEditarVideo = () => {
       const formData = new FormData();
       formData.append('titulo', data.titulo);
       formData.append('idCategoria', data.idCategoria);
-      formData.append('duracion', data.duracion.toString());
       formData.append('orden', data.orden.toString());
       if (data.descripcion) formData.append('descripcion', data.descripcion);
       if (archivoImagen) {

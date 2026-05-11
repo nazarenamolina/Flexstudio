@@ -1,0 +1,9 @@
+User-agent: *
+Allow: /
+Disallow: /admin/
+Disallow: /mi-perfil/
+Disallow: /mis-clases/
+Disallow: /carrito/
+Disallow: /checkout/
+
+Sitemap: https://flexstudio-two.vercel.app/sitemap.xml

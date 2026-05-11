@@ -5,6 +5,7 @@ import { useNavigate } from "react-router-dom";
 import { useCartStore } from "../store/cartStore";
 import { iniciarCompraRequest } from "../api/compras";
 import { ArrowLeft } from "lucide-react";
+import { useGoogleReCaptcha } from "react-google-recaptcha-v3";
 
 export const BotonPayPal = () => {
     const [cargando, setCargando] = useState(false);
@@ -13,6 +14,8 @@ export const BotonPayPal = () => {
     const navigate = useNavigate();
     const cartItems = useCartStore((state) => state.cartItems);
     const clearCart = useCartStore((state) => state.clearCart);
+    const { executeRecaptcha } = useGoogleReCaptcha();
+
     const initialOptions = {
         clientId: import.meta.env.VITE_PAYPAL_CLIENT_ID,
         currency: "USD",
@@ -56,13 +59,21 @@ export const BotonPayPal = () => {
                             shape: "rect",
                             label: "pay"
                         }}
-
                         createOrder={async (_data) => {
                             setCargando(true);
                             setMetodoSeleccionado(true);
                             try {
+                                if (!executeRecaptcha) {
+                                    throw new Error("reCAPTCHA no está disponible");
+                                }
+                                const captchaToken = await executeRecaptcha('compra_paypal');
                                 const idsCategorias = cartItems.map(item => item.id);
-                                const respuestaBackend = await iniciarCompraRequest({ idsCategorias });
+                                const respuestaBackend = await iniciarCompraRequest({ 
+                                    idsCategorias,
+                                    plataforma: 'PAYPAL',
+                                    captchaToken
+                                });
+                                
                                 return respuestaBackend.idPagoExterno;
                             } catch (error) {
                                 toast.error("Hubo un problema al iniciar el pago.");

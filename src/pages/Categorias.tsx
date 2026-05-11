@@ -1,12 +1,14 @@
 import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { obtenerCategoriaPorIdRequest, type Categoria } from "../api/categoria";
-import {ShoppingCart, Check, PlayCircle } from "lucide-react";
+import { ShoppingCart, Check, PlayCircle } from "lucide-react";
 import MuxPlayer from "@mux/mux-player-react";
 import { DynamicIcon } from "../components/IconPicker";
 import { useMoneda } from "../hooks/useMoneda";
 import { useCartStore } from "../store/cartStore";
 import { useMisClases } from "../hooks/useMisClases";
+// 👇 Importamos el componente de animación
+import { ScrollReveal } from "../components/ScrollReveal";
 
 const CategoriaDetailPage = () => {
   const { id } = useParams<{ id: string }>();
@@ -83,7 +85,9 @@ const CategoriaDetailPage = () => {
 
   return (
     <main className="min-h-screen w-full overflow-x-hidden">
-  <section className="relative flex min-h-[50em] w-full items-start pt-25 pb-20 md:pt-30 lg:pt-30 overflow-hidden">
+      
+      {/* SECCIÓN HERO */}
+      <section className="relative flex min-h-[50em] w-full items-start pt-25 pb-20 md:pt-30 lg:pt-30 overflow-hidden">
         <div className="absolute inset-0 z-0">
           <img
             src={categoria.imagenHero}
@@ -93,7 +97,8 @@ const CategoriaDetailPage = () => {
           <div className="absolute inset-0 bg-gradient-to-r from-[#131313] via-[#131313]/80 to-transparent"></div>
         </div>
         
-        <div className="relative z-10 mx-auto w-full px-6 lg:ml-24 xl:ml-32">
+        {/* Animamos todo el contenido del Hero para que entre desde abajo */}
+        <ScrollReveal direction="up" className="relative z-10 mx-auto w-full px-6 lg:ml-24 xl:ml-32">
           <span className="inline-block tracking-[3px] text-neon-pink font-bold uppercase text-[0.6rem] md:text-[1rem]">
             ELITE TRAINING PROGRAM
           </span>
@@ -110,7 +115,6 @@ const CategoriaDetailPage = () => {
           </p>
         
           <div className="mt-8 flex flex-col sm:flex-row gap-4 w-full">
-
             {yaComprado ? (
               <button
                 onClick={() => navigate(`/mis-clases/${categoria.id}`)}
@@ -146,11 +150,14 @@ const CategoriaDetailPage = () => {
               </a>
             )}
           </div>
-        </div>
+        </ScrollReveal>
       </section>
 
-      <section className="mx-auto mt-20 mb-10 flex max-w-7xl flex-col gap-12 px-6 lg:flex-row lg:px-8">
-        <div className="flex flex-col items-start lg:w-1/3">
+      {/* SECCIÓN BENEFICIOS */}
+      <section className="mx-auto mt-20 mb-10 flex max-w-7xl flex-col gap-12 px-6 lg:flex-row lg:px-8 overflow-hidden">
+        
+        {/* Título - Entra desde la izquierda */}
+        <ScrollReveal direction="right" className="flex flex-col items-start lg:w-1/3">
           <span className="mb-2 font-principal font-bold tracking-widest text-neon-pink">SUMATE!</span>
           <h2 className="mb-6 font-principal text-4xl uppercase leading-tight md:text-5xl text-[#131313]">
             QUÉ INCLUYE LA<br />SUSCRIPCIÓN?
@@ -158,36 +165,43 @@ const CategoriaDetailPage = () => {
           <p className="text-[#7c7c84] leading-relaxed">
             {categoria.descripcionBreve || "Únete a este programa para potenciar tu técnica de forma integral y consciente."}
           </p>
-        </div>
+        </ScrollReveal>
 
+        {/* Tarjetas de Beneficios - Entran en cascada desde abajo */}
         <div className="grid gap-6 sm:grid-cols-2 lg:w-2/3">
           {categoria.beneficios && categoria.beneficios.length > 0 ? (
             categoria.beneficios.map((beneficio, index) => (
-              <div key={index} className="group rounded-xl bg-[#d7f250] p-6 transition-all duration-700 hover:bg-[#131313] hover:text-neon-pink active:bg-[#131313] active:text-neon-pink">
-                <DynamicIcon
-                  name={beneficio.icono || 'CheckCircle'}
-                  className="mb-4 h-8 w-8 text-[#131313] transition-all duration-700 group-hover:scale-110 group-hover:text-neon-pink group-active:scale-110 group-active:text-neon-pink"
-                />
-                <h3 className="mb-2 font-principal text-xl">{beneficio.titulo}</h3>
-                <p className="text-sm text-[#131313a0] transition-colors duration-700 group-hover:text-[#a1a1aa] group-active:text-[#a1a1aa]">{beneficio.descripcion}</p>
-              </div>
+              <ScrollReveal key={index} direction="up" delay={index * 0.15}>
+                <div className="group rounded-xl bg-[#d7f250] p-6 transition-all duration-700 hover:bg-[#131313] hover:text-neon-pink active:bg-[#131313] active:text-neon-pink h-full">
+                  <DynamicIcon
+                    name={beneficio.icono || 'CheckCircle'}
+                    className="mb-4 h-8 w-8 text-[#131313] transition-all duration-700 group-hover:scale-110 group-hover:text-neon-pink group-active:scale-110 group-active:text-neon-pink"
+                  />
+                  <h3 className="mb-2 font-principal text-xl">{beneficio.titulo}</h3>
+                  <p className="text-sm text-[#131313a0] transition-colors duration-700 group-hover:text-[#a1a1aa] group-active:text-[#a1a1aa]">{beneficio.descripcion}</p>
+                </div>
+              </ScrollReveal>
             ))
           ) : (
-            <div className="col-span-2 p-6 border border-[#333] rounded-xl bg-[#1a1a1a]">
-              <p className="text-[#a1a1aa]">Explora las ventajas exclusivas al sumarte a este programa.</p>
-            </div>
+            <ScrollReveal direction="up" className="col-span-2">
+              <div className="p-6 border border-[#333] rounded-xl bg-[#1a1a1a]">
+                <p className="text-[#a1a1aa]">Explora las ventajas exclusivas al sumarte a este programa.</p>
+              </div>
+            </ScrollReveal>
           )}
         </div>
       </section>
 
-      {/* SECCIÓN PREVIEW (Diseño Asimétrico Editorial) */}
+      {/* SECCIÓN PREVIEW */}
       {categoria.playbackIdMuestra && (
         <section id="trailer" className="relative w-full bg-[#131313] py-20 lg:py-32 overflow-hidden border-t border-white/5">
           <div className="absolute top-1/2 left-1/2 -translate-y-1/2 -translate-x-1/2 w-[600px] h-[600px] bg-[#d7f250] opacity-[0.03] blur-[100px] rounded-full pointer-events-none" />
 
           <div className="relative z-10 mx-auto max-w-[90%] px-6 lg:px-8">
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-16 items-center">
-              <div className="flex flex-col items-start text-left order-2 lg:order-1 lg:col-span-4">
+              
+              {/* Texto del trailer - Entra desde la izquierda */}
+              <ScrollReveal direction="right" className="flex flex-col items-start text-left order-2 lg:order-1 lg:col-span-4">
                 <span className="mb-4 font-principal font-bold tracking-[0.3em] text-neon-pink text-xs sm:text-sm uppercase">
                   Adelanto Exclusivo
                 </span>
@@ -199,8 +213,10 @@ const CategoriaDetailPage = () => {
                   Una experiencia diseñada para mejorar tu técnica, control y rendimiento.
                 </p>
                 <div className="w-12 h-1.5 bg-[#d7f250] rounded-full" />
-              </div>
-              <div className="relative order-2 lg:order-1 lg:col-span-8 w-full">
+              </ScrollReveal>
+              
+              {/* Reproductor de Video - Entra desde la derecha con un ligero retraso */}
+              <ScrollReveal direction="left" delay={0.2} className="relative order-2 lg:order-1 lg:col-span-8 w-full">
                 <div className="absolute -inset-4 md:-inset-6 bg-gradient-to-br from-[#1a1a1a] to-[#0a0a0a] rounded-[32px] border border-white/5 transform rotate-2 md:rotate-3 scale-105 opacity-70 hidden sm:block" />
 
                 <div className="relative w-full overflow-hidden rounded-2xl bg-[#0a0a0a] shadow-[0_0_40px_rgba(215,242,80,0.15)] transition-all duration-500 hover:shadow-[0_0_50px_rgba(215,242,80,0.3)] hover:-translate-y-2 border border-white/10 z-10">
@@ -212,7 +228,7 @@ const CategoriaDetailPage = () => {
                     style={{ width: '100%', aspectRatio: '16/9', ['--mux-player-control-bar-base-color' as any]: 'rgba(19, 19, 19, 0.85)' }}
                   />
                 </div>
-              </div>
+              </ScrollReveal>
 
             </div>
           </div>
