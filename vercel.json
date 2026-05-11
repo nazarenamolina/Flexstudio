@@ -4,5 +4,28 @@
       "source": "/(.*)",
       "destination": "/index.html"
     }
+  ],
+  "headers": [
+    {
+      "source": "/(.*)",
+      "headers": [
+        {
+          "key": "Content-Security-Policy",
+          "value": "default-src 'self'; img-src 'self' data: https://res.cloudinary.com https://image.mux.com; media-src 'self' https://stream.mux.com blob:; script-src 'self' 'unsafe-inline' https://www.paypal.com https://www.google.com/recaptcha/ https://www.gstatic.com/recaptcha/; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; frame-src 'self' https://www.paypal.com https://www.google.com/recaptcha/ https://recaptcha.google.com; connect-src 'self' https://backflex-production-6e5f.up.railway.app https://api.sandbox.paypal.com https://api.paypal.com https://www.google.com/recaptcha/ https://stats.mux.com;"
+        },
+        {
+          "key": "X-Content-Type-Options",
+          "value": "nosniff"
+        },
+        {
+          "key": "X-XSS-Protection",
+          "value": "1; mode=block"
+        },
+        {
+          "key": "Strict-Transport-Security",
+          "value": "max-age=31536000; includeSubDomains; preload"
+        }
+      ]
+    }
   ]
 }

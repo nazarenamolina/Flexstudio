@@ -48,12 +48,9 @@ export const AppRouter = () => {
     <BrowserRouter>
       <ScrollToTop />
       <Routes>
-        {/* RUTAS PÚBLICAS Y PRIVADAS CON NAVEGACIÓN */}
         <Route element={<LayoutConNav />}>
           <Route path='/' element={<HomePage />} />
           <Route path='/categorias/:id' element={<Categorias />} />
-
-          {/* RUTAS PRIVADAS DEL CLIENTE */}
           <Route element={<ProtectedRoute isAllowed={isAuthenticated} redirectTo="/login" />}>
             <Route path='/mi-perfil' element={<MiPerfilPage />} />
             <Route path='/mis-clases' element={<MisClasesPage />} />
@@ -62,8 +59,6 @@ export const AppRouter = () => {
             <Route path='/checkout/exito' element={<CheckoutExitoPage />} />
           </Route>
         </Route>
-
-        {/* RUTAS DE AUTENTICACIÓN (Solo si NO está logueado) */}
         <Route
           element={
             <ProtectedRoute
@@ -77,8 +72,6 @@ export const AppRouter = () => {
           <Route path="/verificar-email" element={<VerificarEmailPage />} />
           <Route path='/reset-password' element={<ResetPasswordPage/>}/>
         </Route>
-
-        {/* RUTAS DE ADMINISTRADOR */}
         <Route element={<ProtectedRoute isAllowed={isAuthenticated && usuario?.rol === 'ADMIN'} redirectTo="/" />}>
           <Route path="/admin" element={<AdminLayout />}>
             <Route index element={<AdminDashboard />} />  

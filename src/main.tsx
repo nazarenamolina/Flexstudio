@@ -15,7 +15,6 @@ const queryClient = new QueryClient({
   },
 })
 
-console.log("Llave de reCAPTCHA:", import.meta.env.VITE_RECAPTCHA_SITE_KEY);
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <QueryClientProvider client={queryClient}>

@@ -114,7 +114,7 @@ export const FloatingCart = () => {
 
                       <button
                         onClick={() => removeFromCart(item.id)}
-                        className="absolute bottom-3 right-3 p-2 bg-black/50 rounded-lg text-gray-900 hover:text-red-500 hover:bg-red-50 transition-all opacity-0 group-hover:opacity-100 cursor-pointer"
+                        className="absolute bottom-3 opacity-100 group-hover:opacity-100 right-3 p-2 bg-black/50 rounded-lg text-gray-900 hover:text-red-500 hover:bg-red-300 transition-all cursor-pointer"
                         title="Quitar clase"
                       >
                         <Trash2 size={16} strokeWidth={2} />
