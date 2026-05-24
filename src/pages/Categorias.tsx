@@ -7,7 +7,6 @@ import { DynamicIcon } from "../components/IconPicker";
 import { useMoneda } from "../hooks/useMoneda";
 import { useCartStore } from "../store/cartStore";
 import { useMisClases } from "../hooks/useMisClases";
-// 👇 Importamos el componente de animación
 import { ScrollReveal } from "../components/ScrollReveal";
 
 const CategoriaDetailPage = () => {
@@ -92,12 +91,11 @@ const CategoriaDetailPage = () => {
           <img
             src={categoria.imagenHero}
             alt={categoria.titulo}
-            className="h-full w-full object-cover opacity-80"
+            className="h-full w-full object-cover"
           />
           <div className="absolute inset-0 bg-gradient-to-r from-[#131313] via-[#131313]/80 to-transparent"></div>
         </div>
-        
-        {/* Animamos todo el contenido del Hero para que entre desde abajo */}
+
         <ScrollReveal direction="up" className="relative z-10 mx-auto w-full px-6 lg:ml-24 xl:ml-32">
           <span className="inline-block tracking-[3px] text-neon-pink font-bold uppercase text-[0.6rem] md:text-[1rem]">
             ELITE TRAINING PROGRAM
@@ -156,7 +154,6 @@ const CategoriaDetailPage = () => {
       {/* SECCIÓN BENEFICIOS */}
       <section className="mx-auto mt-20 mb-10 flex max-w-7xl flex-col gap-12 px-6 lg:flex-row lg:px-8 overflow-hidden">
         
-        {/* Título - Entra desde la izquierda */}
         <ScrollReveal direction="right" className="flex flex-col items-start lg:w-1/3">
           <span className="mb-2 font-principal font-bold tracking-widest text-neon-pink">SUMATE!</span>
           <h2 className="mb-6 font-principal text-4xl uppercase leading-tight md:text-5xl text-[#131313]">
@@ -167,7 +164,6 @@ const CategoriaDetailPage = () => {
           </p>
         </ScrollReveal>
 
-        {/* Tarjetas de Beneficios - Entran en cascada desde abajo */}
         <div className="grid gap-6 sm:grid-cols-2 lg:w-2/3">
           {categoria.beneficios && categoria.beneficios.length > 0 ? (
             categoria.beneficios.map((beneficio, index) => (
@@ -199,8 +195,7 @@ const CategoriaDetailPage = () => {
 
           <div className="relative z-10 mx-auto max-w-[90%] px-6 lg:px-8">
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-16 items-center">
-              
-              {/* Texto del trailer - Entra desde la izquierda */}
+
               <ScrollReveal direction="right" className="flex flex-col items-start text-left order-2 lg:order-1 lg:col-span-4">
                 <span className="mb-4 font-principal font-bold tracking-[0.3em] text-neon-pink text-xs sm:text-sm uppercase">
                   Adelanto Exclusivo
