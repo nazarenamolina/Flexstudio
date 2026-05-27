@@ -3,7 +3,8 @@ import { api } from './axios';
 export interface LoginCredentials {
   correo: string;
   contrasena: string;
-  captchaToken:string;
+  captchaToken: string;
+  recordarme?: boolean;
 }
 
 export interface VerificarOtpData {

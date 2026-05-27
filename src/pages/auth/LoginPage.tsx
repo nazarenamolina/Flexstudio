@@ -117,10 +117,18 @@ export const LoginPage = () => {
                   </button>
                 </div>
                 {errors.contrasena && <p className="mt-1.5 ml-1 text-xs text-red-400 font-bold">{errors.contrasena.message}</p>}
-              </div>
+              </div>             
 
-              {/* Extras: Checkbox y Olvidaste contraseña */}
-              
+              {/* Checkbox: Mantenerme Conectado (NUEVO) */}
+              <div className="flex items-center pl-1 mt-2">
+                <input
+                  type="checkbox"
+                  id="recordarme"
+                  className="w-4 h-4 rounded border-gray-800 bg-[#0a0a0a] text-[#d7f250] focus:ring-[#d7f250]/30 focus:ring-offset-0 cursor-pointer accent-[#d7f250] transition-all duration-300"
+                  {...register('recordarme')}
+                />
+                <label htmlFor="recordarme" className="ml-3 block text-[13px] font-medium text-gray-400 cursor-pointer hover:text-gray-200 transition-colors select-none">Mantenerme conectado</label>
+              </div>
 
               {/* Botón de Enviar */}
               <button
