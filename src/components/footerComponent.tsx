@@ -12,13 +12,13 @@ export const FooterComponent = () => {
         - lg:grid-cols-4 lg:gap-8: En desktop vuelve a ser simétrico con más espacio.
       */}
       <div className="mx-auto grid w-full max-w-7xl grid-cols-1 gap-12 px-5 md:grid-cols-[0.8fr_1fr_1fr_1.4fr] md:gap-4 lg:grid-cols-4 lg:gap-8 lg:px-8">
-        
+
         {/* Columna 1: Logo */}
         <article className="flex flex-col items-center md:items-start md:pr-2 min-w-0">
-          <img 
-            src="https://res.cloudinary.com/dmp7mcwie/image/upload/v1774490155/logofooter_u3j6cz.png" 
-            className="w-44 md:w-full md:max-w-[150px] lg:max-w-[220px] object-contain opacity-90 transition-opacity hover:opacity-100" 
-            alt="Logo Flex Studio" 
+          <img
+            src="https://res.cloudinary.com/dmp7mcwie/image/upload/v1774490155/logofooter_u3j6cz.png"
+            className="w-44 md:w-full md:max-w-[150px] lg:max-w-[220px] object-contain opacity-90 transition-opacity hover:opacity-100"
+            alt="Logo Flex Studio"
           />
         </article>
 
@@ -28,26 +28,26 @@ export const FooterComponent = () => {
             Redes Sociales
           </h3>
           <div className="flex flex-col gap-[15px] w-full items-center md:items-start">
-            <a 
-              href="https://www.instagram.com/flex_studioc/" 
-              target="_blank" 
-              rel="noopener noreferrer" 
+            <a
+              href="https://www.instagram.com/flex_studioc/"
+              target="_blank"
+              rel="noopener noreferrer"
               className="group flex items-center gap-[12px] text-[#cdcdcd] transition-colors duration-300 hover:text-[#d7f250]"
             >
               <span className="flex h-[35px] w-[35px] shrink-0 items-center justify-center rounded-full bg-[#252525] text-white transition-colors duration-300 group-hover:bg-[#d7f250] group-hover:text-[#161616]">
                 <Instagram size={18} />
-              </span> 
+              </span>
               Instagram
             </a>
-            <a 
-              href="https://www.tiktok.com/@flexstudioc" 
-              target="_blank" 
-              rel="noopener noreferrer" 
+            <a
+              href="https://www.tiktok.com/@flexstudioc"
+              target="_blank"
+              rel="noopener noreferrer"
               className="group flex items-center gap-[12px] text-[#cdcdcd] transition-colors duration-300 hover:text-[#d7f250]"
             >
               <span className="flex h-[35px] w-[35px] shrink-0 items-center justify-center rounded-full bg-[#252525] text-white transition-colors duration-300 group-hover:bg-[#d7f250] group-hover:text-[#161616]">
                 <Tiktok size={18} />
-              </span> 
+              </span>
               Tiktok
             </a>
           </div>
@@ -59,9 +59,9 @@ export const FooterComponent = () => {
             Información
           </h3>
           <ul className="flex flex-col gap-3 w-full">
-            <li><Link to="/acerca-de" className="block text-[0.95rem] text-[#cdcdcd] transition-all duration-300 hover:pl-1.5 hover:text-[#d7f250]">Acerca de mí</Link></li>
-            <li><Link to="/videos" className="block text-[0.95rem] text-[#cdcdcd] transition-all duration-300 hover:pl-1.5 hover:text-[#d7f250]">Ver Cursos</Link></li>
-            <li><Link to="/terminos-y-condiciones" className="block text-[0.95rem] text-[#cdcdcd] transition-all duration-300 hover:pl-1.5 hover:text-[#d7f250]">Términos y Condiciones</Link></li>
+            <li><Link to="/#biografia" onClick={(e) => { if (window.location.pathname === '/') { e.preventDefault(); document.getElementById('biografia')?.scrollIntoView({ behavior: 'smooth' }); } }} className="block text-[0.95rem] text-[#cdcdcd] transition-all duration-300 hover:pl-1.5 hover:text-[#d7f250]">Acerca de mí</Link></li>
+            <li><Link to="/mis-clases" className="block text-[0.95rem] text-[#cdcdcd] transition-all duration-300 hover:pl-1.5 hover:text-[#d7f250]">Ver Cursos</Link></li>
+            <li><Link to="/terminos-condiciones" className="block text-[0.95rem] text-[#cdcdcd] transition-all duration-300 hover:pl-1.5 hover:text-[#d7f250]">Términos y Condiciones</Link></li>
             <li><Link to="/politica-de-privacidad" className="block text-[0.95rem] text-[#cdcdcd] transition-all duration-300 hover:pl-1.5 hover:text-[#d7f250]">Política de Privacidad</Link></li>
           </ul>
         </article>
@@ -75,7 +75,7 @@ export const FooterComponent = () => {
             <div className="flex items-start gap-[12px] max-w-full">
               <Mail className="mt-[3px] shrink-0 text-[#d7f250]" size={20} />
               {/* Removido break-all. El grid ahora le da el espacio necesario. */}
-              <p className="m-0 text-[0.95rem]">candeimbo@gmail.com</p>
+              <p className="m-0 text-[0.95rem]">flexstudio89@gmail.com</p>
             </div>
             <div className="flex items-start gap-[12px] max-w-full">
               <MapPin className="mt-[3px] shrink-0 text-[#d7f250]" size={20} />
