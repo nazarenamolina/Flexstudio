@@ -26,6 +26,8 @@ import { ClientesPage } from '../pages/admin/clientes/ClientesPage';
 import { VerificarEmailPage } from '../pages/auth/VerificarEmailPage'
 import { AdminDashboard } from '../pages/admin/dasboard/AdminDashboard';
 import { ResetPasswordPage } from '../pages/auth/ResetPasswordPage';
+import { TerminosCondiciones } from '../pages/TerminosCondiciones';
+import { PoliticaPrivacidad } from '../pages/PoliticaPrivacidad';
 
 const LayoutConNav = () => {
   return (
@@ -48,9 +50,12 @@ export const AppRouter = () => {
     <BrowserRouter>
       <ScrollToTop />
       <Routes>
+        {/*RUTAS PÚBLICAS CON NAVBAR Y FOOTER */}
         <Route element={<LayoutConNav />}>
           <Route path='/' element={<HomePage />} />
           <Route path='/categorias/:id' element={<Categorias />} />
+          <Route path='/terminos-condiciones' element={<TerminosCondiciones />} />
+          <Route path='/politica-de-privacidad' element={<PoliticaPrivacidad />} />
           <Route element={<ProtectedRoute isAllowed={isAuthenticated} redirectTo="/login" />}>
             <Route path='/mi-perfil' element={<MiPerfilPage />} />
             <Route path='/mis-clases' element={<MisClasesPage />} />
@@ -59,6 +64,8 @@ export const AppRouter = () => {
             <Route path='/checkout/exito' element={<CheckoutExitoPage />} />
           </Route>
         </Route>
+
+        {/*RUTAS DE INVITADOS (Sin Navbar, Solo para No Logueados)*/}
         <Route
           element={
             <ProtectedRoute
@@ -72,6 +79,8 @@ export const AppRouter = () => {
           <Route path="/verificar-email" element={<VerificarEmailPage />} />
           <Route path='/reset-password' element={<ResetPasswordPage/>}/>
         </Route>
+
+        {/* RUTAS DE ADMINISTRADOR (Panel de control)*/}
         <Route element={<ProtectedRoute isAllowed={isAuthenticated && usuario?.rol === 'ADMIN'} redirectTo="/" />}>
           <Route path="/admin" element={<AdminLayout />}>
             <Route index element={<AdminDashboard />} />  
@@ -86,8 +95,9 @@ export const AppRouter = () => {
           </Route>
         </Route>
 
+        {/* Ruta 404 */}
         <Route path="*" element={<PaginaError />} />
       </Routes>
     </BrowserRouter>
   );
-};  
+};
