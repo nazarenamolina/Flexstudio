@@ -141,7 +141,7 @@ const HomePage = () => {
       <section id="biografia" className="w-full flex flex-col lg:flex-row bg-[#FDFDF8] overflow-hidden">
         <ScrollReveal direction="right" className="w-full lg:w-1/2 relative min-h-[50vh] lg:min-h-full">
           <img
-            src="https://res.cloudinary.com/dmp7mcwie/image/upload/v1775007736/flex-studio/categorias/yjtki7chv3jsy2z8hlfb.jpg"
+            src="https://res.cloudinary.com/dmp7mcwie/image/upload/v1779666110/flex-studio/categorias/zf6in7hepy8t9iookjei.jpg"
             alt="Cande Imbaud - Profesora de Flexibilidad"
             className="absolute inset-0 w-full h-full object-cover object-center"
           />
