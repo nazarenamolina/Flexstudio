@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { PencilLine, LayoutGrid, List } from 'lucide-react';
+import { PencilLine, LayoutGrid, List, ArchiveRestore, ChevronDown } from 'lucide-react';
 import { useCategorias } from '../../../hooks/useCategorias';
 import { ConfirmarEliminarModal } from '../../../components/ConfirmarEliminarModal';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -7,7 +7,11 @@ import { CategoriaCard } from '../../../components/CategoriaCard';
 import { AddCategoriaCard } from '../../../components/AddCategoriaCard';
 
 export const CategoriasPage = () => {
-  const { categorias, isLoading, estaEliminando, handleEliminar, navigateANueva, navigateAEditar } = useCategorias();
+  const {
+    categorias, isLoading, estaEliminando, handleEliminar, navigateANueva, navigateAEditar,
+    categoriasEliminadas, handleRestaurar, estaRestaurando,
+  } = useCategorias();
+  const [verEliminadas, setVerEliminadas] = useState(false);
   const [modalAbierto, setModalAbierto] = useState(false);
   const [categoriaAEliminar, setCategoriaAEliminar] = useState<{ id: string, titulo: string } | null>(null);
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
@@ -94,6 +98,44 @@ export const CategoriasPage = () => {
           ))}
         </motion.div>
       </AnimatePresence>
+
+      {/* DADAS DE BAJA: siguen visibles para quienes las compraron y se pueden restaurar */}
+      {categoriasEliminadas.length > 0 && (
+        <div className="mt-12 border-t border-white/5 pt-6">
+          <button
+            onClick={() => setVerEliminadas((v) => !v)}
+            className="flex items-center gap-2 text-gray-400 hover:text-white text-xs font-bold uppercase tracking-widest transition-colors"
+          >
+            <ChevronDown size={16} className={`transition-transform ${verEliminadas ? 'rotate-180' : ''}`} />
+            Dadas de baja ({categoriasEliminadas.length})
+          </button>
+
+          {verEliminadas && (
+            <ul className="mt-4 space-y-3">
+              {categoriasEliminadas.map((cat) => (
+                <li
+                  key={cat.id}
+                  className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-zinc-900/60 border border-white/5 rounded-2xl p-4"
+                >
+                  <div>
+                    <p className="text-white font-bold">{cat.titulo}</p>
+                    <p className="text-gray-500 text-xs">
+                      Fuera del catálogo. Quienes la compraron la siguen viendo.
+                    </p>
+                  </div>
+                  <button
+                    onClick={() => handleRestaurar(cat.id)}
+                    disabled={estaRestaurando}
+                    className="flex items-center justify-center gap-2 bg-[#d7f250] hover:bg-[#c4dd46] text-[#131313] text-xs font-black uppercase tracking-widest px-4 py-2 rounded-full transition-colors disabled:opacity-50"
+                  >
+                    <ArchiveRestore size={14} /> Restaurar
+                  </button>
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
+      )}
 
       <ConfirmarEliminarModal
         isOpen={modalAbierto}

@@ -40,7 +40,8 @@ export const useAdminVideos = () => {
 
   // 👇 2. WEBSOCKET + TANSTACK QUERY
   useEffect(() => {
-    const socket = io(SOCKET_URL);
+    // withCredentials: manda la cookie de sesión; el back solo acepta administradores.
+    const socket = io(SOCKET_URL, { withCredentials: true });
     
     socket.on('videoActualizado', (videoActualizado: Video) => {
       // Modificamos el caché directamente cuando el websocket avisa

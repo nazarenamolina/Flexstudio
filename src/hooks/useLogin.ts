@@ -40,6 +40,12 @@ export const useLogin = () => {
       const redirectTo = respuesta.usuario.rol === 'ADMIN' ? '/admin/categorias' : '/';
       navigate(redirectTo);
     } catch (error: any) {
+      // Contraseña correcta pero correo sin verificar: el back ya mandó un código nuevo si hacía falta.
+      if (error.response?.data?.requiereVerificacion) {
+        toast(error.response.data.message);
+        navigate('/verificar-email', { state: { correo: data.correo } });
+        return;
+      }
       const mensajeError = error.response?.data?.message || 'Error al iniciar sesión. Verifica tus credenciales.';
       setErrorServidor(mensajeError);
       toast.error('Acceso denegado');

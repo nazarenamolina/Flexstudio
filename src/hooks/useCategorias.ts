@@ -4,6 +4,8 @@ import toast from 'react-hot-toast';
 import {
   obtenerCategoriasRequest,
   eliminarCategoriaRequest,
+  obtenerCategoriasEliminadasRequest,
+  restaurarCategoriaRequest,
   type Categoria,
 } from '../api/categoria';
 
@@ -44,10 +46,30 @@ export const useCategorias = () => {
     onSuccess: () => {
       toast.success('Categoría eliminada exitosamente');
       queryClient.invalidateQueries({ queryKey: ['categorias'] });
+      queryClient.invalidateQueries({ queryKey: ['categorias-eliminadas'] });
     },
     onError: (_error, _id, context) => {
       queryClient.setQueryData(['categorias'], context?.previous);
       toast.error('Ocurrió un error al eliminar la categoría');
+    },
+  });
+
+  // Clases dadas de baja: el back las conserva (soft delete) para que se puedan restaurar.
+  const { data: categoriasEliminadas = [] } = useQuery<Categoria[]>({
+    queryKey: ['categorias-eliminadas'],
+    queryFn: obtenerCategoriasEliminadasRequest,
+    staleTime: 1000 * 60 * 5,
+  });
+
+  const restaurarMutation = useMutation({
+    mutationFn: restaurarCategoriaRequest,
+    onSuccess: () => {
+      toast.success('Categoría restaurada: vuelve a estar en el catálogo');
+      queryClient.invalidateQueries({ queryKey: ['categorias'] });
+      queryClient.invalidateQueries({ queryKey: ['categorias-eliminadas'] });
+    },
+    onError: (error) => {
+      toast.error(typeof error === 'string' ? error : 'Ocurrió un error al restaurar la categoría');
     },
   });
 
@@ -73,6 +95,9 @@ export const useCategorias = () => {
     isError,
     refetch,
     estaEliminando: eliminarMutation.isPending,
+    categoriasEliminadas,
+    handleRestaurar: (id: string) => restaurarMutation.mutate(id),
+    estaRestaurando: restaurarMutation.isPending,
     abrirModalEliminacion,
     handleEliminar,
     navigateANueva,

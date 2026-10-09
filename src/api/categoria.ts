@@ -66,6 +66,24 @@ export const actualizarCategoriaRequest = async (
   }
 };
 
+export const obtenerCategoriasEliminadasRequest = async (): Promise<Categoria[]> => {
+  try {
+    const respuesta = await api.get('/categorias/eliminadas');
+    return respuesta.data;
+  } catch (error: any) {
+    throw error.response?.data?.message || 'Error al cargar las categorías dadas de baja';
+  }
+};
+
+export const restaurarCategoriaRequest = async (id: string): Promise<{ mensaje: string }> => {
+  try {
+    const respuesta = await api.post(`/categorias/${id}/restaurar`);
+    return respuesta.data;
+  } catch (error: any) {
+    throw error.response?.data?.message || 'Error al restaurar la categoría';
+  }
+};
+
 export const eliminarCategoriaRequest = async (id: string): Promise<{ mensaje: string }> => {
   try {
     const respuesta = await api.delete(`/categorias/${id}`);

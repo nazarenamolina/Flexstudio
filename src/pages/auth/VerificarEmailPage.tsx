@@ -3,15 +3,35 @@ import { useForm } from 'react-hook-form';
 import { useLocation, useNavigate, Navigate } from 'react-router-dom';
 import { Loader2, MailCheck, AlertCircle, ArrowLeft } from 'lucide-react';
 import { motion } from 'framer-motion';
-import { verificarEmailRequest } from '../../api/auth';
+import { useGoogleReCaptcha } from 'react-google-recaptcha-v3';
+import { verificarEmailRequest, reenviarOtpRequest } from '../../api/auth';
 
 export const VerificarEmailPage = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const correo = location.state?.correo;
   const [cargando, setCargando] = useState(false);
+  const [reenviando, setReenviando] = useState(false);
   const [errorGlobal, setErrorGlobal] = useState<string | null>(null);
+  const [mensajeReenvio, setMensajeReenvio] = useState<string | null>(null);
   const { register, handleSubmit, formState: { errors } } = useForm<{ codigo: string }>();
+  const { executeRecaptcha } = useGoogleReCaptcha();
+
+  const reenviarCodigo = async () => {
+    if (!executeRecaptcha) return;
+    setReenviando(true);
+    setErrorGlobal(null);
+    setMensajeReenvio(null);
+    try {
+      const captchaToken = await executeRecaptcha('reenviar_otp');
+      const respuesta = await reenviarOtpRequest({ correo, captchaToken });
+      setMensajeReenvio(respuesta.mensaje);
+    } catch (error: any) {
+      setErrorGlobal(error.response?.data?.message || 'No pudimos reenviar el código. Intentá en un minuto.');
+    } finally {
+      setReenviando(false);
+    }
+  };
 
   if (!correo) {
     return <Navigate to="/registro" replace />;
@@ -105,6 +125,18 @@ export const VerificarEmailPage = () => {
             {cargando ? <><Loader2 className="animate-spin mr-2 h-5 w-5" /> VERIFICANDO...</> : 'CONFIRMAR CORREO'}
           </button>
         </form>
+
+        <button
+          type="button"
+          onClick={reenviarCodigo}
+          disabled={reenviando}
+          className="text-gray-400 hover:text-[#d7f250] text-sm font-bold transition-colors mt-6 disabled:opacity-50"
+        >
+          {reenviando ? 'Reenviando...' : '¿No te llegó o expiró? Reenviar código'}
+        </button>
+        {mensajeReenvio && (
+          <p className="text-[#d7f250] text-xs text-center mt-2">{mensajeReenvio}</p>
+        )}
 
         <button 
           onClick={() => navigate('/registro')} 

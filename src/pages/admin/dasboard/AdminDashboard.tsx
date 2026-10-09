@@ -334,16 +334,24 @@ export const AdminDashboard = () => {
                       {clase.ingresosUsd > 0 && <p className="text-[#d7f250] font-bold text-sm">U$D {clase.ingresosUsd.toLocaleString('en-US')}</p>}
                     </div>
                     
-                    {/* El Switch mágico */}
+                    {/* El Switch mágico (las clases dadas de baja no se pueden editar: se restauran desde Categorías) */}
                     <div className="pl-4 border-l border-gray-800 flex flex-col items-center gap-1">
-                      <ToggleDestacada 
-                        habilitado={clase.destacada} 
-                        deshabilitado={toggleDestacadaMutation.isPending}
-                        onChange={(val) => toggleDestacadaMutation.mutate({ id: clase.id, destacada: val })} 
-                      />
-                      <span className="text-[9px] font-bold text-gray-500 uppercase tracking-widest">
-                        {clase.destacada ? 'Visible' : 'Oculta'}
-                      </span>
+                      {clase.eliminada ? (
+                        <span className="text-[9px] font-bold text-red-400 uppercase tracking-widest text-center">
+                          Dada de baja
+                        </span>
+                      ) : (
+                        <>
+                          <ToggleDestacada
+                            habilitado={clase.destacada}
+                            deshabilitado={toggleDestacadaMutation.isPending}
+                            onChange={(val) => toggleDestacadaMutation.mutate({ id: clase.id, destacada: val })}
+                          />
+                          <span className="text-[9px] font-bold text-gray-500 uppercase tracking-widest">
+                            {clase.destacada ? 'Visible' : 'Oculta'}
+                          </span>
+                        </>
+                      )}
                     </div>
                   </div>
                 </div>

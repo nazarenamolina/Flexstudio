@@ -51,6 +51,11 @@ export const verificarEmailRequest = async (datos: VerificarOtpData) => {
   return response.data;
 };
 
+export const reenviarOtpRequest = async (datos: { correo: string; captchaToken: string }): Promise<{ mensaje: string }> => {
+  const response = await api.post('/auth/reenviar-otp', datos);
+  return response.data;
+};
+
 export const loginRequest = async (credentials: LoginCredentials): Promise<LoginResponse> => {
   const response = await api.post<LoginResponse>('/auth/login', credentials);
   return response.data;  
