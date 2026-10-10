@@ -3,6 +3,7 @@ import { Edit2, Trash2, Image as ImageIcon, Loader2, ChevronDown, ChevronUp, Ale
 import { type VideoData } from '../api/videos';
 import { useSubidasStore } from '../store/subidasStore';
 import { optimizarCloudinary } from '../imagenes';
+import { tituloVisible } from '../titulos';
 
 
 interface Props {
@@ -97,7 +98,7 @@ export const VideoCard = ({ video, viewMode, onEdit, onDelete }: Props) => {
           {/* BADGES */}
           <div className={`flex items-center gap-2 ${isGrid ? 'mb-2' : 'mb-1.5'}`}>
             <span className={`px-4 py-2 rounded-full bg-[#d7f250]/25 text-[#d7f250] text-[9px] sm:text-[10px] font-bold tracking-wide shrink-0`}>
-              {video.categoria?.titulo || 'Sin categoría'}
+              {(video.categoria ? tituloVisible(video.categoria.titulo) : 'Sin categoría')}
             </span>
             {conError && (
               <span className="px-3 py-2 rounded-full bg-red-500/15 text-red-400 text-[9px] sm:text-[10px] font-bold tracking-wide shrink-0">

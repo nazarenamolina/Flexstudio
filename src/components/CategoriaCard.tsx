@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Edit2, Trash2, ChevronDown, ChevronUp } from 'lucide-react';
 import { type Categoria } from '../api/categoria';
 import { optimizarCloudinary } from '../imagenes';
+import { tituloVisible } from '../titulos';
 
 interface Props {
     categoria: Categoria;
@@ -13,9 +14,7 @@ interface Props {
 export const CategoriaCard = ({ categoria, viewMode, onEdit, onDelete }: Props) => {
     const [expanded, setExpanded] = useState(false);
     const isGrid = viewMode === 'grid';
-    const tituloMostrar = categoria.titulo.includes('|')
-        ? categoria.titulo.split('|').map((s) => s.trim()).join(' ')
-        : categoria.titulo;
+    const tituloMostrar = tituloVisible(categoria.titulo);
     const cantidadVideos = categoria.cantidadVideos || 0;
     const descripcion = categoria.descripcionCard || 'Sin descripción.';
 

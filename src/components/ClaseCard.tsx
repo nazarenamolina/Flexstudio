@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom';
 import type { ClaseComprada } from '../api/compras';
 import { IMAGEN_RESPALDO_CLASE, optimizarCloudinary } from '../imagenes';
+import { tituloVisible } from '../titulos';
 
 interface Props {
   clase: ClaseComprada;
@@ -17,7 +18,7 @@ export const ClaseCard = ({ clase }: Props) => {
       <div className="aspect-video w-full overflow-hidden bg-gray-800">
         <img 
           src={portada} 
-          alt={clase.titulo}
+          alt={tituloVisible(clase.titulo)}
           className="h-full w-full object-cover opacity-80 transition-transform duration-500 group-hover:scale-105 group-hover:opacity-100"
         />
         <div className="absolute inset-0 bg-gradient-to-t from-[#131313] via-[#131313]/40 to-transparent"></div>
@@ -25,7 +26,7 @@ export const ClaseCard = ({ clase }: Props) => {
 
       <div className="absolute bottom-0 left-0 w-full p-5">
         <h3 className="mb-1 font-principal text-2xl uppercase leading-tight text-white drop-shadow-md">
-          {clase.titulo}
+          {tituloVisible(clase.titulo)}
         </h3>
         
         {clase.descripcionCard && (

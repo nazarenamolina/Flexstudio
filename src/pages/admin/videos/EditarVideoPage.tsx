@@ -4,6 +4,7 @@ import { ArrowLeft, Save, Image as ImageIcon, Loader2, Library, Trash2, Film, X 
 import { useSubidasStore } from '../../../store/subidasStore';
 import { useEditarVideo } from '../../../hooks/useEditarVideo';
 import { GaleriaModal } from '../../../components/GaleriaModal';
+import { tituloVisible } from '../../../titulos';
 
 export const EditarVideoPage = () => {
   const { register, handleSubmit, errors, isSubmitting, cargando, categorias, archivoImagen, imagenActual, handleImageChange, handleSelectFromGallery, handleEliminarMiniaturaNueva, navigate, archivoVideo, handleVideoChange, quitarArchivoVideo, estado } = useEditarVideo();
@@ -65,7 +66,7 @@ export const EditarVideoPage = () => {
             <label className={labelClass}>Categoría / Disciplina *</label>
             <select {...register('idCategoria', { required: 'Obligatorio' })} className={`${inputClass} appearance-none cursor-pointer`}>
               <option value="" disabled>Selecciona una categoría...</option>
-              {categorias.map((cat) => <option key={cat.id} value={cat.id}>{cat.titulo}</option>)}
+              {categorias.map((cat) => <option key={cat.id} value={cat.id}>{tituloVisible(cat.titulo)}</option>)}
             </select>
             {errors.idCategoria && <span className="text-red-500 text-xs mt-1">{errors.idCategoria.message}</span>}
           </div>

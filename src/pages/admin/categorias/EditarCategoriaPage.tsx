@@ -7,6 +7,7 @@ import { ConfirmarEliminarModal } from '../../../components/ConfirmarEliminarMod
 import { ToggleDestacada } from '../../../components/ToggleDestacada';
 import { GaleriaModal } from '../../../components/GaleriaModal';
 import { CamposPrecio } from '../../../components/CamposPrecio';
+import { AyudaTitulo } from '../../../components/AyudaTitulo';
 import { optimizarCloudinary } from '../../../imagenes';
 
 export const EditarCategoriaPage = () => {
@@ -107,6 +108,7 @@ export const EditarCategoriaPage = () => {
                 <label className={labelClass}>Título:</label>
                 <input type="text" {...register('titulo', { required: 'Obligatorio' })} className={inputClass} />
                 {errors.titulo && <p className="text-red-500 text-xs mt-1">{errors.titulo.message}</p>}
+                <AyudaTitulo />
               </div>
               <CamposPrecio register={register} control={control} errors={errors} labelClass={labelClass} inputClass={inputClass} />
             </div>

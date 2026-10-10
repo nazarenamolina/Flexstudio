@@ -13,6 +13,7 @@ import { useTituloPagina } from "../hooks/useTituloPagina";
 import { precioEn, formatearPrecio } from "../precios";
 import { IMAGEN_RESPALDO_CLASE, optimizarCloudinary } from "../imagenes";
 import { claseTarjeta, claseBotonPrincipal } from "./auth/estilos";
+import { partesDelTitulo, tituloVisible } from "../titulos";
 
 const CategoriaDetailPage = () => {
   const { id } = useParams<{ id: string }>();
@@ -26,7 +27,7 @@ const CategoriaDetailPage = () => {
     retry: 1,
   });
   const { moneda, cargandoMoneda } = useMoneda();
-  useTituloPagina(categoria?.titulo);
+  useTituloPagina(categoria && tituloVisible(categoria.titulo));
   const addToCart = useCartStore((state) => state.addToCart);
   const cartItems = useCartStore((state) => state.cartItems);
   const { clases: misClases, cargando: cargandoMisClases } = useMisClases();
@@ -55,12 +56,8 @@ const CategoriaDetailPage = () => {
 
   // Sin precio en la moneda del visitante no se puede comprar (el back la rechazaría).
   const precio = precioEn(categoria, moneda);
-  // El título se muestra en dos líneas: la primera mitad en cursiva y la segunda grande en verde.
-  // Con una sola palabra va entera en la línea grande (antes esa línea quedaba vacía).
-  const palabras = categoria.titulo.trim().split(/\s+/);
-  const corte = palabras.length > 1 ? Math.ceil(palabras.length / 2) : 0;
-  const primeraParte = palabras.slice(0, corte).join(" ");
-  const segundaParte = palabras.slice(corte).join(" ");
+  const { cursiva: primeraParte, destacada: segundaParte } = partesDelTitulo(categoria.titulo);
+  const titulo = tituloVisible(categoria.titulo);
   const estaEnCarrito = cartItems.some(item => item.id === categoria.id);
   const yaComprado = misClases.some((c) => c.id === categoria.id);
 
@@ -76,7 +73,7 @@ const CategoriaDetailPage = () => {
     });
     toast.success((t) => (
       <span className="flex items-center gap-3">
-        Agregaste "{categoria.titulo}" al carrito.
+        Agregaste "{titulo}" al carrito.
         <button
           type="button"
           onClick={() => { toast.dismiss(t.id); navigate('/carrito'); }}
@@ -96,7 +93,7 @@ const CategoriaDetailPage = () => {
         <div className="absolute inset-0 z-0">
           <img
             src={optimizarCloudinary(categoria.imagenHero || IMAGEN_RESPALDO_CLASE, 1600)}
-            alt={categoria.titulo}
+            alt={titulo}
             className="h-full w-full object-cover"
           />
           <div className="absolute inset-0 bg-gradient-to-r from-[#131313] via-[#131313]/80 to-transparent"></div>
@@ -222,7 +219,7 @@ const CategoriaDetailPage = () => {
                 <div className="relative w-full overflow-hidden rounded-2xl bg-[#0a0a0a] shadow-[0_0_40px_rgba(215,242,80,0.15)] transition-all duration-500 hover:shadow-[0_0_50px_rgba(215,242,80,0.3)] hover:-translate-y-2 border border-white/10 z-10">
                   <MuxPlayer
                     playbackId={categoria.playbackIdMuestra}
-                    metadataVideoTitle={`Trailer - ${categoria.titulo}`}
+                    metadataVideoTitle={`Trailer - ${titulo}`}
                     primaryColor="#ffffff"
                     accentColor="#d7f250"
                     style={{ width: '100%', aspectRatio: '16/9', '--mux-player-control-bar-base-color': 'rgba(19, 19, 19, 0.85)' }}

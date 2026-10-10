@@ -4,7 +4,7 @@ import toast from 'react-hot-toast';
 import { GalleryHorizontal, Plus, ArrowUp, ArrowDown, Pencil, Trash2, Eye, EyeOff, Loader2, Upload, Images, X } from 'lucide-react';
 import {
   obtenerHeroAdminRequest, crearHeroRequest, actualizarHeroRequest, ordenarHeroRequest, eliminarHeroRequest,
-  type HeroSlide,
+  MEDIDAS_HERO, type HeroSlide,
 } from '../../../api/hero';
 import { HeroSlideVista } from '../../../components/HeroCarrusel';
 import { GaleriaModal } from '../../../components/GaleriaModal';
@@ -66,17 +66,41 @@ const Etiqueta = ({ children, htmlFor, extra }: { children: React.ReactNode; htm
 
 const claseInput = 'w-full bg-[#131313] border-2 border-neutral-700 focus:border-[#d7f250] outline-none px-3 py-2.5 text-sm text-white placeholder-neutral-600 transition-colors';
 
-const SelectorImagen = ({ titulo, ayuda, imagen, onArchivo, onGaleria, onQuitar }: {
-  titulo: string; ayuda: string; imagen: Imagen;
+type Medida = { ancho: number; alto: number };
+
+/** Compara la imagen elegida con la medida recomendada (proporción y resolución). */
+const AvisoMedida = ({ real, recomendada }: { real: Medida | null; recomendada: Medida }) => {
+  if (!real) return null;
+  const diferencia = Math.abs(real.ancho / real.alto - recomendada.ancho / recomendada.alto) / (recomendada.ancho / recomendada.alto);
+  const medida = `${real.ancho} × ${real.alto} px`;
+  if (diferencia > 0.03) {
+    return <p className="text-[11px] text-amber-400 mt-1.5">Tu imagen mide {medida}: tiene otra proporción, así que se va a recortar en los bordes.</p>;
+  }
+  if (real.ancho < recomendada.ancho * 0.7) {
+    return <p className="text-[11px] text-amber-400 mt-1.5">Tu imagen mide {medida}: la proporción está bien, pero puede verse borrosa en pantallas grandes.</p>;
+  }
+  return <p className="text-[11px] text-[#d7f250] mt-1.5">Tu imagen mide {medida}: perfecta.</p>;
+};
+
+const SelectorImagen = ({ titulo, ayuda, recomendada, imagen, onArchivo, onGaleria, onQuitar }: {
+  titulo: string; ayuda: string; recomendada: Medida; imagen: Imagen;
   onArchivo: (f: File) => void; onGaleria: () => void; onQuitar?: () => void;
 }) => {
   const vista = useVistaImagen(imagen);
+  const [medidaReal, setMedidaReal] = useState<{ url: string; medida: Medida } | null>(null);
   return (
     <div>
       <Etiqueta extra={ayuda}>{titulo}</Etiqueta>
       <div className="flex gap-3 items-stretch">
         <div className="w-28 h-20 shrink-0 border-2 border-neutral-700 bg-[#0d0d0d] overflow-hidden grid place-items-center">
-          {vista ? <img src={vista} alt="" className="w-full h-full object-cover" /> : <span className="font-principal text-[10px] text-neutral-600">SIN IMAGEN</span>}
+          {vista ? (
+            <img
+              src={vista}
+              alt=""
+              className="w-full h-full object-cover"
+              onLoad={(e) => setMedidaReal({ url: vista, medida: { ancho: e.currentTarget.naturalWidth, alto: e.currentTarget.naturalHeight } })}
+            />
+          ) : <span className="font-principal text-[10px] text-neutral-600">SIN IMAGEN</span>}
         </div>
         <div className="flex flex-col gap-2 flex-1">
           <label className="relative flex items-center justify-center gap-2 border-2 border-neutral-700 hover:border-[#d7f250] hover:text-[#d7f250] px-3 py-2 font-principal text-[11px] uppercase tracking-[0.1em] cursor-pointer transition-colors">
@@ -100,6 +124,10 @@ const SelectorImagen = ({ titulo, ayuda, imagen, onArchivo, onGaleria, onQuitar 
           </div>
         </div>
       </div>
+      <p className="text-[11px] text-neutral-500 mt-1.5">
+        Recomendado: {recomendada.ancho} × {recomendada.alto} px. Dejá los textos importantes lejos de los bordes.
+      </p>
+      <AvisoMedida real={vista && medidaReal?.url === vista ? medidaReal.medida : null} recomendada={recomendada} />
     </div>
   );
 };
@@ -349,14 +377,16 @@ export const HeroAdminPage = () => {
             <form onSubmit={guardar} className="xl:col-span-5 p-4 sm:p-6 flex flex-col gap-5 border-b-2 xl:border-b-0 xl:border-r-2 border-neutral-700">
               <SelectorImagen
                 titulo="Imagen principal"
-                ayuda="JPG/PNG/WEBP · máx. 8 MB"
+                ayuda="Horizontal 16:9 · JPG/PNG/WEBP · máx. 8 MB"
+                recomendada={MEDIDAS_HERO.escritorio}
                 imagen={imagen}
                 onArchivo={setImagen}
                 onGaleria={() => setGaleriaPara('imagen')}
               />
               <SelectorImagen
                 titulo="Imagen para celulares"
-                ayuda="Opcional · vertical"
+                ayuda="Opcional · vertical 4:5"
+                recomendada={MEDIDAS_HERO.celular}
                 imagen={imagenMovil}
                 onArchivo={setImagenMovil}
                 onGaleria={() => setGaleriaPara('imagenMovil')}
@@ -366,7 +396,7 @@ export const HeroAdminPage = () => {
               <div>
                 <Etiqueta htmlFor="hero-titulo" extra={`${form.titulo.length}/120`}>Título</Etiqueta>
                 <input id="hero-titulo" maxLength={120} value={form.titulo} onChange={cambiar('titulo')} className={claseInput} placeholder="Ej: Flexibilidad sin límites" />
-                <p className="text-[11px] text-neutral-500 mt-1.5">Sin título, la imagen ocupa toda la pantalla (para banners que ya traen el texto).</p>
+                <p className="text-[11px] text-neutral-500 mt-1.5">Sin título, la imagen ocupa todo el carrusel (para banners que ya traen el texto). En ese caso conviene subir también la versión para celulares; si no, en el teléfono se ve la horizontal más chica.</p>
               </div>
               <div>
                 <Etiqueta htmlFor="hero-etiqueta" extra={`${form.etiqueta.length}/60`}>Etiqueta</Etiqueta>

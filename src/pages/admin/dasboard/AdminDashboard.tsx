@@ -10,6 +10,7 @@ import toast from 'react-hot-toast';
 import Chart from 'react-apexcharts';
 import { type ApexOptions } from 'apexcharts';
 import { optimizarCloudinary } from '../../../imagenes';
+import { tituloVisible } from '../../../titulos';
 
 export const AdminDashboard = () => {
   const navigate = useNavigate();
@@ -320,14 +321,14 @@ export const AdminDashboard = () => {
                     {/* Miniatura */}
                     <div className="w-16 h-12 rounded-lg bg-gray-900 overflow-hidden flex items-center justify-center shrink-0 border border-gray-800">
                       {clase.imagenTarjeta ? (
-                        <img src={optimizarCloudinary(clase.imagenTarjeta, 200)} alt={clase.titulo} className="w-full h-full object-cover" />
+                        <img src={optimizarCloudinary(clase.imagenTarjeta, 200)} alt={tituloVisible(clase.titulo)} className="w-full h-full object-cover" />
                       ) : (
                         <ImageIcon size={20} className="text-gray-600" />
                       )}
                     </div>
                     {/* Info */}
                     <div>
-                      <p className="text-white font-bold text-sm line-clamp-1">{clase.titulo}</p>
+                      <p className="text-white font-bold text-sm line-clamp-1">{tituloVisible(clase.titulo)}</p>
                       <p className="text-xs text-gray-500 font-medium">{clase.totalCompras} ventas realizadas</p>
                     </div>
                   </div>

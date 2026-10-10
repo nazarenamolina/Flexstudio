@@ -6,6 +6,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { CategoriaCard } from '../../../components/CategoriaCard';
 import { AddCategoriaCard } from '../../../components/AddCategoriaCard';
 import { ErrorCargaAdmin } from '../../../components/ErrorCargaAdmin';
+import { tituloVisible } from '../../../titulos';
 
 export const CategoriasPage = () => {
   const {
@@ -123,7 +124,7 @@ export const CategoriasPage = () => {
                   className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-zinc-900/60 border border-white/5 rounded-2xl p-4"
                 >
                   <div>
-                    <p className="text-white font-bold">{cat.titulo}</p>
+                    <p className="text-white font-bold">{tituloVisible(cat.titulo)}</p>
                     <p className="text-gray-500 text-xs">
                       Fuera del catálogo. Quienes la compraron la siguen viendo.
                     </p>
@@ -146,13 +147,13 @@ export const CategoriasPage = () => {
         isOpen={modalAbierto}
         onClose={() => !estaEliminando && setModalAbierto(false)}
         onConfirm={ejecutarEliminacion}
-        tituloItem={categoriaAEliminar?.titulo || ''}
+        tituloItem={categoriaAEliminar ? tituloVisible(categoriaAEliminar.titulo) : ''}
         estaEliminando={estaEliminando}
         titulo="Dar de baja la clase"
         textoConfirmar="Sí, dar de baja"
         mensaje={
           <>
-            <strong className="text-white">"{categoriaAEliminar?.titulo}"</strong> deja de aparecer en el catálogo y no se
+            <strong className="text-white">"{categoriaAEliminar && tituloVisible(categoriaAEliminar.titulo)}"</strong> deja de aparecer en el catálogo y no se
             puede comprar. Quienes ya la compraron la siguen viendo, y la podés restaurar cuando quieras desde
             "Dadas de baja".
           </>

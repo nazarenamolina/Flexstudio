@@ -6,6 +6,7 @@ import { ShoppingCart, CircleUser, LogOut, Menu, X, ChevronDown, UserPlus } from
 import { AvatarIniciales } from "./AvatarIniciales";
 import { useCategoriasPublicas } from "../hooks/useCategoriasPublicas";
 import { logoutRequest } from "../api/auth";
+import { tituloVisible } from "../titulos";
 
 export const HeaderComponent = () => {
   const { usuario, isAuthenticated, logout } = useAuthStore();
@@ -124,7 +125,7 @@ export const HeaderComponent = () => {
                             onClick={cerrarMenus}
                             className="block px-4 py-3 text-[14px] font-bold text-gray-500 lg:text-gray-600 rounded-xl hover:bg-gray-100 hover:text-black lg:hover:pl-5 transition-all duration-300"
                           >
-                            {cat.titulo}
+                            {tituloVisible(cat.titulo)}
                           </Link>
                         ))
                       ) : cargandoMenu ? (

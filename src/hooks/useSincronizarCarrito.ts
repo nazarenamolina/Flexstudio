@@ -6,11 +6,12 @@ import { obtenerMisClasesCompradas } from '../api/compras';
 import { claveMisClases } from './useMisClases';
 import { useCartStore, type CategoriaReal } from '../store/cartStore';
 import { useAuthStore } from '../store/authStore';
+import { tituloVisible } from '../titulos';
 
 // Un catálogo pedido hace menos de esto se considera actual para decidir que una clase ya no existe.
 const CATALOGO_RECIENTE_MS = 10_000;
 
-const listar = (titulos: string[]) => titulos.map(t => `"${t}"`).join(', ');
+const listar = (titulos: string[]) => titulos.map(t => `"${tituloVisible(t)}"`).join(', ');
 
 // El hook corre a la vez en el checkout y en el carrito flotante: con el texto como id, el mismo
 // aviso no se muestra dos veces.

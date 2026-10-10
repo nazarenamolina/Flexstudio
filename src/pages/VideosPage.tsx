@@ -5,6 +5,7 @@ import { Play, Loader2, Video, Clock, CheckCircle, TextAlignStart, AlertTriangle
 import MuxPlayer from "@mux/mux-player-react";
 import { mensajeDeError } from "../api/errores";
 import { useTituloPagina } from "../hooks/useTituloPagina";
+import { tituloVisible } from "../titulos";
 
 export const VideosPage = () => {
   const { id } = useParams<{ id: string }>();
@@ -25,7 +26,7 @@ export const VideosPage = () => {
     marcarCompletado
   } = useClaseDetalle(id);
 
-  useTituloPagina(clase?.titulo);
+  useTituloPagina(clase && tituloVisible(clase.titulo));
 
   // Posición del video: si hay que pedir un token nuevo (venció o falló), sigue desde ahí.
   const posicionRef = useRef(0);
@@ -90,7 +91,7 @@ export const VideosPage = () => {
               <Video size={30} className="text-gray-900" />
             </div>
             <h1 className="font-principal text-3xl md:text-4xl lg:text-5xl uppercase leading-tight text-[#131313]">
-              {videoActivo?.titulo || clase.titulo}
+              {videoActivo?.titulo || tituloVisible(clase.titulo)}
             </h1>
           </div>
         </div>
@@ -131,7 +132,7 @@ export const VideosPage = () => {
                   playbackId={credencialesSeguras.playbackId}
                   tokens={credencialesSeguras.tokens}
                   startTime={inicio}
-                  metadataVideoTitle={videoActivo.titulo || clase.titulo}
+                  metadataVideoTitle={videoActivo.titulo || tituloVisible(clase.titulo)}
                   primaryColor="#ffffff"
                   accentColor="#d7f250"
                   onTimeUpdate={(e) => { posicionRef.current = (e.target as HTMLMediaElement).currentTime; }}
@@ -232,7 +233,7 @@ export const VideosPage = () => {
               <div className="flex gap-2 mb-4">
                 <TextAlignStart size={18} className="text-[#131313]" />
                 <div className="flex items-center gap-4">
-                  <span className="text-sm font-bold text-gray-900">{clase.titulo}</span>
+                  <span className="text-sm font-bold text-gray-900">{tituloVisible(clase.titulo)}</span>
                   {videoIndex >= 0 && (
                     <>
                       <span className="w-1 h-1 rounded-full bg-gray-300" />

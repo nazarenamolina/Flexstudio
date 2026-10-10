@@ -4,6 +4,7 @@ import { CartX } from 'react-bootstrap-icons';
 import { useCartStore } from '../../../store/cartStore';
 import { useMoneda } from '../../../hooks/useMoneda';
 import { IMAGEN_RESPALDO_CLASE, optimizarCloudinary } from '../../../imagenes';
+import { tituloVisible } from '../../../titulos';
 
 interface Props {
   onNext: () => void;
@@ -56,7 +57,7 @@ const Paso1Carrito = ({ onNext }: Props) => {
                 <div className="w-16 h-16 sm:w-24 sm:h-24 rounded-lg sm:rounded-xl flex-shrink-0 overflow-hidden relative">
                   <img
                     src={optimizarCloudinary(item.imagenTarjeta || IMAGEN_RESPALDO_CLASE, 240)}
-                    alt={item.titulo}
+                    alt={tituloVisible(item.titulo)}
                     className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
                   />
                 </div>
@@ -64,7 +65,7 @@ const Paso1Carrito = ({ onNext }: Props) => {
                 <div className="flex-1 flex flex-col justify-between py-1">
                   <div className="pr-6 sm:pr-8">
                     <h3 className="text-[13px] sm:text-2xl font-principal font-bold text-[#131313] uppercase leading-tight line-clamp-2">
-                      {item.titulo}
+                      {tituloVisible(item.titulo)}
                     </h3>
                     <p className="text-[9px] sm:text-sm text-[#131313]/60 font-principal font-bold uppercase tracking-[0.15em] mt-1 flex items-center gap-1.5">
                       Acceso de por vida
@@ -83,7 +84,7 @@ const Paso1Carrito = ({ onNext }: Props) => {
                   onClick={() => removeFromCart(item.id)}
                   className="absolute bottom-2 right-2 sm:bottom-5 sm:right-4 p-1.5 sm:p-2 bg-[#131313] rounded-lg text-white hover:bg-red-600 transition-colors cursor-pointer"
                   title="Quitar clase"
-                  aria-label={`Quitar ${item.titulo} del carrito`}
+                  aria-label={`Quitar ${tituloVisible(item.titulo)} del carrito`}
                 >
                   <Trash2 size={16} className="sm:w-[18px] sm:h-[18px]" strokeWidth={1.5} />
                 </button>

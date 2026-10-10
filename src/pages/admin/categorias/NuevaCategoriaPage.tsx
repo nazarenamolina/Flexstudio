@@ -6,6 +6,7 @@ import { IconPicker } from '../../../components/IconPicker';
 import { ToggleDestacada } from '../../../components/ToggleDestacada';
 import { GaleriaModal } from '../../../components/GaleriaModal';
 import { CamposPrecio } from '../../../components/CamposPrecio';
+import { AyudaTitulo } from '../../../components/AyudaTitulo';
 import { optimizarCloudinary } from '../../../imagenes';
 
 export const NuevaCategoriaPage = () => {
@@ -64,8 +65,9 @@ export const NuevaCategoriaPage = () => {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
               <div>
                 <label className={labelClass}>Título *</label>
-                <input type="text" {...register('titulo', { required: 'El título es obligatorio' })} placeholder="Ej: Danza Inicial" className={inputClass} />
+                <input type="text" {...register('titulo', { required: 'El título es obligatorio' })} placeholder="Ej: Clases para | Gimnastas" className={inputClass} />
                 {errors.titulo && <p className="text-red-500 text-xs mt-1">{errors.titulo.message}</p>}
+                <AyudaTitulo />
               </div>
               <CamposPrecio register={register} control={control} errors={errors} labelClass={labelClass} inputClass={inputClass} />
             </div>

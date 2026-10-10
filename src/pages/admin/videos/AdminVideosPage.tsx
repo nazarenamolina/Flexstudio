@@ -7,6 +7,7 @@ import { useAdminVideos } from '../../../hooks/useAdminVideos';
 import { VideoCard } from '../../../components/VideoCard';
 import { AddVideoCard } from '../../../components/AddVideoCard';
 import { ErrorCargaAdmin } from '../../../components/ErrorCargaAdmin';
+import { tituloVisible } from '../../../titulos';
 
 export const AdminVideosPage = () => {
   const { navigate, cargando, errorVideos, reintentarVideos, buscandoVideos, categorias, busqueda, setBusqueda, filtroCategoria, setFiltroCategoria, videosFiltrados, modalAbierto, setModalAbierto, videoAEliminar, estaEliminando, abrirModalEliminacion, ejecutarEliminacion } = useAdminVideos();
@@ -84,7 +85,7 @@ export const AdminVideosPage = () => {
               )}
             </Menu.Item>
             {categorias.map(cat => {
-              const tituloCorto = cat.titulo.includes('|') ? cat.titulo.split('|')[1].trim() : cat.titulo;
+              const tituloCorto = tituloVisible(cat.titulo);
               return (
                 <Menu.Item key={cat.id}>
                   {({ active }) => (

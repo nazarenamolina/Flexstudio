@@ -2,6 +2,7 @@ import { Link } from 'react-router-dom';
 import { Clock, ArrowRight, Star, PlaySquare, Infinity as InfinityIcon } from 'lucide-react';
 import { type Categoria } from '../api/categoria';
 import { IMAGEN_RESPALDO_CLASE, optimizarCloudinary } from '../imagenes';
+import { tituloVisible } from '../titulos';
 
 interface Props {
   servicio: Categoria;
@@ -49,7 +50,7 @@ export const TarjetaClase = ({ servicio, flippedCard, setFlippedCard }: Props) =
             {/* Títulos y CTA Visual */}
             <div className="mt-auto">
               <h3 className="text-white text-3xl sm:text-4xl lg:text-5xl font-principal font-bold uppercase tracking-tight mb-3 leading-[1.05] drop-shadow-2xl wrap-break-word">
-                {servicio.titulo}
+                {tituloVisible(servicio.titulo)}
               </h3>
             </div>
           </div>
@@ -71,7 +72,7 @@ export const TarjetaClase = ({ servicio, flippedCard, setFlippedCard }: Props) =
             {/* Bloque superior que desliza hacia arriba */}
             <div className={`flex-1 flex flex-col justify-center transition-all duration-800 delay-100 ${isFlipped ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8 lg:group-hover:opacity-100 lg:group-hover:translate-y-0 group-focus-within:opacity-100 group-focus-within:translate-y-0'}`}>
               <h4 className="text-[#d7f250] text-2xl sm:text-3xl font-principal font-bold uppercase tracking-tight mb-2 sm:mb-4 leading-tight text-center drop-shadow-md wrap-break-word">
-                {servicio.titulo}
+                {tituloVisible(servicio.titulo)}
               </h4>
               <p className="text-gray-200 text-xs sm:text-[15px] mb-4 sm:mb-6 line-clamp-4 sm:line-clamp-4 leading-relaxed font-medium drop-shadow-md wrap-break-word">
                 {servicio.descripcionCard || 'Descripción no disponible.'}
@@ -107,7 +108,7 @@ export const TarjetaClase = ({ servicio, flippedCard, setFlippedCard }: Props) =
               <Link
                 to={`/categorias/${servicio.id}`}
                 onClick={(e) => e.stopPropagation()}
-                aria-label={`Ver la clase ${servicio.titulo}`}
+                aria-label={`Ver la clase ${tituloVisible(servicio.titulo)}`}
                 className="group/btn flex items-center justify-center w-full bg-[#d7f250] outline-none focus-visible:ring-4 focus-visible:ring-white/70 text-[#131313] font-black rounded-2xl px-6 py-3 sm:py-5 transition-all duration-300 hover:bg-white hover:shadow-[0_0_30px_rgba(215,242,80,0.3)] uppercase tracking-widest text-xs sm:text-sm"
               >
                 Ver Masterclass

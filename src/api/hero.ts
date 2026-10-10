@@ -14,6 +14,12 @@ export interface HeroSlide {
   activo?: boolean;
 }
 
+/** Medidas recomendadas para las imágenes del carrusel (escritorio 16:9, celular 4:5). */
+export const MEDIDAS_HERO = {
+  escritorio: { ancho: 1920, alto: 1080 },
+  celular: { ancho: 1080, alto: 1350 },
+} as const;
+
 export const obtenerHeroRequest = async (): Promise<HeroSlide[]> => {
   const respuesta = await api.get('/hero');
   return respuesta.data;

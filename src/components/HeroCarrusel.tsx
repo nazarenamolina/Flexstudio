@@ -17,6 +17,9 @@ const SLIDES_DE_RESPALDO: HeroSlide[] = [
 
 const optimizar = optimizarCloudinary;
 
+// Proporciones fijas del carrusel: deben coincidir con MEDIDAS_HERO (las que recomienda el panel admin).
+const ALTO_CARRUSEL = 'aspect-[4/5] md:aspect-[16/9] md:max-h-[calc(100svh-78px)] w-full';
+
 const dosDigitos = (n: number) => String(n).padStart(2, '0');
 
 // Preferencia del sistema "reducir movimiento": sin avance automático ni desplazamiento animado.
@@ -29,9 +32,9 @@ const suscribirMovimiento = (avisar: () => void) => {
 const leerMovimientoReducido = () => window.matchMedia(CONSULTA_MOVIMIENTO).matches;
 
 const tamanoTitulo = (titulo: string) => {
-  if (titulo.length <= 22) return 'text-[clamp(3rem,7vw,8rem)]';
-  if (titulo.length <= 48) return 'text-[clamp(2.4rem,5vw,5.5rem)]';
-  return 'text-[clamp(2rem,3.6vw,4rem)]';
+  if (titulo.length <= 22) return 'text-[clamp(2.4rem,6vw,8rem)]';
+  if (titulo.length <= 48) return 'text-[clamp(2rem,4.5vw,5.5rem)]';
+  return 'text-[clamp(1.6rem,3.4vw,4rem)]';
 };
 
 /** Enlace interno con el router; externo en otra pestaña. */
@@ -81,7 +84,15 @@ interface VistaProps {
 export const HeroSlideVista = ({ slide, indice, total, prioridad = false }: VistaProps) => {
   // Sin título: banner de imagen completa (el texto viene dentro de la imagen).
   if (!slide.titulo) {
-    const imagen = <Imagen slide={slide} prioridad={prioridad} className="absolute inset-0 w-full h-full object-cover" />;
+    // Sin versión para celulares, en el teléfono la imagen horizontal se muestra entera, sin recortar.
+    const sinMovil = !slide.imagenMovilUrl;
+    const imagen = (
+      <Imagen
+        slide={slide}
+        prioridad={prioridad}
+        className={`absolute inset-0 w-full h-full ${sinMovil ? 'object-contain md:object-cover' : 'object-cover'}`}
+      />
+    );
     return (
       <div className="relative w-full h-full bg-[#FDFDF8] overflow-hidden">
         {slide.enlace && !slide.textoBoton ? (
@@ -97,18 +108,18 @@ export const HeroSlideVista = ({ slide, indice, total, prioridad = false }: Vist
   }
 
   return (
-    <div className="grid w-full h-full grid-rows-[42%_1fr] lg:grid-rows-1 lg:grid-cols-12 bg-[#FDFDF8] text-[#131313]">
-      <div className="relative lg:order-2 lg:col-span-7 overflow-hidden border-b-2 lg:border-b-0 lg:border-l-2 border-[#131313]">
+    <div className="grid w-full h-full grid-rows-[38%_1fr] md:grid-rows-1 md:grid-cols-12 bg-[#FDFDF8] text-[#131313]">
+      <div className="relative md:order-2 md:col-span-7 overflow-hidden border-b-2 md:border-b-0 md:border-l-2 border-[#131313]">
         <Imagen slide={slide} prioridad={prioridad} className="absolute inset-0 w-full h-full object-cover" />
       </div>
 
-      <div className="lg:order-1 lg:col-span-5 flex flex-col min-h-0 overflow-hidden">
+      <div className="md:order-1 md:col-span-5 flex flex-col min-h-0 overflow-hidden">
         <div className="flex items-center justify-between border-b-2 border-[#131313] px-5 sm:px-8 lg:px-10 h-11 shrink-0 font-principal text-xs sm:text-sm uppercase tracking-[0.2em]">
           <span>Flex <span className="text-[#131313]/50">Studio</span></span>
           <span className="tabular-nums">{dosDigitos(indice + 1)} / {dosDigitos(total)}</span>
         </div>
 
-        <div className="flex-1 min-h-0 flex flex-col justify-center gap-4 lg:gap-6 px-5 sm:px-8 lg:px-10 py-5 lg:py-8">
+        <div className="flex-1 min-h-0 flex flex-col justify-center gap-3 md:gap-4 lg:gap-6 px-5 sm:px-8 lg:px-10 py-4 lg:py-8">
           {slide.etiqueta && (
             <span className="self-start bg-[#d7f250] px-3 py-1 font-principal font-bold text-xs sm:text-sm uppercase tracking-widest">
               {slide.etiqueta}
@@ -118,7 +129,7 @@ export const HeroSlideVista = ({ slide, indice, total, prioridad = false }: Vist
             {slide.titulo}
           </h2>
           {slide.subtitulo && (
-            <p className="max-w-md text-sm md:text-base leading-relaxed opacity-90 line-clamp-3 lg:line-clamp-none">
+            <p className="max-w-md text-sm md:text-base leading-relaxed opacity-90 line-clamp-2 md:line-clamp-3 lg:line-clamp-none">
               {slide.subtitulo}
             </p>
           )}
@@ -167,7 +178,7 @@ export const HeroCarrusel = () => {
 
   if (isLoading) {
     return (
-      <section aria-busy className="w-full bg-[#FDFDF8] border-b-2 border-[#131313] h-[78svh] lg:h-[calc(100svh-78px)] min-h-[460px] grid place-items-center">
+      <section aria-busy className={`w-full bg-[#FDFDF8] border-b-2 border-[#131313] ${ALTO_CARRUSEL} grid place-items-center`}>
         <span className="font-principal text-sm uppercase tracking-[0.2em] text-[#131313]/50 animate-pulse">Cargando…</span>
       </section>
     );
@@ -177,7 +188,7 @@ export const HeroCarrusel = () => {
     <section
       aria-roledescription="carrusel"
       aria-label="Destacados de Flex Studio"
-      className="group/hero relative w-full bg-[#FDFDF8] text-[#131313] border-b-2 border-[#131313] select-none overflow-hidden h-[78svh] lg:h-[calc(100svh-78px)] min-h-[460px]"
+      className={`group/hero relative w-full bg-[#FDFDF8] text-[#131313] border-b-2 border-[#131313] select-none overflow-hidden ${ALTO_CARRUSEL}`}
       onMouseEnter={() => setPausaPorPuntero(true)}
       onMouseLeave={() => setPausaPorPuntero(false)}
       onFocus={() => setPausaPorPuntero(true)}

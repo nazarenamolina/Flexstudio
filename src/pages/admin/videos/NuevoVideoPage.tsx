@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { ArrowLeft, Image as ImageIcon, Loader2, Library, Trash2, Film } from 'lucide-react';
 import { useNuevoVideo } from '../../../hooks/useNuevoVideoPage';
 import { GaleriaModal } from '../../../components/GaleriaModal'; 
+import { tituloVisible } from '../../../titulos';
 
 export const NuevoVideoPage = () => {
   const {register, handleSubmit, errors, categorias, cargandoCategorias, archivos, estadoSubida, handleFileChange, handleSelectFromGallery, handleEliminarMiniatura, quitarVideo, navigate} = useNuevoVideo();
@@ -62,7 +63,7 @@ export const NuevoVideoPage = () => {
               {cargandoCategorias ? (
                 <option disabled>Cargando...</option>
               ) : (
-                categorias.map((cat) => <option key={cat.id} value={cat.id}>{cat.titulo}</option>)
+                categorias.map((cat) => <option key={cat.id} value={cat.id}>{tituloVisible(cat.titulo)}</option>)
               )}
             </select>
             {errors.idCategoria && <span className="text-red-500 text-xs mt-1">{errors.idCategoria.message}</span>}

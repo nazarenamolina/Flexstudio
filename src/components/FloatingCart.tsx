@@ -7,6 +7,7 @@ import { useMoneda } from '../hooks/useMoneda';
 import { useSincronizarCarrito } from '../hooks/useSincronizarCarrito';
 import { BagHeart } from 'react-bootstrap-icons';
 import { IMAGEN_RESPALDO_CLASE, optimizarCloudinary } from '../imagenes';
+import { tituloVisible } from '../titulos';
 
 export const FloatingCart = () => {
   const navigate = useNavigate();
@@ -93,7 +94,7 @@ export const FloatingCart = () => {
                       <div className="w-20 h-20 rounded-xl overflow-hidden flex-shrink-0 shadow-sm border border-white/20">
                         <img
                           src={optimizarCloudinary(item.imagenTarjeta || IMAGEN_RESPALDO_CLASE, 240)}
-                          alt={item.titulo}
+                          alt={tituloVisible(item.titulo)}
                           className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                         />
                       </div>
@@ -101,7 +102,7 @@ export const FloatingCart = () => {
                       <div className="flex-1 flex flex-col justify-between min-w-0">
                         <div className="pr-8">
                           <h3 className="text-sm font-bold text-[#131313] uppercase leading-tight line-clamp-2">
-                            {item.titulo}
+                            {tituloVisible(item.titulo)}
                           </h3>
                           <p className="text-[10px] text-[#131313]/60 font-medium uppercase tracking-wider mt-1">
                             Acceso de por vida
@@ -120,7 +121,7 @@ export const FloatingCart = () => {
                         onClick={() => removeFromCart(item.id)}
                         className="absolute bottom-3 right-3 p-2 bg-[#131313] rounded-lg text-white hover:bg-red-600 transition-colors cursor-pointer"
                         title="Quitar clase"
-                        aria-label={`Quitar ${item.titulo} del carrito`}
+                        aria-label={`Quitar ${tituloVisible(item.titulo)} del carrito`}
                       >
                         <Trash2 size={16} strokeWidth={2} />
                       </button>
