@@ -14,10 +14,10 @@ export const useCerrarSesionAdmin = () => {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const logout = useAuthStore((s) => s.logout);
-  const subidas = useSubidasStore((s) => s.subidas);
-  const quitarSubida = useSubidasStore((s) => s.quitar);
 
   return async () => {
+    // Se leen al hacer clic: suscribirse re-renderizaría todo el layout del admin con cada avance de una subida.
+    const { subidas, quitar: quitarSubida } = useSubidasStore.getState();
     if (hayCargasActivas(subidas) && !window.confirm('Hay videos subiéndose. Si cerrás sesión se cancelan. ¿Cerrar sesión igual?')) {
       return;
     }

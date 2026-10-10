@@ -43,8 +43,9 @@ interface SubidasState {
 // Las instancias de UpChunk no van en el estado (no son serializables ni hace falta re-renderizar).
 const cargas = new Map<string, { upload: UpChunk.UpChunk; alFallar?: NuevaSubida['alFallar'] }>();
 
-// Trozos de 5 MB (en KB, como pide UpChunk): se reintentan solos si falla la conexión.
-const TAMANO_TROZO_KB = 5120;
+// Trozos de 30 MB (en KB, como pide UpChunk; es su valor por defecto): menos pedidos a Mux que con 5 MB.
+// Cada trozo se reintenta solo si falla la conexión.
+const TAMANO_TROZO_KB = 30720;
 
 const TEXTO_TIPO: Record<TipoSubida, string> = {
   video: 'El video',
@@ -68,7 +69,14 @@ export const useSubidasStore = create<SubidasState>((set, get) => {
       const upload = UpChunk.createUpload({ endpoint, file: archivo, chunkSize: TAMANO_TROZO_KB });
       cargas.set(id, { upload, alFallar });
 
-      upload.on('progress', (e) => actualizar(id, { progreso: Math.floor(e.detail) }));
+      // UpChunk avisa decenas de veces por segundo: solo se actualiza el estado cuando cambia el porcentaje entero.
+      let ultimoProgreso = 0;
+      upload.on('progress', (e) => {
+        const progreso = Math.floor(e.detail);
+        if (progreso === ultimoProgreso) return;
+        ultimoProgreso = progreso;
+        actualizar(id, { progreso });
+      });
       upload.on('offline', () => actualizar(id, { estado: 'pausada' }));
       upload.on('online', () => actualizar(id, { estado: 'subiendo' }));
       upload.on('success', () => {
