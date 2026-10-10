@@ -1,17 +1,24 @@
 // src/pages/carrito/CarritoMP.tsx
 import { useState, useEffect } from 'react';
 import { useAuthStore } from '../../store/authStore';
+import { useCartStore } from '../../store/cartStore';
 import { obtenerMiPerfilRequest, type CheckoutPerfilData } from '../../api/usuario';
 import Stepper from './components/Stepper';
 import Paso1Carrito from './components/Paso1Carrito';
 import Paso2Formulario from './components/Paso2Formulario';
 import Paso3Resumen from './components/Paso3Resumen';
+import { useSincronizarCarrito } from '../../hooks/useSincronizarCarrito';
 
  
 const CarritoMP = () => {
   const usuario = useAuthStore((state) => state.usuario);
-  const [pasoActual, setPasoActual] = useState(1);
-  const [metodoPago, setMetodoPago] = useState('mercadopago');
+  const [pasoElegido, setPasoActual] = useState(1);
+  // Si el carrito queda vacío (por ejemplo, la revalidación quitó una clase dada de baja), se
+  // vuelve al paso 1, que muestra el carrito vacío en lugar de un resumen sin clases.
+  const carritoVacio = useCartStore((state) => state.cartItems.length === 0);
+  const pasoActual = carritoVacio ? 1 : pasoElegido;
+  // Al entrar al checkout se revalida el carrito contra el catálogo y las clases ya compradas.
+  useSincronizarCarrito({ siempre: true });
 
   const [formData, setFormData] = useState<CheckoutPerfilData>({
     documentoIdentidad: '',
@@ -34,7 +41,7 @@ const CarritoMP = () => {
           ciudad: datosBD.ciudad || '',
           codigoPostal: datosBD.codigoPostal || '',
         });
-      } catch (error) {
+      } catch {
         console.warn("No se pudo precargar la info del perfil.");
       }
     };
@@ -65,8 +72,6 @@ const CarritoMP = () => {
         <Paso3Resumen 
           formData={formData}
           usuario={usuario}
-          metodoPago={metodoPago}
-          setMetodoPago={setMetodoPago}
           onPrev={() => setPasoActual(2)}
         />
       )}

@@ -4,7 +4,9 @@ import { ShoppingCart, X, ArrowRight, Trash2 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useCartStore } from '../store/cartStore';
 import { useMoneda } from '../hooks/useMoneda';
+import { useSincronizarCarrito } from '../hooks/useSincronizarCarrito';
 import { BagHeart } from 'react-bootstrap-icons';
+import { IMAGEN_RESPALDO_CLASE, optimizarCloudinary } from '../imagenes';
 
 export const FloatingCart = () => {
   const navigate = useNavigate();
@@ -12,6 +14,7 @@ export const FloatingCart = () => {
   const removeFromCart = useCartStore((state) => state.removeFromCart);
   const { moneda } = useMoneda();
   const [minimizado, setMinimizado] = useState(true);
+  useSincronizarCarrito();
 
   if (cartItems.length === 0) return null;
 
@@ -51,10 +54,11 @@ export const FloatingCart = () => {
             leaveFrom="translate-x-0"
             leaveTo="translate-x-full"
           >
-            <div className="bg-white bg-[url('https://res.cloudinary.com/dmp7mcwie/image/upload/v1774312699/fondo_hwrosv.png')] relative w-full sm:max-w-md h-full shadow-2xl flex flex-col pointer-events-auto">
+            <div className="bg-white bg-[url('https://res.cloudinary.com/dmp7mcwie/image/upload/f_auto,q_auto/v1774312699/fondo_hwrosv.png')] relative w-full sm:max-w-md h-full shadow-2xl flex flex-col pointer-events-auto">
               <div className="px-6 pt-6 pb-6 border-b border-gray-200 relative">
                 <button
                   onClick={() => setMinimizado(true)}
+                  aria-label="Cerrar carrito"
                   className="absolute top-6 right-5 text-gray-400 hover:text-gray-600 hover:bg-gray-100 p-2 rounded-full transition-all"
                 >
                   <X size={20} strokeWidth={2} />
@@ -74,7 +78,7 @@ export const FloatingCart = () => {
                 </div>
               </div>
 
-              <div className="flex-1 overflow-y-auto p-4 space-y-3 bg-[url('https://res.cloudinary.com/dmp7mcwie/image/upload/v1776544346/bg-card_dfxwsn.png')]">
+              <div className="flex-1 overflow-y-auto p-4 space-y-3 bg-[url('https://res.cloudinary.com/dmp7mcwie/image/upload/f_auto,q_auto/v1776544346/bg-card_dfxwsn.png')]">
                 {cartItems.map((item) => {
                   const precioItem = moneda === 'ARS' ? item.precioArs : item.precioUsd;
                   const precioItemFormateado = moneda === 'ARS'
@@ -88,7 +92,7 @@ export const FloatingCart = () => {
                     >
                       <div className="w-20 h-20 rounded-xl overflow-hidden flex-shrink-0 shadow-sm border border-white/20">
                         <img
-                          src={item.imagenTarjeta || 'https://placehold.co/150x150/111111/FFFFFF?text=Flex+Studio'}
+                          src={optimizarCloudinary(item.imagenTarjeta || IMAGEN_RESPALDO_CLASE, 240)}
                           alt={item.titulo}
                           className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                         />
@@ -99,8 +103,8 @@ export const FloatingCart = () => {
                           <h3 className="text-sm font-bold text-[#131313] uppercase leading-tight line-clamp-2">
                             {item.titulo}
                           </h3>
-                          <p className="text-[10px] text-gray-400 font-medium uppercase tracking-wider mt-1">
-                            DESCRIPCION
+                          <p className="text-[10px] text-[#131313]/60 font-medium uppercase tracking-wider mt-1">
+                            Acceso de por vida
                           </p>
                         </div>
 
@@ -114,8 +118,9 @@ export const FloatingCart = () => {
 
                       <button
                         onClick={() => removeFromCart(item.id)}
-                        className="absolute bottom-3 opacity-100 group-hover:opacity-100 right-3 p-2 bg-black/50 rounded-lg text-gray-900 hover:text-red-500 hover:bg-red-300 transition-all cursor-pointer"
+                        className="absolute bottom-3 right-3 p-2 bg-[#131313] rounded-lg text-white hover:bg-red-600 transition-colors cursor-pointer"
                         title="Quitar clase"
+                        aria-label={`Quitar ${item.titulo} del carrito`}
                       >
                         <Trash2 size={16} strokeWidth={2} />
                       </button>
@@ -124,7 +129,7 @@ export const FloatingCart = () => {
                 })}
               </div>
 
-              <div className="px-6 py-5 bg-white bg-[url('https://res.cloudinary.com/dmp7mcwie/image/upload/v1774312699/fondo_hwrosv.png')] border-t border-white/10 shadow-[0_-4px_20px_rgba(0,0,0,0.3)]">
+              <div className="px-6 py-5 bg-white bg-[url('https://res.cloudinary.com/dmp7mcwie/image/upload/f_auto,q_auto/v1774312699/fondo_hwrosv.png')] border-t border-white/10 shadow-[0_-4px_20px_rgba(0,0,0,0.3)]">
                 <div className="flex justify-between items-center mb-4 pb-4 border-b border-white/10">
                   <span className="text-xl font-principal uppercase tracking-wider">
                     Subtotal
@@ -164,6 +169,7 @@ export const FloatingCart = () => {
         <div className="fixed bottom-6 right-6 md:bottom-8 md:right-8 z-50">
           <button
             onClick={() => setMinimizado(false)}
+            aria-label={`Abrir carrito (${cartItems.length})`}
             className="relative flex h-14 w-14 sm:h-16 sm:w-16 items-center justify-center rounded-2xl bg-[#d7f250] text-gray-900 duration-300 cursor-pointer"
           >
             <ShoppingCart size={24} className="sm:w-[26px] sm:h-[26px]" strokeWidth={2} />

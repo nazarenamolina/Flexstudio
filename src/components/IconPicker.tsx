@@ -1,11 +1,12 @@
 import { 
-  Video, Headphones, Infinity, Award, Star, Heart, 
+  Video, Headphones, Infinity as InfinityIcon, Award, Star, Heart, 
   Zap, Shield, Smartphone, BookOpen, CheckCircle, Users 
 } from 'lucide-react';
 const ICONS_DISPONIBLES = {
   Video: Video,
   Headphones: Headphones,
-  Infinity: Infinity,
+  // La clave "Infinity" queda igual: es el nombre que se guarda en la base para cada beneficio.
+  Infinity: InfinityIcon,
   Award: Award,
   Star: Star,
   Heart: Heart,

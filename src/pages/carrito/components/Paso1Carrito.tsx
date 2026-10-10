@@ -3,6 +3,7 @@ import { Trash2 } from 'lucide-react';
 import { CartX } from 'react-bootstrap-icons';
 import { useCartStore } from '../../../store/cartStore';
 import { useMoneda } from '../../../hooks/useMoneda';
+import { IMAGEN_RESPALDO_CLASE, optimizarCloudinary } from '../../../imagenes';
 
 interface Props {
   onNext: () => void;
@@ -23,9 +24,9 @@ const Paso1Carrito = ({ onNext }: Props) => {
   if (cartItems.length === 0) {
     return (
       <div className="max-w-2xl mx-auto flex flex-col items-center w-full">
-        <div className="bg-[#c9c5c5] rounded-xl p-10 flex flex-col items-center text-center w-full border border-neutral-300">
+        <div className="bg-white bg-[url('https://res.cloudinary.com/dmp7mcwie/image/upload/f_auto,q_auto/v1774312699/fondo_hwrosv.png')] border border-neutral-100 rounded-[24px] p-10 flex flex-col items-center text-center w-full shadow-[0_8px_30px_rgb(0,0,0,0.04)]">
           <CartX className="w-16 h-16 text-[#131313]/70 mb-4" />
-          <h3 className="text-xl font-bold mb-2 text-[#131313]/70">Tu carrito está vacío</h3>
+          <h3 className="font-principal text-2xl uppercase mb-2 text-[#131313]">Tu carrito está vacío</h3>
           <p className="text-sm text-neutral-500 mb-6">Parece que aún no has seleccionado ninguna clase.</p>
           <Link to="/" className="flex items-center justify-center gap-3 rounded-full bg-neon-pink px-6 sm:px-8 py-3 sm:py-4 font-principal text-lg sm:text-xl font-bold text-[#131313]/90 shadow-sm transition-all duration-400 hover:-translate-y-1 hover:bg-[#131313] hover:text-white hover:shadow-md cursor-pointer">
             Descubrir clases
@@ -54,7 +55,7 @@ const Paso1Carrito = ({ onNext }: Props) => {
               >
                 <div className="w-16 h-16 sm:w-24 sm:h-24 rounded-lg sm:rounded-xl flex-shrink-0 overflow-hidden relative">
                   <img
-                    src={item.imagenTarjeta || 'https://placehold.co/150x150/111111/FFFFFF?text=Flex+Studio'}
+                    src={optimizarCloudinary(item.imagenTarjeta || IMAGEN_RESPALDO_CLASE, 240)}
                     alt={item.titulo}
                     className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
                   />
@@ -65,8 +66,8 @@ const Paso1Carrito = ({ onNext }: Props) => {
                     <h3 className="text-[13px] sm:text-2xl font-principal font-bold text-[#131313] uppercase leading-tight line-clamp-2">
                       {item.titulo}
                     </h3>
-                    <p className="text-[9px] sm:text-sm text-neutral-500 font-principal font-bold uppercase tracking-[0.15em] mt-1 flex items-center gap-1.5">
-                      DESCRIPCION
+                    <p className="text-[9px] sm:text-sm text-[#131313]/60 font-principal font-bold uppercase tracking-[0.15em] mt-1 flex items-center gap-1.5">
+                      Acceso de por vida
                     </p>
                   </div>
 
@@ -80,8 +81,9 @@ const Paso1Carrito = ({ onNext }: Props) => {
 
                 <button
                   onClick={() => removeFromCart(item.id)}
-                  className="absolute bottom-2 right-2 sm:bottom-5 sm:right-4 p-1.5 sm:p-2 bg-black/50 rounded-lg text-neutral-900 hover:text-red-500 hover:bg-red-500/10 transition-all sm:opacity-0 sm:group-hover:opacity-100 cursor-pointer"
+                  className="absolute bottom-2 right-2 sm:bottom-5 sm:right-4 p-1.5 sm:p-2 bg-[#131313] rounded-lg text-white hover:bg-red-600 transition-colors cursor-pointer"
                   title="Quitar clase"
+                  aria-label={`Quitar ${item.titulo} del carrito`}
                 >
                   <Trash2 size={16} className="sm:w-[18px] sm:h-[18px]" strokeWidth={1.5} />
                 </button>
@@ -89,7 +91,7 @@ const Paso1Carrito = ({ onNext }: Props) => {
             );
           })}
         </div>
-        <div className="bg-white bg-[url('https://res.cloudinary.com/dmp7mcwie/image/upload/v1774312699/fondo_hwrosv.png')] border border-neutral-100 w-full mx-auto p-6 md:p-8 rounded-[24px] shadow-[0_8px_30px_rgb(0,0,0,0.04)] flex flex-col transition-shadow hover:shadow-[0_8px_30px_rgba(215,242,80,0.15)]">
+        <div className="bg-white bg-[url('https://res.cloudinary.com/dmp7mcwie/image/upload/f_auto,q_auto/v1774312699/fondo_hwrosv.png')] border border-neutral-100 w-full mx-auto p-6 md:p-8 rounded-[24px] shadow-[0_8px_30px_rgb(0,0,0,0.04)] flex flex-col transition-shadow hover:shadow-[0_8px_30px_rgba(215,242,80,0.15)]">
         <div className="w-full max-w-lg mx-auto flex flex-col">
           <h3 className="font-principal text-2xl mb-3 text-[#131313]">Resumen de compra:</h3>
           <div className="flex justify-between font-principal text-neutral-800">

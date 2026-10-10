@@ -16,7 +16,7 @@ export const FooterComponent = () => {
         {/* Columna 1: Logo */}
         <article className="flex flex-col items-center md:items-start md:pr-2 min-w-0">
           <img
-            src="https://res.cloudinary.com/dmp7mcwie/image/upload/v1774490155/logofooter_u3j6cz.png"
+            src="https://res.cloudinary.com/dmp7mcwie/image/upload/f_auto,q_auto,c_limit,w_500/v1774490155/logofooter_u3j6cz.png"
             className="w-44 md:w-full md:max-w-[150px] lg:max-w-[220px] object-contain opacity-90 transition-opacity hover:opacity-100"
             alt="Logo Flex Studio"
           />
@@ -60,7 +60,7 @@ export const FooterComponent = () => {
           </h3>
           <ul className="flex flex-col gap-3 w-full">
             <li><Link to="/#biografia" onClick={(e) => { if (window.location.pathname === '/') { e.preventDefault(); document.getElementById('biografia')?.scrollIntoView({ behavior: 'smooth' }); } }} className="block text-[0.95rem] text-[#cdcdcd] transition-all duration-300 hover:pl-1.5 hover:text-[#d7f250]">Acerca de mí</Link></li>
-            <li><Link to="/mis-clases" className="block text-[0.95rem] text-[#cdcdcd] transition-all duration-300 hover:pl-1.5 hover:text-[#d7f250]">Ver Cursos</Link></li>
+            <li><Link to="/#clases" className="block text-[0.95rem] text-[#cdcdcd] transition-all duration-300 hover:pl-1.5 hover:text-[#d7f250]">Ver clases</Link></li>
             <li><Link to="/terminos-condiciones" className="block text-[0.95rem] text-[#cdcdcd] transition-all duration-300 hover:pl-1.5 hover:text-[#d7f250]">Términos y Condiciones</Link></li>
             <li><Link to="/politica-de-privacidad" className="block text-[0.95rem] text-[#cdcdcd] transition-all duration-300 hover:pl-1.5 hover:text-[#d7f250]">Política de Privacidad</Link></li>
           </ul>

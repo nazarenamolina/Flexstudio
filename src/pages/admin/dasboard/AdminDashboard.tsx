@@ -2,12 +2,14 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Users, Video, DollarSign, Loader2, PlusCircle, LayoutGrid, Search, ArrowRight, BarChart, Star, Image as ImageIcon } from 'lucide-react';
-import { obtenerEstadisticasRequest, obtenerHistorialClientes, obtenerClasesMasCompradasRequest } from '../../../api/admin';
+import { obtenerEstadisticasRequest, obtenerHistorialClientes, obtenerClasesMasCompradasRequest, type ClaseMasComprada } from '../../../api/admin';
 import { actualizarCategoriaRequest } from '../../../api/categoria';
+import { mensajeDeError } from '../../../api/errores';
 import { ToggleDestacada } from '../../../components/ToggleDestacada';
 import toast from 'react-hot-toast';
 import Chart from 'react-apexcharts';
 import { type ApexOptions } from 'apexcharts';
+import { optimizarCloudinary } from '../../../imagenes';
 
 export const AdminDashboard = () => {
   const navigate = useNavigate();
@@ -36,12 +38,15 @@ export const AdminDashboard = () => {
       formData.append('destacada', String(destacada));
       return actualizarCategoriaRequest(id, formData);
     },
-    onSuccess: () => {
+    onSuccess: (_datos, { id }) => {
       queryClient.invalidateQueries({ queryKey: ['dashboard-data'] });
+      // "Destacada" ordena el carrusel de la home y se edita también desde Categorías.
+      queryClient.invalidateQueries({ queryKey: ['categorias'] });
+      queryClient.invalidateQueries({ queryKey: ['categoria', id] });
       toast.success('Estado de clase actualizado');
     },
-    onError: () => {
-      toast.error('No se pudo actualizar el estado');
+    onError: (error) => {
+      toast.error(mensajeDeError(error, 'No se pudo actualizar el estado'));
     }
   });
 
@@ -185,7 +190,7 @@ export const AdminDashboard = () => {
             ].map(tab => (
               <button
                 key={tab.id}
-                onClick={() => setPeriodoActivo(tab.id as any)}
+                onClick={() => setPeriodoActivo(tab.id as typeof periodoActivo)}
                 className={`px-4 py-2 text-sm font-bold rounded-lg cursor-pointer transition-all ${
                   periodoActivo === tab.id 
                     ? 'bg-[#d7f250] text-[#131313] shadow-md' 
@@ -309,13 +314,13 @@ export const AdminDashboard = () => {
 
           <div className="flex-1 flex flex-col">
             {topClases.length > 0 ? (
-              topClases.map((clase: any) => (
+              topClases.map((clase: ClaseMasComprada) => (
                 <div key={clase.id} className="flex items-center justify-between p-4 border-b border-gray-800/50 hover:bg-white/[0.02] transition-colors">
                   <div className="flex items-center gap-4">
                     {/* Miniatura */}
                     <div className="w-16 h-12 rounded-lg bg-gray-900 overflow-hidden flex items-center justify-center shrink-0 border border-gray-800">
                       {clase.imagenTarjeta ? (
-                        <img src={clase.imagenTarjeta} alt={clase.titulo} className="w-full h-full object-cover" />
+                        <img src={optimizarCloudinary(clase.imagenTarjeta, 200)} alt={clase.titulo} className="w-full h-full object-cover" />
                       ) : (
                         <ImageIcon size={20} className="text-gray-600" />
                       )}

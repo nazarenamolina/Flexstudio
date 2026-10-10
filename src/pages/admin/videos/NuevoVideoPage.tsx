@@ -1,10 +1,10 @@
 import { useState } from 'react';
-import { ArrowLeft, CloudUpload, Image as ImageIcon, Loader2, CheckCircle2, Library, Trash2, Film } from 'lucide-react';
+import { ArrowLeft, Image as ImageIcon, Loader2, Library, Trash2, Film } from 'lucide-react';
 import { useNuevoVideo } from '../../../hooks/useNuevoVideoPage';
 import { GaleriaModal } from '../../../components/GaleriaModal'; 
 
 export const NuevoVideoPage = () => {
-  const {register, handleSubmit, errors, categorias, cargandoCategorias, archivos, estadoSubida, progreso, handleFileChange, handleSelectFromGallery, handleEliminarMiniatura, navigate} = useNuevoVideo();
+  const {register, handleSubmit, errors, categorias, cargandoCategorias, archivos, estadoSubida, handleFileChange, handleSelectFromGallery, handleEliminarMiniatura, quitarVideo, navigate} = useNuevoVideo();
   const [isGaleriaOpen, setIsGaleriaOpen] = useState(false);
   const inputClass = "w-full bg-[#131313] border border-gray-800 focus:border-[#d7f250] focus:ring-1 focus:ring-[#d7f250]/50 rounded-xl px-4 py-3 text-white placeholder-gray-600 outline-none transition-all shadow-sm";
   const labelClass = "block text-sm font-bold text-gray-400 mb-2";
@@ -12,29 +12,6 @@ export const NuevoVideoPage = () => {
     if (!archivo) return null;
     return typeof archivo === 'string' ? archivo : URL.createObjectURL(archivo);
   };
-
-  if (estadoSubida === 'SUBIENDO' || estadoSubida === 'COMPLETADO') {
-    return (
-      <div className="w-full h-[80vh] flex flex-col items-center justify-center">
-        <div className="bg-[#131313] border border-gray-800 p-10 rounded-[24px] shadow-2xl w-full max-w-xl text-center">
-          {estadoSubida === 'SUBIENDO' ? (
-            <CloudUpload className="w-20 h-20 text-[#d7f250] animate-bounce mx-auto mb-6" />
-          ) : (
-            <CheckCircle2 className="w-20 h-20 text-[#d7f250] mx-auto mb-6" />
-          )}
-          <h2 className="text-2xl font-black text-white mb-2">
-            {estadoSubida === 'SUBIENDO' ? 'Subiendo clase a la nube...' : '¡Subida completada!'}
-          </h2>
-          <p className="text-gray-400 mb-8">Por favor, no cierres esta ventana hasta que termine el proceso.</p>
-          
-          <div className="w-full bg-gray-800 rounded-full h-4 mb-2 overflow-hidden">
-            <div className="bg-[#d7f250] h-4 rounded-full transition-all duration-300" style={{ width: `${progreso}%` }}></div>
-          </div>
-          <p className="text-right text-[#d7f250] font-black text-xl">{progreso}%</p>
-        </div>
-      </div>
-    );
-  }
 
   return (
     <div className="w-full h-full flex flex-col font-sans overflow-y-auto custom-scrollbar pr-2 pb-10">
@@ -47,7 +24,7 @@ export const NuevoVideoPage = () => {
       />
 
       <div className="flex items-center gap-4 mb-8 shrink-0">
-        <button onClick={() => navigate('/admin/videos')} className="p-2 bg-[#131313] hover:bg-gray-800 border border-gray-800 rounded-full text-white transition-colors">
+        <button aria-label="Volver a videos" title="Volver a videos" onClick={() => navigate('/admin/videos')} className="p-2 bg-[#131313] hover:bg-gray-800 border border-gray-800 rounded-full text-white transition-colors">
           <ArrowLeft size={24} />
         </button>
         <div>
@@ -85,7 +62,7 @@ export const NuevoVideoPage = () => {
               {cargandoCategorias ? (
                 <option disabled>Cargando...</option>
               ) : (
-                categorias.map((cat: any) => <option key={cat.id} value={cat.id}>{cat.titulo}</option>)
+                categorias.map((cat) => <option key={cat.id} value={cat.id}>{cat.titulo}</option>)
               )}
             </select>
             {errors.idCategoria && <span className="text-red-500 text-xs mt-1">{errors.idCategoria.message}</span>}
@@ -123,7 +100,7 @@ export const NuevoVideoPage = () => {
                 {archivos.imagen && (
                   <>
                     <img src={getPreviewUrl(archivos.imagen)!} alt="Preview" className="absolute inset-0 w-full h-full object-cover opacity-60" />
-                    <button
+                    <button aria-label="Quitar la miniatura" title="Quitar la miniatura"
                       type="button"
                       onClick={(e) => { e.preventDefault(); e.stopPropagation(); handleEliminarMiniatura(); }}
                       className="absolute top-2 right-2 z-30 p-2 bg-red-500/80 hover:bg-red-500 text-white rounded-lg opacity-0 group-hover:opacity-100 transition-opacity"
@@ -149,9 +126,9 @@ export const NuevoVideoPage = () => {
                 <input type="file" accept="video/mp4,video/x-m4v,video/*" onChange={(e) => handleFileChange(e, 'video')} className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-20" />
                 
                 {archivos.video && (
-                  <button
+                  <button aria-label="Quitar el video elegido" title="Quitar el video elegido"
                     type="button"
-                    onClick={(e) => { e.preventDefault(); e.stopPropagation(); handleFileChange({ target: { files: null } } as any, 'video'); }}
+                    onClick={(e) => { e.preventDefault(); e.stopPropagation(); quitarVideo(); }}
                     className="absolute top-2 right-2 z-30 p-2 bg-red-500/80 hover:bg-red-500 text-white rounded-lg opacity-0 group-hover:opacity-100 transition-opacity"
                   >
                     <Trash2 size={16} />

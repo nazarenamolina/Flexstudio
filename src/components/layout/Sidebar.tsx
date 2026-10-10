@@ -1,28 +1,23 @@
 import { useState } from 'react';
-import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { Home, Users, LayoutDashboard, Video, LogOut, ChartNoAxesCombined } from 'lucide-react';
+import { Link, useLocation } from 'react-router-dom';
+import { Home, Users, LayoutDashboard, Video, LogOut, ChartNoAxesCombined, GalleryHorizontal, type LucideIcon } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
-import toast from 'react-hot-toast';
 import { useAuthStore } from '../../store/authStore';
-import { logoutRequest } from '../../api/auth';
+import { type Usuario } from '../../api/auth';
+import { useCerrarSesionAdmin } from '../../hooks/useCerrarSesionAdmin';
+
+export interface ItemMenuAdmin {
+  name: string;
+  path: string;
+  icon: LucideIcon;
+}
 
  
 
 export const Sidebar = () => {
-  const { usuario, logout } = useAuthStore();
+  const usuario = useAuthStore((s) => s.usuario);
   const location = useLocation();
-  const navigate = useNavigate();
-
-  const handleLogout = async () => {
-    try {
-      await logoutRequest();
-      logout();
-      toast.success('Sesión cerrada');
-      navigate('/login');
-    } catch (error) {
-      toast.error('Error al cerrar sesión');
-    }
-  };
+  const handleLogout = useCerrarSesionAdmin();
 
   const menuItems = [
     { name: 'Inicio', path: '/', icon: Home },
@@ -30,6 +25,7 @@ export const Sidebar = () => {
     { name: 'Clientes', path: '/admin/clientes', icon: Users },
     { name: 'Categorías', path: '/admin/categorias', icon: LayoutDashboard },
     { name: 'Videos', path: '/admin/videos', icon: Video },
+    { name: 'Carrusel', path: '/admin/carrusel', icon: GalleryHorizontal },
   ];
 
   return (
@@ -52,7 +48,7 @@ export const Sidebar = () => {
   );
 };
 
-const SidebarItem = ({ item, isActive }: { item: any, isActive: boolean }) => {
+const SidebarItem = ({ item, isActive }: { item: ItemMenuAdmin, isActive: boolean }) => {
   const [isHovered, setIsHovered] = useState(false);
   const Icon = item.icon;
 
@@ -75,7 +71,15 @@ const SidebarItem = ({ item, isActive }: { item: any, isActive: boolean }) => {
         style={{ zIndex: isHovered ? 50 : 20 }}
       >
         {/* El Link normal va por dentro ocupando el 100% del espacio */}
-        <Link to={item.path} className="flex items-center w-full h-full">
+        {/* El nombre solo se ve al pasar el mouse: con teclado o lector de pantalla lo da aria-label. */}
+        <Link
+          to={item.path}
+          aria-label={item.name}
+          aria-current={isActive ? 'page' : undefined}
+          onFocus={() => setIsHovered(true)}
+          onBlur={() => setIsHovered(false)}
+          className="flex items-center w-full h-full rounded-full outline-none focus-visible:ring-2 focus-visible:ring-[#d7f250]"
+        >
           
           <div className="w-12 h-12 shrink-0 flex items-center justify-center transition-colors duration-200">
             <Icon 
@@ -104,7 +108,7 @@ const SidebarItem = ({ item, isActive }: { item: any, isActive: boolean }) => {
   );
 };
 
-const SidebarProfile = ({ usuario }: { usuario: any }) => {
+const SidebarProfile = ({ usuario }: { usuario: Usuario | null }) => {
   const [isHovered, setIsHovered] = useState(false);
 
   return (
@@ -152,6 +156,10 @@ const SidebarLogout = ({ onLogout }: { onLogout: () => void }) => {
       onMouseLeave={() => setIsHovered(false)}
     >
       <motion.button
+        type="button"
+        aria-label="Cerrar sesión"
+        onFocus={() => setIsHovered(true)}
+        onBlur={() => setIsHovered(false)}
         onClick={onLogout}
         layout
         animate={{ 

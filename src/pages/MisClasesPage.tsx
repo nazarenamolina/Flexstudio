@@ -1,62 +1,52 @@
+import { Link } from 'react-router-dom';
+import { Loader2, AlertTriangle, RotateCcw, GraduationCap } from 'lucide-react';
 import { useMisClases } from '../hooks/useMisClases';
 import { ClaseCard } from '../components/ClaseCard';
-import { Link } from 'react-router-dom';
+import { claseTarjeta, claseBotonPrincipal } from './auth/estilos';
+
+// Botón principal del sitio, del ancho de su texto (no de toda la tarjeta).
+const botonAncho = claseBotonPrincipal.replace('w-full', 'w-auto');
 
 export const MisClasesPage = () => {
-  const { clases, cargando, error } = useMisClases();
-  if (cargando) {
-    return (
-      <div className="flex min-h-screen items-center justify-center bg-gray-50">
-        <div className="h-12 w-12 animate-spin rounded-full border-4 border-indigo-500 border-t-transparent"></div>
-      </div>
-    );
-  }
- 
-  if (error) {
-    return (
-      <div className="flex min-h-screen items-center justify-center bg-gray-50 p-6 text-center">
-        <div className="rounded-xl bg-red-50 p-8 text-red-600">
-          <p className="text-lg font-semibold">{error}</p>
-        </div>
-      </div>
-    );
-  }
+  const { clases, cargando, error, reintentar } = useMisClases();
 
   return (
-    <main className="px-4 md:px-8 pb-10 pt-25">
+    <main className="px-4 md:px-8 pb-16 pt-28 text-[#131313]">
       <div className="mx-auto max-w-7xl">
-        
-        {/* Cabecera */}
-        <div className="mb-10">
-          <h1 className="text-3xl font-extrabold tracking-tight text-gray-900 sm:text-4xl">
-            Clases Compradas 
-          </h1>
-        </div>
+        <h1 className="font-principal text-4xl md:text-5xl uppercase leading-tight mb-10">
+          Mis <span className="bg-[#d7f250] px-2">clases</span>
+        </h1>
 
-        {/* Grilla de Clases */}
-        {clases.length > 0 ? (
+        {cargando ? (
+          <div className="flex min-h-[40vh] items-center justify-center" aria-busy>
+            <Loader2 className="h-10 w-10 animate-spin text-[#131313]" />
+          </div>
+        ) : error ? (
+          <div role="alert" className={`${claseTarjeta} mx-auto max-w-lg p-8 text-center flex flex-col items-center gap-4`}>
+            <AlertTriangle className="h-10 w-10 text-red-600" />
+            <p className="font-semibold">{error}</p>
+            <button type="button" onClick={reintentar} className={botonAncho}>
+              <RotateCcw size={18} /> Reintentar
+            </button>
+          </div>
+        ) : clases.length > 0 ? (
           <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 md:grid-cols-3 lg:gap-8">
             {clases.map((clase) => (
               <ClaseCard key={clase.id} clase={clase} />
             ))}
           </div>
         ) : (
- 
-          <div className="flex flex-col items-center justify-center rounded-2xl bg-white py-20 text-center shadow-sm">
-            <svg xmlns="http://www.w3.org/2000/svg" className="mb-4 h-16 w-16 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
-            </svg>
-            <h2 className="mb-2 text-xl font-semibold text-gray-900">Aún no tienes clases disponibles</h2>
-            <p className="mb-6 text-gray-500">Explora nuestro catálogo y comienza tu entrenamiento.</p>
-            <Link 
-              to="/cursos" 
-              className="rounded-lg bg-[#d7f250] px-6 py-3 font-semibold text-[#131313] transition hover:bg-[#131313] hover:text-[#d7f250]"
-            >
-              Ir a la Tienda
+          <div className={`${claseTarjeta} mx-auto max-w-lg flex flex-col items-center py-14 px-6 text-center`}>
+            <div className="mb-5 grid h-20 w-20 place-items-center rounded-full bg-[#d7f250]">
+              <GraduationCap className="h-10 w-10" />
+            </div>
+            <h2 className="mb-2 font-principal text-2xl uppercase">Todavía no tenés clases</h2>
+            <p className="mb-8 text-neutral-600">Explorá el catálogo y empezá tu entrenamiento.</p>
+            <Link to="/#clases" className={botonAncho}>
+              Ver clases disponibles
             </Link>
           </div>
         )}
-
       </div>
     </main>
   );

@@ -3,6 +3,7 @@ import { useForm } from 'react-hook-form';
 import toast from 'react-hot-toast';
 import { obtenerMiPerfilRequest, actualizarMiPerfilRequest } from '../api/usuario';
 import { useAuthStore } from '../store/authStore';
+import { mensajeDeError } from '../api/errores';
 
 export interface PerfilForm {
   nombre: string;
@@ -39,7 +40,7 @@ export const useMiPerfil = () => {
           direccion: datosBD.direccion || '',
           codigoPostal: datosBD.codigoPostal || '',
         });
-      } catch (error) {
+      } catch {
         toast.error('No se pudieron cargar los datos de tu perfil.');
       } finally {
         setCargandoDatos(false);
@@ -51,15 +52,16 @@ export const useMiPerfil = () => {
   const onSubmit = async (data: PerfilForm) => {
     const loadingToast = toast.loading('Guardando cambios...');
     try {
-      const { correo, pais, ...datosAEnviar } = data;
+      // Correo y país no se editan desde el perfil (los cambia soporte): solo se mandan estos campos.
+      const { nombre, apellido, telefono, fechaNacimiento, provincia, ciudad, direccion, codigoPostal } = data;
+      const datosAEnviar = { nombre, apellido, telefono, fechaNacimiento, provincia, ciudad, direccion, codigoPostal };
       const usuarioActualizado = await actualizarMiPerfilRequest(datosAEnviar);
       if (usuarioZustand) {
         setUsuario({ ...usuarioZustand, nombre: usuarioActualizado.nombre, apellido: usuarioActualizado.apellido });
       }
       toast.success('¡Perfil actualizado con éxito!', { id: loadingToast });
-    } catch (error: any) {
-      const mensaje = error.response?.data?.message || 'Error al actualizar el perfil';
-      toast.error(Array.isArray(mensaje) ? mensaje[0] : mensaje, { id: loadingToast });
+    } catch (error) {
+      toast.error(mensajeDeError(error, 'Error al actualizar el perfil'), { id: loadingToast });
     }
   };
 

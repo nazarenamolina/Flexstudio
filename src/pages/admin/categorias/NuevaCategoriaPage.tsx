@@ -1,15 +1,17 @@
 import { useState } from 'react';
-import { ArrowLeft, Save, Image as ImageIcon, Loader2, Film, CloudUpload, CheckCircle2, Plus, Trash2, Library } from 'lucide-react';
+import { ArrowLeft, Save, Image as ImageIcon, Loader2, Film, Plus, Trash2, Library } from 'lucide-react';
 import { useNuevaCategoria } from '../../../hooks/useNuevaCategoria';
 import { Controller } from 'react-hook-form';
 import { IconPicker } from '../../../components/IconPicker';
 import { ToggleDestacada } from '../../../components/ToggleDestacada';
 import { GaleriaModal } from '../../../components/GaleriaModal';
+import { CamposPrecio } from '../../../components/CamposPrecio';
+import { optimizarCloudinary } from '../../../imagenes';
 
 export const NuevaCategoriaPage = () => {
   const { 
-    register, handleSubmit, errors, isSubmitting, estadoSubida, 
-    progreso, archivos, handleFileChange, handleSelectFromGallery, 
+    register, handleSubmit, errors, isSubmitting, estadoSubida,
+     archivos, handleFileChange, handleSelectFromGallery, 
     handleEliminarMultimedia, watch, navigate, beneficiosFields, 
     appendBeneficio, removeBeneficio, control 
   } = useNuevaCategoria();
@@ -26,20 +28,6 @@ export const NuevaCategoriaPage = () => {
     return typeof archivo === 'string' ? archivo : URL.createObjectURL(archivo);
   };
 
-  if (estadoSubida === 'SUBIENDO_VIDEO' || estadoSubida === 'COMPLETADO') {
-    return (
-      <div className="w-full h-[80vh] flex flex-col items-center justify-center">
-        <div className="bg-[#131313] border border-gray-800 p-10 rounded-[24px] shadow-2xl w-full max-w-xl text-center">
-          {estadoSubida === 'SUBIENDO_VIDEO' ? <CloudUpload className="w-20 h-20 text-[#d7f250] animate-bounce mx-auto mb-6" /> : <CheckCircle2 className="w-20 h-20 text-[#d7f250] mx-auto mb-6" />}
-          <h2 className="text-2xl font-black text-white mb-2">{estadoSubida === 'SUBIENDO_VIDEO' ? 'Subiendo video...' : '¡Subida completada!'}</h2>
-          <div className="w-full bg-gray-800 rounded-full h-4 mb-2 overflow-hidden mt-6">
-            <div className="bg-[#d7f250] h-4 rounded-full transition-all duration-300" style={{ width: `${progreso}%` }}></div>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
   return (
     <div className="w-full h-full flex flex-col font-sans overflow-y-auto custom-scrollbar pr-2 pb-10">
       
@@ -55,7 +43,7 @@ export const NuevaCategoriaPage = () => {
 
       {/* HEADER */}
       <div className="flex items-center gap-4 mb-8 shrink-0">
-        <button onClick={() => navigate('/admin/categorias')} type="button" disabled={isSubmitting} className="p-2 bg-[#d7f250] rounded-full text-[#131313] transition-colors disabled:opacity-50 cursor-pointer">
+        <button aria-label="Volver a categorías" title="Volver a categorías" onClick={() => navigate('/admin/categorias')} type="button" disabled={isSubmitting} className="p-2 bg-[#d7f250] rounded-full text-[#131313] transition-colors disabled:opacity-50 cursor-pointer">
           <ArrowLeft size={24} />
         </button>
         <div>
@@ -79,14 +67,7 @@ export const NuevaCategoriaPage = () => {
                 <input type="text" {...register('titulo', { required: 'El título es obligatorio' })} placeholder="Ej: Danza Inicial" className={inputClass} />
                 {errors.titulo && <p className="text-red-500 text-xs mt-1">{errors.titulo.message}</p>}
               </div>
-              <div>
-                <label className={labelClass}>Precio (ARS) *</label>
-                <input type="number" {...register('precioArs')} className={inputClass} />
-              </div>
-              <div>
-                <label className={labelClass}>Precio (USD) *</label>
-                <input type="number" {...register('precioUsd')} className={inputClass} />
-              </div>
+              <CamposPrecio register={register} control={control} errors={errors} labelClass={labelClass} inputClass={inputClass} />
             </div>
 
             <div className="mb-6">
@@ -104,7 +85,7 @@ export const NuevaCategoriaPage = () => {
           </div>
 
           {/* SECCIÓN 2: BENEFICIOS Y SUSCRIPCIÓN */}
-          <div className="bg-[#1a1a1a] bg-[url('https://res.cloudinary.com/dmp7mcwie/image/upload/v1774312699/fondo_hwrosv.png')] p-6 md:p-8 rounded-[24px] border border-neutral-800 shadow-sm">
+          <div className="bg-[#1a1a1a] bg-[url('https://res.cloudinary.com/dmp7mcwie/image/upload/f_auto,q_auto/v1774312699/fondo_hwrosv.png')] p-6 md:p-8 rounded-[24px] border border-neutral-800 shadow-sm">
             <h3 className="text-xl font-bold text-white mb-6 border-b border-neutral-800 pb-4">Configurar Beneficios</h3>
 
             <div className="mb-8">
@@ -143,7 +124,7 @@ export const NuevaCategoriaPage = () => {
                     </div>
                   </div>
 
-                  <button
+                  <button aria-label="Eliminar beneficio"
                     type="button"
                     onClick={() => removeBeneficio(index)}
                     className="w-11 self-start p-3 text-gray-500 hover:text-white hover:bg-red-500/20 rounded-xl transition-all border border-neutral-800 hover:border-red-500/50 bg-[#131313] cursor-pointer"
@@ -206,8 +187,8 @@ export const NuevaCategoriaPage = () => {
 
                 {archivos.imagenTarjeta && (
                   <>
-                    <img src={getPreviewUrl(archivos.imagenTarjeta)!} alt="Preview" className="absolute inset-0 w-full h-full object-cover opacity-60" />
-                    <button
+                    <img src={optimizarCloudinary(getPreviewUrl(archivos.imagenTarjeta), 800)} alt="Preview" className="absolute inset-0 w-full h-full object-cover opacity-60" />
+                    <button aria-label="Quitar la imagen de tarjeta" title="Quitar la imagen de tarjeta"
                       type="button"
                       onClick={(e) => { e.preventDefault(); e.stopPropagation(); handleEliminarMultimedia('tarjeta'); }}
                       className="absolute top-2 right-2 z-30 p-2 bg-red-500/80 hover:bg-red-500 text-white rounded-lg opacity-0 group-hover:opacity-100 transition-opacity"
@@ -241,8 +222,8 @@ export const NuevaCategoriaPage = () => {
 
                 {archivos.imagenHero && (
                   <>
-                    <img src={getPreviewUrl(archivos.imagenHero)!} alt="Preview" className="absolute inset-0 w-full h-full object-cover opacity-60" />
-                    <button
+                    <img src={optimizarCloudinary(getPreviewUrl(archivos.imagenHero), 1200)} alt="Preview" className="absolute inset-0 w-full h-full object-cover opacity-60" />
+                    <button aria-label="Quitar la imagen hero" title="Quitar la imagen hero"
                       type="button"
                       onClick={(e) => { e.preventDefault(); e.stopPropagation(); handleEliminarMultimedia('hero'); }}
                       className="absolute top-2 right-2 z-30 p-2 bg-red-500/80 hover:bg-red-500 text-white rounded-lg opacity-0 group-hover:opacity-100 transition-opacity"
@@ -265,7 +246,7 @@ export const NuevaCategoriaPage = () => {
                 <input type="file" accept="video/*" onChange={(e) => handleFileChange(e, 'videoMuestra')} className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10" />
 
                 {archivos.videoMuestra && (
-                  <button
+                  <button aria-label="Quitar el video de muestra" title="Quitar el video de muestra"
                     type="button"
                     onClick={(e) => { e.preventDefault(); e.stopPropagation(); handleEliminarMultimedia('video'); }}
                     className="absolute top-2 right-2 z-30 p-2 bg-red-500/80 hover:bg-red-500 text-white rounded-lg opacity-0 group-hover:opacity-100 transition-opacity"

@@ -1,147 +1,65 @@
-import { useState, useEffect } from 'react';
-import { User, Mail, ChevronLeft, ChevronRight, Loader2, Clock, GraduationCap, BicepsFlexed} from 'lucide-react';
+import { useState } from 'react';
+import { User, Mail, Loader2, Clock, GraduationCap, BicepsFlexed, RotateCw } from 'lucide-react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import toast from 'react-hot-toast';
 import { useGoogleReCaptcha } from 'react-google-recaptcha-v3';
-import { obtenerCategoriasRequest, type Categoria } from '../api/categoria';
 import { enviarConsultaRequest } from '../api/contacto';
-import { TarjetaClase } from '../components/TarjetaClase';
+import { mensajeDeError } from '../api/errores';
+import { useCategoriasPublicas } from '../hooks/useCategoriasPublicas';
 import { CarruselDestacadas } from '../components/CarruselDestacadas';
 import { Tiktok, Instagram } from 'react-bootstrap-icons';
 import { ScrollReveal } from '../components/ScrollReveal';
+import { HeroCarrusel } from '../components/HeroCarrusel';
 
 const contactoSchema = z.object({
-  nombre: z.string().min(2, 'El nombre debe tener al menos 2 caracteres'),
-  correo: z.string().email('Ingresa un correo electrónico válido'),
-  mensaje: z.string().min(10, 'El mensaje debe tener al menos 10 caracteres').max(1000, 'El mensaje es muy largo'),
+  // Mismos límites que el DTO del back (contacto.dto.ts).
+  nombre: z.string().trim().min(2, 'El nombre debe tener al menos 2 caracteres').max(100, 'El nombre es muy largo (máximo 100 caracteres)'),
+  correo: z.string().trim().email('Ingresá un correo electrónico válido').max(255, 'El correo es muy largo'),
+  mensaje: z.string().trim().min(10, 'El mensaje debe tener al menos 10 caracteres').max(1000, 'El mensaje es muy largo (máximo 1000 caracteres)'),
 });
 
 type ContactoFormValues = z.infer<typeof contactoSchema>;
 
 const HomePage = () => {
-  const [categorias, setCategorias] = useState<Categoria[]>([]);
-  const [cargando, setCargando] = useState<boolean>(true);
+  const { data: categorias = [], isPending: cargando, isLoadingError: isError, refetch, isFetching } = useCategoriasPublicas();
   const [flippedCard, setFlippedCard] = useState<string | number | null>(null);
-
-  const slides = [
-    'https://res.cloudinary.com/dmp7mcwie/image/upload/v1774312494/QuienSoy_ssu4xv.png',
-    'https://res.cloudinary.com/dmp7mcwie/image/upload/v1774312483/Banner_jntyks.png'
-  ];
-  const [currentSlide, setCurrentSlide] = useState(0);
-  const [touchStart, setTouchStart] = useState(0);
-  const [touchEnd, setTouchEnd] = useState(0);
 
   const { executeRecaptcha } = useGoogleReCaptcha();
   const { register, handleSubmit, formState: { errors, isSubmitting }, reset } = useForm<ContactoFormValues>({
     resolver: zodResolver(contactoSchema),
   });
 
-  const nextSlide = () => setCurrentSlide((prev) => (prev === slides.length - 1 ? 0 : prev + 1));
-  const prevSlide = () => setCurrentSlide((prev) => (prev === 0 ? slides.length - 1 : prev - 1));
-
-  const handleTouchStart = (e: React.TouchEvent) => {
-    if (e.targetTouches.length > 0) setTouchStart(e.targetTouches[0].clientX);
-  };
-
-  const handleTouchMove = (e: React.TouchEvent) => {
-    if (e.targetTouches.length > 0) setTouchEnd(e.targetTouches[0].clientX);
-  };
-
-  const handleTouchEnd = () => {
-    if (!touchStart || !touchEnd) return;
-    const distance = touchStart - touchEnd;
-    if (distance > 50) nextSlide();
-    if (distance < -50) prevSlide();
-    setTouchStart(0);
-    setTouchEnd(0);
-  };
-
-  useEffect(() => {
-    const timer = setInterval(nextSlide, 5000);
-    return () => clearInterval(timer);
-  }, [slides.length]);
-
-  useEffect(() => {
-    const cargarDatos = async () => {
-      try {
-        const data = await obtenerCategoriasRequest();
-        if (Array.isArray(data)) {
-          setCategorias(data);
-        } else if (data && Array.isArray((data as any).categorias)) {
-          setCategorias((data as any).categorias);
-        } else {
-          setCategorias([]);
-        }
-      } catch (error) {
-        console.error("Error al cargar las categorías:", error);
-        setCategorias([]);
-      } finally {
-        setCargando(false);
-      }
-    };
-    cargarDatos();
-  }, []);
-
   const onSubmitContacto = async (data: ContactoFormValues) => {
-    if (!executeRecaptcha) return toast.error('Verificando seguridad...');
+    // Sin reCAPTCHA (script bloqueado por un bloqueador de anuncios o sin conexión) el back rechaza el envío.
+    if (!executeRecaptcha) {
+      toast.error('No pudimos cargar la verificación de seguridad. Recargá la página o escribime por Instagram.', { id: 'contacto' });
+      return;
+    }
+    let captchaToken: string;
     try {
-      const captchaToken = await executeRecaptcha('contacto_home');
+      captchaToken = await executeRecaptcha('contacto_home');
+    } catch {
+      toast.error('Falló la verificación de seguridad. Recargá la página y volvé a intentar.', { id: 'contacto' });
+      return;
+    }
+    try {
       const respuesta = await enviarConsultaRequest({ ...data, captchaToken });
-      toast.success(respuesta.mensaje || '¡Consulta enviada con éxito!');
+      toast.success(respuesta.mensaje || '¡Consulta enviada! Te respondo lo antes posible.', { id: 'contacto' });
       reset();
     } catch (error) {
-      toast.error('Hubo un error al enviar tu consulta. Intenta nuevamente.');
+      toast.error(mensajeDeError(error, 'No pudimos enviar tu consulta. Revisá tu conexión y volvé a intentar.'), { id: 'contacto' });
     }
   };
 
-  const destacadas = categorias.filter(c => c.destacada);
-  const regulares = categorias.filter(c => !c.destacada);
-
   return (
-    <main className="min-h-screen font-sans text-[#161616] pt-[52px]">
-      <ScrollReveal direction="none">
-        <section
-          className=" bg-white relative w-full h-[50vh] sm:h-[60vh] md:h-[70vh] lg:h-[80vh] xl:h-[100vh] overflow-hidden group"
-          onTouchStart={handleTouchStart}
-          onTouchMove={handleTouchMove}
-          onTouchEnd={handleTouchEnd}
-        >
-          <div
-            className="flex h-full w-full transition-transform duration-700 ease-in-out"
-            style={{ transform: `translateX(-${currentSlide * 100}%)` }}
-          >
-            {slides.map((slide, index) => (
-              <div key={index} className="w-full h-full shrink-0 relative ">
-                <img src={slide} alt={`Slide ${index}`} className="w-full h-full" />
-              </div>
-            ))}
-          </div>
-
-          <button onClick={prevSlide} className="absolute left-4 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-[#d7f250] hover:text-black text-white p-3 rounded-full transition-all opacity-0 group-hover:opacity-100 focus:opacity-100 z-10">
-            <ChevronLeft className="w-6 h-6 cursor-pointer" />
-          </button>
-          <button onClick={nextSlide} className="absolute right-4 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-[#d7f250] hover:text-black text-white p-3 rounded-full transition-all opacity-0 group-hover:opacity-100 focus:opacity-100 z-10">
-            <ChevronRight className="w-6 h-6 cursor-pointer" />
-          </button>
-
-          <div className="absolute bottom-6 left-1/2 -translate-x-1/2 flex gap-3 z-10">
-            {slides.map((_, index) => (
-              <button
-                key={index}
-                onClick={() => setCurrentSlide(index)}
-                className={`w-3 h-3 rounded-full transition-all duration-300 ${currentSlide === index ? "bg-[#d7f250] w-8" : "bg-white/50 hover:bg-white"}`}
-                aria-label={`Ir a la diapositiva ${index + 1}`}
-              />
-            ))}
-          </div>
-        </section>
-      </ScrollReveal>
+    <main className="min-h-screen font-sans text-[#161616] pt-[67px] lg:pt-[78px]">
+      <HeroCarrusel />
       <section id="biografia" className="w-full flex flex-col lg:flex-row bg-[#FDFDF8] overflow-hidden">
         <ScrollReveal direction="right" className="w-full lg:w-1/2 relative min-h-[50vh] lg:min-h-full">
           <img
-            src="https://res.cloudinary.com/dmp7mcwie/image/upload/v1779666110/flex-studio/categorias/zf6in7hepy8t9iookjei.jpg"
+            src="https://res.cloudinary.com/dmp7mcwie/image/upload/f_auto,q_auto,c_limit,w_1200/v1779666110/flex-studio/categorias/zf6in7hepy8t9iookjei.jpg"
             alt="Cande Imbaud - Profesora de Flexibilidad"
             className="absolute inset-0 w-full h-full object-cover object-center"
           />
@@ -188,89 +106,94 @@ const HomePage = () => {
 
       </section>
 
-      <section className="container mx-auto px-6 py-6 overflow-hidden">
+      <section id="clases" className="container mx-auto px-6 py-6 overflow-hidden scroll-mt-24">
         <ScrollReveal direction="down">
           <div className="flex justify-center mt-0 -mx-6 md:mx-0">
             <img
-              src="https://res.cloudinary.com/dmp7mcwie/image/upload/v1774312501/titulo_rue8kw.png"
+              src="https://res.cloudinary.com/dmp7mcwie/image/upload/f_auto,q_auto,c_limit,w_1600/v1774312501/titulo_rue8kw.png"
               alt="Explorar Clases"
               className="w-full h-auto object-cover"
             />
           </div>
         </ScrollReveal>
-        <ScrollReveal direction="up" delay={0.2}>
-          <CarruselDestacadas
-            categorias={categorias}
-            flippedCard={flippedCard}
-            setFlippedCard={setFlippedCard}
-          />
-        </ScrollReveal>
-        <article className="flex flex-wrap justify-center gap-[25px] mt-10">
-          {cargando ? (
-            <div className="w-full text-center py-10">
-              <h4 className="text-xl text-gray-400 font-bold animate-pulse">Cargando clases disponibles...</h4>
-            </div>
-          ) : regulares.length === 0 && destacadas.length === 0 ? (
-            <div className="w-full text-center py-10">
-              <p className="text-gray-400">Aún no hay categorías disponibles.</p>
-            </div>
-          ) : (
-            regulares.map((servicio, index) => (
-              <ScrollReveal key={servicio.id} direction="up" delay={index * 0.15}>
-                <TarjetaClase
-                  servicio={servicio}
-                  flippedCard={flippedCard}
-                  setFlippedCard={setFlippedCard}
-                />
-              </ScrollReveal>
-            ))
-          )}
-        </article>
+        {/* El carrusel muestra todas las clases (primero las destacadas). */}
+        {cargando ? (
+          <div className="w-full text-center py-16">
+            <p className="text-xl text-gray-400 font-bold animate-pulse">Cargando clases disponibles...</p>
+          </div>
+        ) : isError ? (
+          <div className="w-full flex flex-col items-center text-center gap-4 py-16">
+            <p className="text-gray-500">No pudimos cargar las clases.</p>
+            <button
+              type="button"
+              onClick={() => refetch()}
+              disabled={isFetching}
+              className="inline-flex items-center gap-2 rounded-xl bg-[#131313] px-5 py-2.5 text-sm font-bold text-white transition-colors hover:bg-[#d7f250] hover:text-[#131313] disabled:opacity-60"
+            >
+              <RotateCw size={16} className={isFetching ? 'animate-spin' : ''} /> Reintentar
+            </button>
+          </div>
+        ) : categorias.length === 0 ? (
+          <div className="w-full text-center py-16">
+            <p className="text-gray-400">Pronto vas a encontrar acá las clases disponibles.</p>
+          </div>
+        ) : (
+          <ScrollReveal direction="up" delay={0.2}>
+            <CarruselDestacadas
+              categorias={categorias}
+              flippedCard={flippedCard}
+              setFlippedCard={setFlippedCard}
+            />
+          </ScrollReveal>
+        )}
         <ScrollReveal direction="up" delay={0.3}>
-          <article className="w-[100%] sm:w-[80%] lg:w-[60%] xl:w-[50%] mx-auto border border-gray-300 bg-white/80 bg-[url('https://res.cloudinary.com/dmp7mcwie/image/upload/v1774312699/fondo_hwrosv.png')] bg-cover rounded-2xl p-6 md:p-10 shadow-inner">
+          <article className="w-[100%] sm:w-[80%] lg:w-[60%] xl:w-[50%] mx-auto border border-gray-300 bg-white/80 bg-[url('https://res.cloudinary.com/dmp7mcwie/image/upload/f_auto,q_auto/v1774312699/fondo_hwrosv.png')] bg-cover rounded-2xl p-6 md:p-10 shadow-inner">
             <div className="text-center mb-6">
-              <h3 className="text-3xl font-black text-[#161616] tracking-tight mb-2 font-principal">¿Tenés una consulta?</h3>
+              <h3 className="text-3xl font-bold uppercase text-[#161616] tracking-tight mb-2 font-principal">¿Tenés una consulta?</h3>
               <p className="text-gray-500 text-sm">Completa con tus datos y te respondo lo antes posible.</p>
             </div>
 
-            <form onSubmit={handleSubmit(onSubmitContacto)} className="space-y-6">
+            <form onSubmit={handleSubmit(onSubmitContacto)} noValidate className="space-y-6">
               <div>
-                <label className="block text-sm font-principal font-semibold text-[#161616] mb-1">Nombre</label>
+                <label htmlFor="contacto-nombre" className="block text-sm font-principal font-semibold text-[#161616] mb-1">Nombre</label>
                 <div className="relative">
-                  <User className="absolute left-4 top-1/2 -translate-y-1/2 text-[#adb5bd] w-4 h-4" />
+                  <User aria-hidden="true" className="absolute left-4 top-1/2 -translate-y-1/2 text-[#adb5bd] w-4 h-4" />
                   <input
                     type="text"
                     placeholder="Tu nombre"
                     className={`w-full bg-white/50 border border-[#dee2e6]/50 ${errors.nombre ? 'border-red-500/70 focus:ring-red-500/20' : 'border-[#d7f250]/30 focus:border-[#d7f250]/50 focus:ring-[#d7f250]/20'} focus:ring-[3px] rounded-xl pl-10 pr-3 py-3 text-[#161616] placeholder-[#adb5bd]/80 outline-none transition-all duration-200`}
+                    id="contacto-nombre" autoComplete="name" aria-invalid={!!errors.nombre} aria-describedby={errors.nombre ? 'contacto-nombre-error' : undefined}
                     {...register('nombre')}
                   />
                 </div>
-                {errors.nombre && <p className="mt-1 text-xs text-red-500 font-medium">{errors.nombre.message}</p>}
+                {errors.nombre && <p id="contacto-nombre-error" role="alert" className="mt-1.5 ml-1 text-xs text-red-600 font-semibold">{errors.nombre.message}</p>}
               </div>
 
               <div>
-                <label className="block text-sm font-principal font-semibold text-[#161616] mb-1">E-mail</label>
+                <label htmlFor="contacto-correo" className="block text-sm font-principal font-semibold text-[#161616] mb-1">E-mail</label>
                 <div className="relative">
-                  <Mail className="absolute left-4 top-1/2 -translate-y-1/2 text-[#adb5bd] w-4 h-4" />
+                  <Mail aria-hidden="true" className="absolute left-4 top-1/2 -translate-y-1/2 text-[#adb5bd] w-4 h-4" />
                   <input
                     type="email"
                     placeholder="correo@ejemplo.com"
                     className={`w-full bg-white/50  border border-[#dee2e6]/50 ${errors.correo ? 'border-red-500/70 focus:ring-red-500/20' : 'border-[#d7f250]/30 focus:border-[#d7f250]/50 focus:ring-[#d7f250]/20'} focus:ring-[3px] rounded-xl pl-10 pr-3 py-3 text-[#161616] placeholder-[#adb5bd]/80 outline-none transition-all duration-200`}
+                    id="contacto-correo" autoComplete="email" aria-invalid={!!errors.correo} aria-describedby={errors.correo ? 'contacto-correo-error' : undefined}
                     {...register('correo')}
                   />
                 </div>
-                {errors.correo && <p className="mt-1 text-xs text-red-500 font-medium">{errors.correo.message}</p>}
+                {errors.correo && <p id="contacto-correo-error" role="alert" className="mt-1.5 ml-1 text-xs text-red-600 font-semibold">{errors.correo.message}</p>}
               </div>
 
               <div>
-                <label className="block text-sm font-principal font-semibold text-[#161616] mb-1">Consulta</label>
+                <label htmlFor="contacto-mensaje" className="block text-sm font-principal font-semibold text-[#161616] mb-1">Consulta</label>
                 <textarea
                   rows={4}
                   placeholder="Mensaje"
                   className={`w-full bg-white/50 border border-[#dee2e6]/50 ${errors.mensaje ? 'border-red-500/70 focus:ring-red-500/20' : 'border-[#d7f250]/30 focus:border-[#d7f250]/50 focus:ring-[#d7f250]/20'} focus:ring-[3px] rounded-xl p-4 text-[#161616] placeholder-[#adb5bd]/80 outline-none transition-all duration-200 resize-none`}
-                  {...register('mensaje')}
+                  id="contacto-mensaje" aria-invalid={!!errors.mensaje} aria-describedby={errors.mensaje ? 'contacto-mensaje-error' : undefined}
+                    {...register('mensaje')}
                 />
-                {errors.mensaje && <p className="mt-1 text-xs text-red-500 font-medium">{errors.mensaje.message}</p>}
+                {errors.mensaje && <p id="contacto-mensaje-error" role="alert" className="mt-1.5 ml-1 text-xs text-red-600 font-semibold">{errors.mensaje.message}</p>}
               </div>
 
               <button
@@ -307,7 +230,7 @@ const HomePage = () => {
                   </a>
 
                   <a
-                    href="https://www.tiktok.com/@flexstudioc?_t=ZM-8xQeZpOUQ3c&_r=1&fbclid=PAZXh0bgNhZW0CMTEAc3J0YwZhcHBfaWQMMjU2MjgxMDQwNTU4AAGnn52UOWCv_RZIzoPJ5lpjY1-HE565wQnrS9gWcvwhaVJ0GJvvZLkqzq90gac_aem_9KRbLQ8q9Cr1Gno9nK8vNQ"
+                    href="https://www.tiktok.com/@flexstudioc"
                     target="_blank"
                     rel="noopener noreferrer"
                     className="group flex items-center gap-3 text-[#161616] transition-all duration-300 hover:-translate-y-1"

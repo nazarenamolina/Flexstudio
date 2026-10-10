@@ -1,24 +1,27 @@
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { ArrowLeft } from 'lucide-react';
+import type { ReactNode } from 'react';
+import { useTituloPagina } from '../hooks/useTituloPagina';
 
-interface SectionProps {titulo: string; children: React.ReactNode;}
+const ultimaActualizacion = "29 de mayo de 2026";
+
+const Section = ({ titulo, children }: { titulo: string; children: ReactNode }) => (
+  <section className="mb-10">
+    <h2 className="text-lg md:text-xl font-bold text-gray-900 flex items-center gap-3 mb-3">
+      {titulo}
+    </h2>
+    <div className="text-gray-700 leading-relaxed text-[15px] space-y-4 md:pl-5">
+      {children}
+    </div>
+  </section>
+);
 
 export const TerminosCondiciones = () => {
-  const ultimaActualizacion = "29 de mayo de 2026";
-  const Section = ({ titulo, children }: SectionProps) => (
-    <div className="mb-10">
-      <h2 className="text-lg md:text-xl font-bold text-gray-900 flex items-center gap-3 mb-3">
-        {titulo}
-      </h2>
-      <div className="text-gray-700 leading-relaxed text-[15px] space-y-4 md:pl-5">
-        {children}
-      </div>
-    </div>
-  );
+  useTituloPagina('Términos y Condiciones');
 
   return (
-    <div className="min-h-screen font-sans py-12 px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen font-sans pt-[115px] lg:pt-[126px] pb-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-4xl mx-auto">
         
         <Link 
@@ -37,7 +40,7 @@ export const TerminosCondiciones = () => {
         >
           {/* Encabezado */}
           <div className="border-b border-gray-200 pb-8 mb-10">
-            <h1 className="text-4xl md:text-5xl font-black text-gray-900 tracking-tighter mb-4">
+            <h1 className="text-4xl md:text-5xl font-principal font-bold uppercase text-gray-900 tracking-tight mb-4">
               Términos y Condiciones 
             </h1>
             <p className="text-gray-600 text-md">
@@ -109,8 +112,7 @@ export const TerminosCondiciones = () => {
               </p>
             </Section>
 
-            <Section titulo="10
-            . Legislación Aplicable y Jurisdicción">
+            <Section titulo="10. Legislación Aplicable y Jurisdicción">
               <p>
                 Estos Términos y Condiciones se rigen por las leyes de la República Argentina. Para cualquier disputa legal que pudiera surgir, las partes se someten a la jurisdicción de los Tribunales Ordinarios de San Miguel de Tucumán, provincia de Tucumán, renunciando a cualquier otro fuero que pudiera corresponder.
               </p>

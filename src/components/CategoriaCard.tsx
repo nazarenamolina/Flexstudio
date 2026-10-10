@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Edit2, Trash2, ChevronDown, ChevronUp } from 'lucide-react';
 import { type Categoria } from '../api/categoria';
+import { optimizarCloudinary } from '../imagenes';
 
 interface Props {
     categoria: Categoria;
@@ -26,7 +27,7 @@ export const CategoriaCard = ({ categoria, viewMode, onEdit, onDelete }: Props) 
                 <div className="absolute inset-0 overflow-hidden">
                     <div
                         className="w-full h-full bg-cover bg-center transition-transform duration-700 group-hover:scale-110 opacity-60"
-                        style={{ backgroundImage: `url(${categoria.imagenTarjeta || categoria.imagenHero})` }}
+                        style={{ backgroundImage: `url(${optimizarCloudinary(categoria.imagenTarjeta || categoria.imagenHero, 800)})` }}
                     />
                     <div className="absolute inset-0 bg-gradient-to-t from-[#0f0f0f] via-[#0f0f0f]/60 to-transparent" />
                 </div>
@@ -37,7 +38,7 @@ export const CategoriaCard = ({ categoria, viewMode, onEdit, onDelete }: Props) 
                 <div className="hidden sm:block relative w-48 h-full overflow-hidden shrink-0">
                     <div
                         className="w-full h-full bg-cover bg-center transition-transform duration-700 group-hover:scale-110 opacity-70"
-                        style={{ backgroundImage: `url(${categoria.imagenTarjeta || categoria.imagenHero})` }}
+                        style={{ backgroundImage: `url(${optimizarCloudinary(categoria.imagenTarjeta || categoria.imagenHero, 800)})` }}
                     />
                 </div>
             )}
@@ -91,7 +92,7 @@ export const CategoriaCard = ({ categoria, viewMode, onEdit, onDelete }: Props) 
 
                 {/* BOTONES ACCIÓN */}
                 <div className={`flex items-center gap-2 shrink-0 ${isGrid ? 'mt-4' : ''}`}>
-                    <button
+                    <button aria-label={`Editar ${tituloMostrar}`} title={`Editar ${tituloMostrar}`}
                         onClick={(e) => { e.stopPropagation(); onEdit(categoria.id); }}
                         className="
               p-2 sm:p-2.5 rounded-xl
@@ -104,7 +105,7 @@ export const CategoriaCard = ({ categoria, viewMode, onEdit, onDelete }: Props) 
                     >
                         <Edit2 size={13} className="sm:w-[14px] sm:h-[14px]" />
                     </button>
-                    <button
+                    <button aria-label={`Dar de baja ${tituloMostrar}`} title={`Dar de baja ${tituloMostrar}`}
                         onClick={(e) => { e.stopPropagation(); onDelete(categoria.id, tituloMostrar); }}
                         className="
               p-2 sm:p-2.5 rounded-xl

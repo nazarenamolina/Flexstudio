@@ -3,10 +3,15 @@ import { useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import toast from 'react-hot-toast';
 import { io } from 'socket.io-client';
-import { obtenerTodosLosVideosRequest, eliminarVideoRequest, type Video } from '../api/videos'; 
-import { obtenerCategoriasRequest, type Categoria } from '../api/categoria'; 
+import { obtenerTodosLosVideosRequest, eliminarVideoRequest, type Video } from '../api/videos';
+import { mensajeDeError } from '../api/errores';
+import { useCategoriasPublicas } from './useCategoriasPublicas';
+import { API_URL } from '../config';
 
-const SOCKET_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+const SOCKET_URL = API_URL;
+
+/** Clave de la lista de videos del admin: la usan también el alta y la edición para refrescarla. */
+export const CLAVE_VIDEOS_ADMIN = ['videos-admin'] as const;
 
 export const useAdminVideos = () => {
   const navigate = useNavigate();
@@ -18,73 +23,69 @@ export const useAdminVideos = () => {
   const [modalAbierto, setModalAbierto] = useState(false);
   const [videoAEliminar, setVideoAEliminar] = useState<{ id: string, titulo: string } | null>(null);
 
-  // 👇 1. QUERIES: Descargamos Videos y Categorías en paralelo
-  const { data: videos = [], isLoading: cargandoVideos } = useQuery<Video[]>({
-    queryKey: ['videos-admin'],
+  const { data: videos = [], isLoading: cargandoVideos, isLoadingError: errorVideos, refetch: reintentarVideos, isFetching: buscandoVideos } = useQuery<Video[]>({
+    queryKey: CLAVE_VIDEOS_ADMIN,
     queryFn: obtenerTodosLosVideosRequest,
-    staleTime: 1000 * 60 * 5, // 5 minutos de caché
   });
-
-  const { data: categorias = [], isLoading: cargandoCategorias } = useQuery<Categoria[]>({
-    queryKey: ['categorias'],
-    queryFn: async () => {
-      const data = await obtenerCategoriasRequest();
-      if (Array.isArray(data)) return data;
-      if (data && Array.isArray((data as any).categorias)) return (data as any).categorias;
-      return [];
-    },
-    staleTime: 1000 * 60 * 60, // 1 hora de caché (las categorías casi no cambian)
-  });
+  const { data: categorias = [], isLoading: cargandoCategorias } = useCategoriasPublicas();
 
   const cargando = cargandoVideos || cargandoCategorias;
 
-  // 👇 2. WEBSOCKET + TANSTACK QUERY
+  // Mux avisa por el back cuando termina (o falla) el procesamiento de un video.
   useEffect(() => {
     // withCredentials: manda la cookie de sesión; el back solo acepta administradores.
     const socket = io(SOCKET_URL, { withCredentials: true });
-    
+
     socket.on('videoActualizado', (videoActualizado: Video) => {
-      // Modificamos el caché directamente cuando el websocket avisa
-      queryClient.setQueryData<Video[]>(['videos-admin'], (videosAntiguos) => {
-        if (!videosAntiguos) return [];
-        return videosAntiguos.map((v) => 
-          v.id === videoActualizado.id ? { ...v, ...videoActualizado } : v
+      const lista = queryClient.getQueryData<Video[]>(CLAVE_VIDEOS_ADMIN);
+      if (lista?.some((v) => v.id === videoActualizado.id)) {
+        queryClient.setQueryData<Video[]>(CLAVE_VIDEOS_ADMIN, (anteriores = []) =>
+          anteriores.map((v) => (v.id === videoActualizado.id ? { ...v, ...videoActualizado } : v)),
         );
-      });
-      toast.success(`¡El video "${videoActualizado.titulo}" ya está listo!`);
+      } else {
+        // Video que esta pantalla todavía no tenía (subido desde otra pestaña): se pide la lista.
+        queryClient.invalidateQueries({ queryKey: CLAVE_VIDEOS_ADMIN });
+      }
+      // Cantidad de videos y duración de cada clase (tarjetas de la home).
+      queryClient.invalidateQueries({ queryKey: ['categorias'] });
+
+      if (videoActualizado.estado === 'ERROR') {
+        toast.error(`Mux no pudo procesar el video "${videoActualizado.titulo}". Borralo y volvé a subirlo.`, { duration: 8000 });
+      } else if (videoActualizado.estado === 'LISTO') {
+        toast.success(`¡El video "${videoActualizado.titulo}" ya está listo!`);
+      }
+    });
+
+    socket.on('reemplazoFallido', (video: { id: string; titulo: string }) => {
+      toast.error(`Mux no pudo procesar el archivo nuevo de "${video.titulo}". El video sigue con el archivo anterior.`, { duration: 8000 });
     });
 
     return () => { socket.disconnect(); };
   }, [queryClient]);
 
-  // 👇 3. MUTACIÓN: Eliminar Video con Actualización Optimista
+  // Eliminar con actualización optimista: desaparece al instante y vuelve si el back falla.
   const eliminarMutation = useMutation({
     mutationFn: eliminarVideoRequest,
     onMutate: async (id: string) => {
-      await queryClient.cancelQueries({ queryKey: ['videos-admin'] });
-      const previousVideos = queryClient.getQueryData(['videos-admin']);
-      
-      // Borramos de la pantalla al instante
-      queryClient.setQueryData<Video[]>(['videos-admin'], (old = []) =>
-        old.filter((v) => v.id !== id)
-      );
-      
+      await queryClient.cancelQueries({ queryKey: CLAVE_VIDEOS_ADMIN });
+      const previousVideos = queryClient.getQueryData<Video[]>(CLAVE_VIDEOS_ADMIN);
+      queryClient.setQueryData<Video[]>(CLAVE_VIDEOS_ADMIN, (old = []) => old.filter((v) => v.id !== id));
       return { previousVideos };
     },
     onSuccess: () => {
       toast.success('Video eliminado permanentemente');
-      queryClient.invalidateQueries({ queryKey: ['videos-admin'] });
     },
-    onError: (_error, _id, context) => {
-      queryClient.setQueryData(['videos-admin'], context?.previousVideos);
-      toast.error('Ocurrió un error al eliminar el video');
+    onError: (error, _id, context) => {
+      queryClient.setQueryData(CLAVE_VIDEOS_ADMIN, context?.previousVideos);
+      toast.error(mensajeDeError(error, 'No se pudo eliminar el video.'));
     },
     onSettled: () => {
-      setTimeout(() => setVideoAEliminar(null), 300); 
-    }
+      queryClient.invalidateQueries({ queryKey: CLAVE_VIDEOS_ADMIN });
+      queryClient.invalidateQueries({ queryKey: ['categorias'] });
+      setTimeout(() => setVideoAEliminar(null), 300);
+    },
   });
 
-  // Funciones de la Interfaz
   const abrirModalEliminacion = (id: string, titulo: string) => {
     setVideoAEliminar({ id, titulo });
     setModalAbierto(true);
@@ -93,10 +94,9 @@ export const useAdminVideos = () => {
   const ejecutarEliminacion = () => {
     if (!videoAEliminar) return;
     setModalAbierto(false); // Cerramos el modal instantáneamente
-    eliminarMutation.mutate(videoAEliminar.id); // Lanzamos la mutación optimista
+    eliminarMutation.mutate(videoAEliminar.id);
   };
 
-  // 👇 4. FILTROS (Memoizados)
   const videosFiltrados = useMemo(() => {
     return videos.filter(video => {
       const coincideBusqueda = video.titulo.toLowerCase().includes(busqueda.toLowerCase());
@@ -108,6 +108,9 @@ export const useAdminVideos = () => {
   return {
     navigate,
     cargando,
+    errorVideos,
+    reintentarVideos,
+    buscandoVideos,
     categorias,
     busqueda,
     setBusqueda,

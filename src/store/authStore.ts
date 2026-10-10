@@ -7,7 +7,8 @@ interface AuthState {
   usuario: Usuario | null;
   isAuthenticated: boolean;
   setUsuario: (usuario: Usuario) => void;
-  logout: () => void;
+  /** `conservarCarrito`: cuando la sesión vence sola (no la cerró el usuario), el carrito es suyo y se mantiene. */
+  logout: (opciones?: { conservarCarrito?: boolean }) => void;
 }
 
 export const useAuthStore = create<AuthState>()(
@@ -22,8 +23,8 @@ export const useAuthStore = create<AuthState>()(
           isAuthenticated: true 
         }),
 
-      logout: () => {
-        useCartStore.getState().clearCart();
+      logout: (opciones) => {
+        if (!opciones?.conservarCarrito) useCartStore.getState().clearCart();
         set({ 
           usuario: null, 
           isAuthenticated: false 

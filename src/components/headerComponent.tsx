@@ -4,7 +4,7 @@ import { useAuthStore } from "../store/authStore";
 import { useCartStore } from "../store/cartStore";
 import { ShoppingCart, CircleUser, LogOut, Menu, X, ChevronDown, UserPlus } from "lucide-react";
 import { AvatarIniciales } from "./AvatarIniciales";
-import { obtenerCategoriasRequest, type Categoria } from "../api/categoria";
+import { useCategoriasPublicas } from "../hooks/useCategoriasPublicas";
 import { logoutRequest } from "../api/auth";
 
 export const HeaderComponent = () => {
@@ -15,7 +15,7 @@ export const HeaderComponent = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isClasesOpen, setIsClasesOpen] = useState(false);
   const [isProfileOpen, setIsProfileOpen] = useState(false);
-  const [categoriasMenu, setCategoriasMenu] = useState<Categoria[]>([]);
+  const { data: categoriasMenu = [], isPending: cargandoMenu, isError: errorMenu } = useCategoriasPublicas();
   
   const [scrolled, setScrolled] = useState(false);
 
@@ -23,18 +23,6 @@ export const HeaderComponent = () => {
     const handleScroll = () => setScrolled(window.scrollY > 20);
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
-  }, []);
-
-  useEffect(() => {
-    const cargarMenuCategorias = async () => {
-      try {
-        const data = await obtenerCategoriasRequest();
-        setCategoriasMenu(data);
-      } catch (error) {
-        console.error("Error al cargar categorías para el menú:", error);
-      }
-    };
-    cargarMenuCategorias();
   }, []);
 
   const handleLogout = async () => {
@@ -69,7 +57,7 @@ export const HeaderComponent = () => {
           {/* LOGO */}
           <Link to="/" className="flex-shrink-0 transition-transform duration-300 hover:scale-105" onClick={cerrarMenus}>
             <img
-              src="https://res.cloudinary.com/dmp7mcwie/image/upload/v1774488885/Logo_hfou8a.png"
+              src="https://res.cloudinary.com/dmp7mcwie/image/upload/f_auto,q_auto,c_limit,w_400/v1774488885/Logo_hfou8a.png"
               className="h-9 sm:h-10 w-auto object-contain"
               alt="Logo Flex Studio"
             />
@@ -91,7 +79,7 @@ export const HeaderComponent = () => {
             
             <div className="flex items-center justify-between px-5 py-3 border-b border-gray-100 lg:hidden bg-white">
               <img
-                src="https://res.cloudinary.com/dmp7mcwie/image/upload/v1774488885/Logo_hfou8a.png"
+                src="https://res.cloudinary.com/dmp7mcwie/image/upload/f_auto,q_auto,c_limit,w_400/v1774488885/Logo_hfou8a.png"
                 className="h-9 w-auto object-contain"
                 alt="Logo Flex Studio"
               />
@@ -127,7 +115,7 @@ export const HeaderComponent = () => {
                 >
                   <div className="flex flex-col rounded-2xl border-none lg:border lg:border-gray-100 bg-white lg:shadow-xl overflow-hidden lg:min-w-[260px] pl-4 lg:pl-0">
                     <div className="p-2 flex flex-col max-h-[60vh] overflow-y-auto scrollbar-hide">
-                      <p className="px-3 py-2 text-[11px] font-black tracking-widest uppercase text-[#d7f250] hidden lg:block">Nuestras Disciplinas</p>
+                      <p className="px-3 py-2 text-[11px] font-black tracking-widest uppercase text-neutral-400 hidden lg:block">Nuestras Disciplinas</p>
                       {categoriasMenu.length > 0 ? (
                         categoriasMenu.map((cat) => (
                           <Link
@@ -139,8 +127,17 @@ export const HeaderComponent = () => {
                             {cat.titulo}
                           </Link>
                         ))
-                      ) : (
+                      ) : cargandoMenu ? (
                         <span className="px-4 py-3 text-sm text-gray-400 italic">Cargando...</span>
+                      ) : (
+                        // Sin clases o sin conexión con el back: se ofrece la sección de la home.
+                        <Link
+                          to="/#clases"
+                          onClick={cerrarMenus}
+                          className="block px-4 py-3 text-[14px] font-bold text-gray-500 lg:text-gray-600 rounded-xl hover:bg-gray-100 hover:text-black transition-all duration-300"
+                        >
+                          {errorMenu ? 'Ver todas las clases' : 'Próximamente'}
+                        </Link>
                       )}
                     </div>
                   </div>
@@ -195,7 +192,7 @@ export const HeaderComponent = () => {
                     <div className="flex flex-col rounded-2xl border-none lg:border lg:border-gray-100 bg-white lg:shadow-xl overflow-hidden lg:min-w-[220px] pl-4 lg:pl-0">
                       <div className="p-2 flex flex-col">
                         <div className="px-4 py-3 mb-2 border-b border-gray-50 hidden lg:block">
-                          <p className="text-[10px] font-black tracking-widest uppercase text-[#d7f250]">Sesión Actual</p>
+                          <p className="text-[10px] font-black tracking-widest uppercase text-neutral-400">Sesión Actual</p>
                         </div>
 
                         <Link to="/mi-perfil" onClick={cerrarMenus} className="px-4 py-2.5 text-[14px] font-bold text-gray-500 lg:text-gray-600 rounded-xl hover:bg-gray-100 hover:text-black transition-all">

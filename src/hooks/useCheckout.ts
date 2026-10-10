@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { mensajeDeError } from '../api/errores';
 import { iniciarCompraRequest } from '../api/compras';
 import { actualizarPerfilCheckoutRequest, type CheckoutPerfilData } from '../api/usuario'; 
 
@@ -25,11 +26,9 @@ export const useCheckout = () => {
         throw new Error('No se recibió el enlace de pago de la pasarela');
       }
       
-    } catch (err: any) {
+    } catch (err) {
       console.error('Error al procesar checkout:', err);
-      setError(
-        err.response?.data?.message || 'Ocurrió un error al procesar el pago. Intenta nuevamente.'
-      );
+      setError(mensajeDeError(err, 'Ocurrió un error al procesar el pago. Intentá nuevamente.'));
       return null; 
     } finally {
       setCargando(false);

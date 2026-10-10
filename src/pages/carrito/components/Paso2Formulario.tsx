@@ -1,10 +1,12 @@
 import { useForm } from 'react-hook-form';
 import { AlertCircle } from 'lucide-react';
-import { type CheckoutPerfilData } from '../../../api/usuario';  
+import { type CheckoutPerfilData } from '../../../api/usuario';
+import { useMoneda } from '../../../hooks/useMoneda';
+import { type Usuario } from '../../../api/auth';
 
 interface Props {
   formData: CheckoutPerfilData;
-  usuario: any;
+  usuario: Usuario | null;
   onPrev: () => void;
   onNext: (datosValidados: CheckoutPerfilData) => void;
 }
@@ -26,26 +28,27 @@ const Paso2Formulario = ({ formData, usuario, onPrev, onNext }: Props) => {
     onNext(data);
   };
 
-  const esArgentina = usuario?.pais === 'Argentina';
+  // Misma regla que el precio y la pasarela: si se paga con MercadoPago se pide el CUIT/CUIL.
+  const { esArgentina } = useMoneda();
 
   return (
-    <div className="bg-white bg-[url('https://res.cloudinary.com/dmp7mcwie/image/upload/v1774312699/fondo_hwrosv.png')] border border-neutral-100 w-full sm:w-[70%] mx-auto p-6 md:p-8 rounded-[24px] shadow-[0_8px_30px_rgb(0,0,0,0.04)] flex flex-col transition-shadow hover:shadow-[0_8px_30px_rgba(215,242,80,0.15)]">
+    <div className="bg-white bg-[url('https://res.cloudinary.com/dmp7mcwie/image/upload/f_auto,q_auto/v1774312699/fondo_hwrosv.png')] border border-neutral-100 w-full sm:w-[70%] mx-auto p-6 md:p-8 rounded-[24px] shadow-[0_8px_30px_rgb(0,0,0,0.04)] flex flex-col transition-shadow hover:shadow-[0_8px_30px_rgba(215,242,80,0.15)]">
     <form onSubmit={handleSubmit(onSubmit)} className="max-w-4xl mx-auto w-full">
       <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-5">
         
         <div className="flex flex-col gap-2">
-          <label className="font-principal font-semibold text-neutral-800">Nombre Completo</label>
-          <input type="text" value={`${usuario?.nombre || ''} ${usuario?.apellido || ''}`} disabled className={disabledInputClass} />
+          <label htmlFor="checkout-nombre" className="font-principal font-semibold text-neutral-800">Nombre Completo</label>
+          <input id="checkout-nombre" type="text" value={`${usuario?.nombre || ''} ${usuario?.apellido || ''}`} disabled className={disabledInputClass} />
         </div>
 
         <div className="flex flex-col gap-2">
-          <label className="font-principal font-semibold text-neutral-800">País de Residencia</label>
-          <input type="text" value={usuario?.pais || 'No definido'} disabled title="El país se define al registrarse." className={disabledInputClass} />
+          <label htmlFor="checkout-pais" className="font-principal font-semibold text-neutral-800">País de Residencia</label>
+          <input id="checkout-pais" type="text" value={usuario?.pais || 'No definido'} disabled title="El país se define al registrarse." className={disabledInputClass} />
         </div>
 
         <div className="flex flex-col gap-2 md:col-span-2 relative">
-          <label className="font-principal font-semibold text-neutral-800">Correo Electrónico</label>
-          <input type="email" value={usuario?.correo || ''} disabled className={disabledInputClass} />
+          <label htmlFor="checkout-correo" className="font-principal font-semibold text-neutral-800">Correo Electrónico</label>
+          <input id="checkout-correo" type="email" value={usuario?.correo || ''} disabled className={disabledInputClass} />
         </div>
 
         {esArgentina && (
@@ -53,12 +56,14 @@ const Paso2Formulario = ({ formData, usuario, onPrev, onNext }: Props) => {
             <label className="font-principal font-semibold text-neutral-800">Datos de facturación: </label>
             <div className="flex flex-col gap-3 md:col-span-2 p-5 border-[1px] border-neutral-400 rounded-xl">
               
-              <label className="font-bold text-sm text-neutral-800">CUIT / CUIL</label>
+              <label htmlFor="checkout-cuit" className="font-bold text-sm text-neutral-800">CUIT / CUIL</label>
               
               {/* Input exclusivo de CUIT/CUIL */}
               <div className="flex flex-col gap-1">
-                <input 
-                  type="text" 
+                <input
+                  id="checkout-cuit"
+                  type="text"
+                  inputMode="numeric"
                   placeholder="Ej: 20123456789"
                   className={errors.documentoIdentidad ? inputErrorClass : inputClass}
                   {...register('documentoIdentidad', { 
@@ -86,7 +91,7 @@ const Paso2Formulario = ({ formData, usuario, onPrev, onNext }: Props) => {
                   })}
                 />
                 {errors.documentoIdentidad && (
-                  <span className="text-red-400 text-xs flex items-center gap-1 mt-1">
+                  <span className="text-red-600 text-xs flex items-center gap-1 mt-1">
                     <AlertCircle size={12} /> {errors.documentoIdentidad.message}
                   </span>
                 )}
@@ -96,35 +101,36 @@ const Paso2Formulario = ({ formData, usuario, onPrev, onNext }: Props) => {
         )}
 
         <div className="flex flex-col gap-2">
-          <label className="font-principal font-semibold text-neutral-800">Número de teléfono</label>
-          <input 
-            type="text" 
+          <label htmlFor="checkout-telefono" className="font-principal font-semibold text-neutral-800">Número de teléfono</label>
+          <input
+            id="checkout-telefono"
+            type="tel"
             className={errors.telefono ? inputErrorClass : inputClass}
             {...register('telefono', { 
               pattern: { value: /^[0-9+ ]+$/, message: 'Solo números y el signo +' }
             })} 
           />
-          {errors.telefono && <span className="text-red-400 text-xs">{errors.telefono.message}</span>}
+          {errors.telefono && <span className="text-red-600 text-xs">{errors.telefono.message}</span>}
         </div>
 
         <div className="flex flex-col gap-2 md:col-span-2">
-          <label className="font-principal font-semibold text-neutral-800">Dirección Completa</label>
-          <input type="text" placeholder="Ej: Calle Falsa 123, Piso 2..." className={inputClass} {...register('direccion')} />
+          <label htmlFor="checkout-direccion" className="font-principal font-semibold text-neutral-800">Dirección Completa</label>
+          <input id="checkout-direccion" type="text" placeholder="Ej: Calle Falsa 123, Piso 2..." className={inputClass} {...register('direccion')} />
         </div>
 
         <div className="flex flex-col gap-2">
-          <label className="font-principal font-semibold text-neutral-800">Provincia / Estado</label>
-          <input type="text" className={inputClass} {...register('provincia')} />
+          <label htmlFor="checkout-provincia" className="font-principal font-semibold text-neutral-800">Provincia / Estado</label>
+          <input id="checkout-provincia" type="text" className={inputClass} {...register('provincia')} />
         </div>
 
         <div className="flex flex-col gap-2">
-          <label className="font-principal font-semibold text-neutral-800">Ciudad</label>
-          <input type="text" className={inputClass} {...register('ciudad')} />
+          <label htmlFor="checkout-ciudad" className="font-principal font-semibold text-neutral-800">Ciudad</label>
+          <input id="checkout-ciudad" type="text" className={inputClass} {...register('ciudad')} />
         </div>
         
         <div className="flex flex-col gap-2 md:col-span-2">
-          <label className="font-principal font-semibold text-neutral-800">Código Postal</label>
-          <input type="text" className={inputClass} {...register('codigoPostal')} />
+          <label htmlFor="checkout-cp" className="font-principal font-semibold text-neutral-800">Código Postal</label>
+          <input id="checkout-cp" type="text" className={inputClass} {...register('codigoPostal')} />
         </div>
       </div>
 

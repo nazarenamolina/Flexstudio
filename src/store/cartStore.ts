@@ -14,6 +14,8 @@ interface CartState {
   addToCart: (item: CategoriaReal) => void;
   removeFromCart: (id: string) => void;
   clearCart: () => void;
+  /** Reemplaza el carrito por su versión revalidada contra el catálogo (ver useSincronizarCarrito). */
+  reemplazarCarrito: (items: CategoriaReal[]) => void;
 }
 
 export const useCartStore = create<CartState>()(
@@ -32,6 +34,7 @@ export const useCartStore = create<CartState>()(
           cartItems: state.cartItems.filter((item) => item.id !== id)
         })),
       clearCart: () => set({ cartItems: [] }),
+      reemplazarCarrito: (items) => set({ cartItems: items }),
     }),
     {
       name: 'flex-studio-cart',  

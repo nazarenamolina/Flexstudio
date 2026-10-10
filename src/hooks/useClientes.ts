@@ -1,14 +1,18 @@
-import { useState, useMemo } from 'react';
+import { useState, useEffect } from 'react';
 import { useQuery, useQueryClient, keepPreviousData } from '@tanstack/react-query';
-import { obtenerHistorialClientes, obtenerComprobantesCliente, type ComprobanteData, type RespuestaPaginadaClientes } from '../api/admin';  
+import { obtenerHistorialClientes, obtenerComprobantesCliente, type ComprobanteData, type OrdenClientes, type RespuestaPaginadaClientes } from '../api/admin';
 import toast from 'react-hot-toast';
 
-export type SortField = 'nombreCompleto' | 'pais' | 'totalClasesCompradas' | 'totalInvertidoArs' | 'totalInvertidoUsd' | 'fechaUltimaCompra';
+export type SortField = OrdenClientes;
+
+// Espera desde la última tecla antes de buscar en el back (un pedido por búsqueda, no por letra).
+const ESPERA_BUSQUEDA_MS = 350;
 export type SortDir = 'asc' | 'desc';
 
 export const useClientes = () => {
   const queryClient = useQueryClient();
-  const [busqueda, setBusqueda] = useState('');
+  const [busqueda, setBusquedaTexto] = useState('');
+  const [busquedaAplicada, setBusquedaAplicada] = useState('');
   const [sortField, setSortField] = useState<SortField | null>(null);
   const [sortDir, setSortDir] = useState<SortDir>('asc');
   const [expandedId, setExpandedId] = useState<string | null>(null);
@@ -17,9 +21,24 @@ export const useClientes = () => {
   const [pagina, setPagina] = useState(1);
   const limit = 5;
 
-  const { data: respuestaPagina, isLoading: cargando, isPlaceholderData } = useQuery<RespuestaPaginadaClientes>({
-    queryKey: ['historial-clientes', pagina],
-    queryFn: () => obtenerHistorialClientes(pagina, limit),
+  useEffect(() => {
+    const espera = setTimeout(() => setBusquedaAplicada(busqueda.trim()), ESPERA_BUSQUEDA_MS);
+    return () => clearTimeout(espera);
+  }, [busqueda]);
+
+  // Cambiar la búsqueda o el orden vuelve a la primera página (la actual puede no existir).
+  const setBusqueda = (texto: string) => {
+    setBusquedaTexto(texto);
+    setPagina(1);
+  };
+
+  const { data: respuestaPagina, isLoading: cargando, isPlaceholderData, isError, refetch, isFetching } = useQuery<RespuestaPaginadaClientes>({
+    queryKey: ['historial-clientes', pagina, busquedaAplicada, sortField, sortDir],
+    queryFn: () => obtenerHistorialClientes(pagina, limit, {
+      busqueda: busquedaAplicada,
+      orden: sortField ?? undefined,
+      direccion: sortField ? sortDir : undefined,
+    }),
     staleTime: 1000 * 60 * 5, 
     placeholderData: keepPreviousData, 
   });
@@ -42,7 +61,7 @@ export const useClientes = () => {
           staleTime: 1000 * 60 * 15,
         });
         setComprobantes(prev => ({ ...prev, [idUsuario]: data }));
-      } catch (error) {
+      } catch {
         toast.error('Error al cargar los comprobantes');
       } finally {
         setCargandoComprobantes(prev => ({ ...prev, [idUsuario]: false }));
@@ -50,31 +69,20 @@ export const useClientes = () => {
     }
   };
 
-  const clientesFiltrados = useMemo(() => {
-    let filtered = clientes.filter(c =>
-      c.nombreCompleto?.toLowerCase().includes(busqueda.toLowerCase()) ||
-      (c.correo && c.correo.toLowerCase().includes(busqueda.toLowerCase()))
-    );
-
-    if (sortField) {
-      filtered = [...filtered].sort((a, b) => {
-        const aVal = a[sortField] ?? '';
-        const bVal = b[sortField] ?? '';
-        const cmp = String(aVal).localeCompare(String(bVal), 'es', { numeric: true });
-        return sortDir === 'asc' ? cmp : -cmp;
-      });
-    }
-
-    return filtered;
-  }, [clientes, busqueda, sortField, sortDir]);
+  // La página ya viene filtrada y ordenada por el back.
+  const clientesFiltrados = clientes;
+  const totalClientes = respuestaPagina?.meta.totalItems ?? 0;
+  const buscando = busqueda.trim() !== busquedaAplicada || (isPlaceholderData && busquedaAplicada !== '');
 
   const handleSort = (field: SortField) => {
     if (sortField === field) {
       setSortDir(d => d === 'asc' ? 'desc' : 'asc');
     } else {
       setSortField(field);
-      setSortDir('asc');
+      // Montos, cantidades y fechas: primero los más altos o recientes.
+      setSortDir(field === 'nombreCompleto' || field === 'pais' ? 'asc' : 'desc');
     }
+    setPagina(1);
   };
 
   const formatearFecha = (fechaISO: string | null | undefined) => {
@@ -108,6 +116,12 @@ export const useClientes = () => {
 
   return {
     clientesFiltrados, 
+    isError,
+    refetch,
+    isFetching,
+    totalClientes,
+    buscando,
+    busquedaAplicada,
     cargando,
     busqueda, 
     setBusqueda, 

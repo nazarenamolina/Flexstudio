@@ -1,10 +1,14 @@
 import { useState } from 'react';
-import { ArrowLeft, Save, Image as ImageIcon, Loader2, Library, Trash2 } from 'lucide-react';
+import { useParams } from 'react-router-dom';
+import { ArrowLeft, Save, Image as ImageIcon, Loader2, Library, Trash2, Film, X } from 'lucide-react';
+import { useSubidasStore } from '../../../store/subidasStore';
 import { useEditarVideo } from '../../../hooks/useEditarVideo';
 import { GaleriaModal } from '../../../components/GaleriaModal';
 
 export const EditarVideoPage = () => {
-  const { register, handleSubmit, errors, isSubmitting, cargando, categorias, archivoImagen, imagenActual, handleImageChange, handleSelectFromGallery, handleEliminarMiniaturaNueva, navigate } = useEditarVideo();
+  const { register, handleSubmit, errors, isSubmitting, cargando, categorias, archivoImagen, imagenActual, handleImageChange, handleSelectFromGallery, handleEliminarMiniaturaNueva, navigate, archivoVideo, handleVideoChange, quitarArchivoVideo, estado } = useEditarVideo();
+  const { id } = useParams();
+  const subidaEnCurso = useSubidasStore((s) => s.subidas.some((x) => x.idVideo === id && (x.estado === 'subiendo' || x.estado === 'pausada')));
   const [isGaleriaOpen, setIsGaleriaOpen] = useState(false);
   const inputClass = "w-full bg-[#131313] border border-gray-800 focus:border-[#d7f250] focus:ring-1 focus:ring-[#d7f250]/50 rounded-xl px-4 py-3 text-white placeholder-gray-600 outline-none transition-all shadow-sm";
   const labelClass = "block text-sm font-bold text-gray-400 mb-2";
@@ -29,12 +33,12 @@ export const EditarVideoPage = () => {
         onSelectImagen={(url) => handleSelectFromGallery(url)}
       />
       <div className="flex items-center gap-4 mb-8 shrink-0">
-        <button onClick={() => navigate('/admin/videos')} type="button" disabled={isSubmitting} className="p-2 bg-[#131313] hover:bg-gray-800 border border-gray-800 rounded-full text-white transition-colors disabled:opacity-50">
+        <button aria-label="Volver a videos" title="Volver a videos" onClick={() => navigate('/admin/videos')} type="button" disabled={isSubmitting} className="p-2 bg-[#131313] hover:bg-gray-800 border border-gray-800 rounded-full text-white transition-colors disabled:opacity-50">
           <ArrowLeft size={24} />
         </button>
         <div>
           <h1 className="text-3xl font-extrabold text-white tracking-tight">Editar Clase</h1>
-          <p className="text-gray-400 text-sm">Modifica los detalles y la miniatura del video.</p>
+          <p className="text-gray-400 text-sm">Modificá los detalles, la miniatura o el archivo del video.</p>
         </div>
       </div>
 
@@ -61,7 +65,7 @@ export const EditarVideoPage = () => {
             <label className={labelClass}>Categoría / Disciplina *</label>
             <select {...register('idCategoria', { required: 'Obligatorio' })} className={`${inputClass} appearance-none cursor-pointer`}>
               <option value="" disabled>Selecciona una categoría...</option>
-              {categorias.map((cat: any) => <option key={cat.id} value={cat.id}>{cat.titulo}</option>)}
+              {categorias.map((cat) => <option key={cat.id} value={cat.id}>{cat.titulo}</option>)}
             </select>
             {errors.idCategoria && <span className="text-red-500 text-xs mt-1">{errors.idCategoria.message}</span>}
           </div>
@@ -99,7 +103,7 @@ export const EditarVideoPage = () => {
 
                     {/* Botón para quitar la miniatura NUEVA seleccionada */}
                     {archivoImagen && (
-                      <button
+                      <button aria-label="Deshacer la miniatura elegida"
                         type="button"
                         onClick={(e) => { e.preventDefault(); e.stopPropagation(); handleEliminarMiniaturaNueva(); }}
                         className="absolute top-2 right-2 z-30 p-2 bg-red-500/80 hover:bg-red-500 text-white rounded-lg opacity-0 group-hover:opacity-100 transition-opacity"
@@ -119,6 +123,35 @@ export const EditarVideoPage = () => {
               <p className="text-xs text-gray-500 mt-3 text-center">Recomendado: 1920x1080px (16:9)</p>
             </div>
           </div>
+          {/* Reemplazar el archivo: se sube en segundo plano y las alumnas ven el actual hasta que el nuevo esté listo. */}
+          <div className="bg-[#131313] p-6 rounded-[24px] border border-gray-800 shadow-sm flex flex-col gap-4">
+            <h3 className="text-xl font-bold text-white border-b border-gray-800 pb-4">Archivo del video</h3>
+            {subidaEnCurso ? (
+              <p className="text-sm text-[#d7f250]">Hay una subida en curso para este video. Mirá el progreso en el panel de subidas.</p>
+            ) : archivoVideo ? (
+              <div className="flex items-center gap-3 rounded-xl bg-[#0a0a0a] border border-[#d7f250]/40 p-3">
+                <Film className="w-5 h-5 text-[#d7f250] shrink-0" aria-hidden="true" />
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm text-white font-bold truncate" title={archivoVideo.name}>{archivoVideo.name}</p>
+                  <p className="text-xs text-gray-500">{(archivoVideo.size / (1024 * 1024)).toFixed(1)} MB · se sube al guardar</p>
+                </div>
+                <button type="button" onClick={quitarArchivoVideo} aria-label="No reemplazar el archivo" className="p-1.5 rounded-lg text-gray-400 hover:text-white hover:bg-white/5">
+                  <X size={16} />
+                </button>
+              </div>
+            ) : (
+              <label className="relative w-full h-28 border-2 border-dashed border-gray-700 hover:border-[#d7f250] rounded-xl flex flex-col items-center justify-center gap-2 transition-colors bg-[#0a0a0a] cursor-pointer focus-within:border-[#d7f250]">
+                <input type="file" accept="video/*" onChange={handleVideoChange} className="sr-only" />
+                <Film className="h-7 w-7 text-white" aria-hidden="true" />
+                <span className="text-sm font-medium text-white">{estado === 'ERROR' ? 'Subir el archivo de nuevo' : 'Reemplazar archivo'}</span>
+              </label>
+            )}
+            <p className="text-xs text-gray-500 leading-relaxed">
+              Mientras Mux procesa el archivo nuevo, las alumnas siguen viendo el actual. Su progreso en la clase se conserva.
+              Ocupa un lugar más del plan de Mux hasta que termina; después se borra el anterior.
+            </p>
+          </div>
+
           <button type="submit" disabled={isSubmitting} className="w-full bg-[#d7f250] hover:bg-[#c4dd46] text-[#131313] p-4 rounded-xl font-black text-lg flex items-center justify-center gap-2 transition-transform duration-200 hover:-translate-y-1 shadow-lg disabled:opacity-70 uppercase tracking-widest">
             {isSubmitting ? <><Loader2 className="w-6 h-6 animate-spin" /> Guardando...</> : <><Save className="w-6 h-6" /> Guardar Cambios</>}
           </button>

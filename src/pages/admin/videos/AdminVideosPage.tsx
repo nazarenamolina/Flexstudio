@@ -6,9 +6,10 @@ import { ConfirmarEliminarModal } from '../../../components/ConfirmarEliminarMod
 import { useAdminVideos } from '../../../hooks/useAdminVideos';
 import { VideoCard } from '../../../components/VideoCard';
 import { AddVideoCard } from '../../../components/AddVideoCard';
+import { ErrorCargaAdmin } from '../../../components/ErrorCargaAdmin';
 
 export const AdminVideosPage = () => {
-  const { navigate, cargando, categorias, busqueda, setBusqueda, filtroCategoria, setFiltroCategoria, videosFiltrados, modalAbierto, setModalAbierto, videoAEliminar, estaEliminando, abrirModalEliminacion, ejecutarEliminacion } = useAdminVideos();
+  const { navigate, cargando, errorVideos, reintentarVideos, buscandoVideos, categorias, busqueda, setBusqueda, filtroCategoria, setFiltroCategoria, videosFiltrados, modalAbierto, setModalAbierto, videoAEliminar, estaEliminando, abrirModalEliminacion, ejecutarEliminacion } = useAdminVideos();
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
 
   const slideVariants = {
@@ -109,6 +110,8 @@ export const AdminVideosPage = () => {
           <Loader2 className="w-10 h-10 animate-spin mb-4" />
           <p className="font-bold tracking-widest uppercase text-sm animate-pulse">Cargando librería de videos...</p>
         </div>
+      ) : errorVideos ? (
+        <ErrorCargaAdmin que="los videos" onReintentar={() => reintentarVideos()} reintentando={buscandoVideos} />
       ) : (
         /* GRILLA / LISTA CONTENEDORA (Animada) */
         <AnimatePresence mode="wait">

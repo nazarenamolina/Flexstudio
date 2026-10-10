@@ -2,14 +2,16 @@ import { Loader2 } from 'lucide-react';
 import { useCartStore } from '../../../store/cartStore';
 import { useCheckout } from '../../../hooks/useCheckout';
 import { type CheckoutPerfilData } from '../../../api/usuario';
+import { type Usuario } from '../../../api/auth';
 import { useGoogleReCaptcha } from 'react-google-recaptcha-v3';
 import toast from 'react-hot-toast';
+import { useState } from 'react';
+import { useMoneda } from '../../../hooks/useMoneda';
+import { useSincronizarCarrito } from '../../../hooks/useSincronizarCarrito';
 
 interface Props {
   formData: CheckoutPerfilData;
-  usuario: any;
-  metodoPago: string;
-  setMetodoPago: (metodo: string) => void;
+  usuario: Usuario | null;
   onPrev: () => void;
 }
 
@@ -17,7 +19,10 @@ const Paso3Resumen = ({ formData, usuario, onPrev }: Props) => {
   const cartItems = useCartStore((state) => state.cartItems);
   const { procesarCheckout, cargando, error } = useCheckout();
   const { executeRecaptcha } = useGoogleReCaptcha();
-  const esArgentina = usuario?.pais?.toLowerCase() === 'argentina' || usuario?.pais?.toLowerCase() === 'ar';
+  const { esArgentina, pasarela, cargandoMoneda } = useMoneda();
+  const [redirigiendo, setRedirigiendo] = useState(false);
+  const { sincronizando } = useSincronizarCarrito();
+  const ocupado = cargando || redirigiendo || cargandoMoneda || sincronizando;
 
   const total = cartItems.reduce((acc, item) => {
     const precio = esArgentina ? item.precioArs : item.precioUsd;
@@ -33,37 +38,27 @@ const Paso3Resumen = ({ formData, usuario, onPrev }: Props) => {
       return;
     }
     
-    const nuevaPestana = window.open('about:blank', '_blank');
+    if (ocupado) return;
 
     try {
       const captchaToken = await executeRecaptcha('compra');
       const idsCategorias = cartItems.map((item) => item.id);
-      const payloadCompra = {
-        idsCategorias,
-        plataforma: esArgentina ? 'MERCADOPAGO' : 'PAYPAL',
-        captchaToken
-      };
-
-      // 👇 2. Esperamos que el backend nos devuelva la URL
-      const urlDePago = await procesarCheckout(payloadCompra, formData);
-
-      // 👇 3. Si todo salió bien, redirigimos la pestaña que habíamos abierto
-      if (urlDePago && nuevaPestana) {
-        nuevaPestana.location.href = urlDePago;
-        toast.success('Se abrió una pestaña segura para completar tu pago', { duration: 4000 });
-      } else {
-        // Si no llegó la URL, cerramos la pestaña vacía
-        if (nuevaPestana) nuevaPestana.close();
+      const urlDePago = await procesarCheckout({ idsCategorias, plataforma: pasarela, captchaToken }, formData);
+      // Se paga en la misma pestaña (flujo estándar de MercadoPago y PayPal): al volver, las
+      // páginas de resultado vacían o conservan el carrito según cómo terminó el pago. Abrir otra
+      // pestaña dejaba esta con el carrito lleno (se podía pagar dos veces) y Safari en iOS la
+      // bloqueaba o la dejaba en blanco.
+      if (urlDePago) {
+        setRedirigiendo(true);
+        window.location.assign(urlDePago);
       }
-
-    } catch (err) {
-      // Si hubo un error (ej. tarjeta rechazada o error de red), cerramos la pestaña
-      if (nuevaPestana) nuevaPestana.close();
+    } catch {
+      toast.error('No pudimos conectar con la pasarela de pago. Intentá de nuevo.');
     }
   };
 
   return (
-    <div className="max-w-2xl mx-auto w-full flex flex-col items-center bg-white bg-[url('https://res.cloudinary.com/dmp7mcwie/image/upload/v1774312699/fondo_hwrosv.png')] border border-neutral-100 p-6 md:p-8 rounded-[24px] shadow-[0_8px_30px_rgb(0,0,0,0.04)] flex flex-col transition-shadow hover:shadow-[0_8px_30px_rgba(215,242,80,0.15)]">
+    <div className="max-w-2xl mx-auto w-full flex flex-col items-center bg-white bg-[url('https://res.cloudinary.com/dmp7mcwie/image/upload/f_auto,q_auto/v1774312699/fondo_hwrosv.png')] border border-neutral-100 p-6 md:p-8 rounded-[24px] shadow-[0_8px_30px_rgb(0,0,0,0.04)] flex flex-col transition-shadow hover:shadow-[0_8px_30px_rgba(215,242,80,0.15)]">
       <h2 className="text-3xl font-principal font-bold mb-6 text-[#131313]">¡Ya casi es tuyo! Revisa tus datos</h2>
 
       {/* Datos del Cliente */}
@@ -100,7 +95,7 @@ const Paso3Resumen = ({ formData, usuario, onPrev }: Props) => {
           <div className="p-4 flex items-center gap-[14px] rounded-[14px] w-full cursor-pointer">
             <div className="w-12 h-12 rounded-[10px] flex items-center justify-center shrink-0 overflow-hidden">
               <img
-                src="https://res.cloudinary.com/dmp7mcwie/image/upload/v1776553638/idQ3WnPeIo_1776553596063_frvubq.png"
+                src="https://res.cloudinary.com/dmp7mcwie/image/upload/f_auto,q_auto,c_limit,w_300/v1776553638/idQ3WnPeIo_1776553596063_frvubq.png"
                 alt="Mercado Pago"
                 className="w-full h-full object-cover"
               />
@@ -124,7 +119,7 @@ const Paso3Resumen = ({ formData, usuario, onPrev }: Props) => {
           <div className="p-4 flex items-center gap-4">
             <div className="w-12 h-12 flex items-center justify-center">
               <img
-                src="https://res.cloudinary.com/dmp7mcwie/image/upload/v1776554878/Paypal_2014_logo_xjlksb.png"
+                src="https://res.cloudinary.com/dmp7mcwie/image/upload/f_auto,q_auto,c_limit,w_300/v1776554878/Paypal_2014_logo_xjlksb.png"
                 alt="PayPal"
                 className="w-full h-full object-cover"
               />
@@ -151,17 +146,17 @@ const Paso3Resumen = ({ formData, usuario, onPrev }: Props) => {
       <div className="flex justify-center items-center gap-4 w-full">
         <button
           onClick={onPrev}
-          disabled={cargando}
-          className="flex items-center justify-center gap-3 rounded-full bg-[#131313]/60 px-6 sm:px-8 py-3 sm:py-4 font-principal text-lg sm:text-xl font-bold text-[#fff]/90 shadow-sm transition-all duration-400 hover:-translate-y-1 hover:bg-[#131313] hover:text-white hover:shadow-md cursor-pointer"
+          disabled={ocupado}
+          className="flex items-center justify-center gap-3 rounded-full bg-[#131313]/60 px-6 sm:px-8 py-3 sm:py-4 font-principal text-lg sm:text-xl font-bold text-[#fff]/90 shadow-sm transition-all duration-400 hover:-translate-y-1 hover:bg-[#131313] hover:text-white hover:shadow-md cursor-pointer disabled:pointer-events-none disabled:opacity-60"
         >
           Anterior
         </button>
         <button
           onClick={handleConfirmar}
-          disabled={cargando}
-          className="flex items-center justify-center gap-3 rounded-full bg-neon-pink px-3 sm:px-8 py-3 sm:py-4 font-principal text-lg sm:text-xl font-bold text-[#131313]/90 shadow-sm transition-all duration-400 hover:-translate-y-1 hover:bg-[#131313] hover:text-white hover:shadow-md cursor-pointer"
+          disabled={ocupado}
+          className="flex items-center justify-center gap-3 rounded-full bg-neon-pink px-3 sm:px-8 py-3 sm:py-4 font-principal text-lg sm:text-xl font-bold text-[#131313]/90 shadow-sm transition-all duration-400 hover:-translate-y-1 hover:bg-[#131313] hover:text-white hover:shadow-md cursor-pointer disabled:pointer-events-none disabled:opacity-60"
         >
-          {cargando ? <><Loader2 className="animate-spin w-4 h-4" /> Procesando</> : 'Confirmar y Pagar'}
+          {cargando || redirigiendo ? <><Loader2 className="animate-spin w-4 h-4" /> {redirigiendo ? 'Abriendo el pago' : 'Procesando'}</> : 'Confirmar y Pagar'}
         </button>
       </div>
       <p className="text-[10px] text-gray-500 text-center leading-tight mt-6 max-w-sm">

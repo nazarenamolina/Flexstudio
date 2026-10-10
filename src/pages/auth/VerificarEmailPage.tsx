@@ -1,15 +1,46 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { useLocation, useNavigate, Navigate } from 'react-router-dom';
 import { Loader2, MailCheck, AlertCircle, ArrowLeft } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useGoogleReCaptcha } from 'react-google-recaptcha-v3';
 import { verificarEmailRequest, reenviarOtpRequest } from '../../api/auth';
+import { PantallaTarjeta } from './DisenoAuth';
+import { mensajeDeError } from '../../api/errores';
+import { claseAvisoError, claseError, claseBotonPrincipal, claseEnlace } from './estilos';
+
+// El correo llega por el state de la navegación (registro o login sin verificar). Se guarda en la
+// sesión del navegador para que recargar la página no lo pierda, junto con la hora del último envío
+// del código: el back no permite reenviarlo antes de 1 minuto.
+const CLAVE_CORREO = 'flex-verificar-correo';
+const CLAVE_ENVIO = 'flex-verificar-enviado';
+const ESPERA_REENVIO_S = 60;
+
+const leer = (clave: string) => { try { return sessionStorage.getItem(clave); } catch { return null; } };
+const guardar = (clave: string, valor: string) => { try { sessionStorage.setItem(clave, valor); } catch { /* modo privado */ } };
+const borrar = () => { try { sessionStorage.removeItem(CLAVE_CORREO); sessionStorage.removeItem(CLAVE_ENVIO); } catch { /* modo privado */ } };
 
 export const VerificarEmailPage = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const correo = location.state?.correo;
+  const correoNavegacion: string | undefined = location.state?.correo;
+  const correo = correoNavegacion ?? leer(CLAVE_CORREO) ?? undefined;
+  // Si se llega desde el registro o el login, el código se acaba de enviar.
+  const [enviadoEn, setEnviadoEn] = useState(() => (correoNavegacion ? Date.now() : Number(leer(CLAVE_ENVIO)) || 0));
+  const [ahora, setAhora] = useState(() => Date.now());
+  const restante = Math.max(0, ESPERA_REENVIO_S - Math.floor((ahora - enviadoEn) / 1000));
+
+  useEffect(() => {
+    if (!correo) return;
+    guardar(CLAVE_CORREO, correo);
+    guardar(CLAVE_ENVIO, String(enviadoEn));
+  }, [correo, enviadoEn]);
+
+  useEffect(() => {
+    if (restante <= 0) return;
+    const reloj = setInterval(() => setAhora(Date.now()), 1000);
+    return () => clearInterval(reloj);
+  }, [restante]);
   const [cargando, setCargando] = useState(false);
   const [reenviando, setReenviando] = useState(false);
   const [errorGlobal, setErrorGlobal] = useState<string | null>(null);
@@ -18,7 +49,7 @@ export const VerificarEmailPage = () => {
   const { executeRecaptcha } = useGoogleReCaptcha();
 
   const reenviarCodigo = async () => {
-    if (!executeRecaptcha) return;
+    if (!executeRecaptcha || !correo || restante > 0) return;
     setReenviando(true);
     setErrorGlobal(null);
     setMensajeReenvio(null);
@@ -26,8 +57,10 @@ export const VerificarEmailPage = () => {
       const captchaToken = await executeRecaptcha('reenviar_otp');
       const respuesta = await reenviarOtpRequest({ correo, captchaToken });
       setMensajeReenvio(respuesta.mensaje);
-    } catch (error: any) {
-      setErrorGlobal(error.response?.data?.message || 'No pudimos reenviar el código. Intentá en un minuto.');
+      setEnviadoEn(Date.now());
+      setAhora(Date.now());
+    } catch (error) {
+      setErrorGlobal(mensajeDeError(error, 'No pudimos reenviar el código. Intentá en un minuto.'));
     } finally {
       setReenviando(false);
     }
@@ -42,109 +75,73 @@ export const VerificarEmailPage = () => {
     setErrorGlobal(null);
     try {
       await verificarEmailRequest({ correo, codigo: data.codigo });
+      borrar();
       navigate('/login', { state: { mensaje: '¡Cuenta verificada! Ya puedes iniciar sesión.' } });
-    } catch (error: any) {
-      setErrorGlobal(error.response?.data?.message || 'Código incorrecto o expirado.');
+    } catch (error) {
+      setErrorGlobal(mensajeDeError(error, 'Código incorrecto o expirado.'));
     } finally {
       setCargando(false);
     }
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-[#131313] font-sans p-4 relative overflow-hidden">
-      <div className="absolute inset-0 overflow-hidden pointer-events-none z-0">
-        <motion.div 
-          animate={{ opacity: [0.15, 0.3, 0.15] }} 
-          transition={{ duration: 5, repeat: Infinity, ease: "easeInOut" }} 
-          className="absolute top-[-10%] left-[-10%] w-[500px] h-[500px] bg-[radial-gradient(circle,rgba(215,242,80,0.1)_0%,transparent_60%)] rounded-full" 
-        />
-        <motion.div 
-          animate={{ opacity: [0.1, 0.2, 0.1] }} 
-          transition={{ duration: 7, repeat: Infinity, ease: "easeInOut", delay: 1 }} 
-          className="absolute bottom-[-20%] right-[-10%] w-[600px] h-[600px] bg-[radial-gradient(circle,rgba(215,242,80,0.08)_0%,transparent_60%)] rounded-full" 
-        />
-      </div>
-      <motion.div 
-        initial={{ opacity: 0, scale: 0.95, y: 20 }}
-        animate={{ opacity: 1, scale: 1, y: 0 }}
-        transition={{ duration: 0.5, ease: "easeOut" }}
-        className="relative z-10 max-w-md w-full bg-[#111111]/90 backdrop-blur-xl border border-gray-800/80 rounded-3xl p-8 sm:p-10 shadow-[0_20px_50px_rgba(0,0,0,0.5)] flex flex-col items-center"
-      >
-        
-        {/* Ícono animado */}
-        <motion.div 
-          animate={{ scale: [1, 1.05, 1], boxShadow: ["0px 0px 0px rgba(215,242,80,0)", "0px 0px 20px rgba(215,242,80,0.2)", "0px 0px 0px rgba(215,242,80,0)"] }}
-          transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
-          className="w-20 h-20 bg-[#d7f250]/10 rounded-full flex items-center justify-center mb-6 border border-[#d7f250]/20"
-        >
-          <MailCheck className="text-[#d7f250] w-10 h-10" />
+    <PantallaTarjeta icono={<MailCheck className="text-[#131313] w-10 h-10" />}>
+      <h1 className="font-principal text-3xl uppercase mb-3 text-center">Revisá tu correo</h1>
+      <p className="text-neutral-600 text-[15px] text-center mb-8 leading-relaxed">
+        Enviamos un código de 6 dígitos a <br />
+        <strong className="text-[#131313] font-bold break-all">{correo}</strong>
+      </p>
+
+      {errorGlobal && (
+        <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} role="alert" className={`${claseAvisoError} mb-6`}>
+          <AlertCircle size={18} className="flex-shrink-0" /> {errorGlobal}
         </motion.div>
-        
-        <h1 className="text-3xl font-black text-white tracking-tight mb-3">Revisa tu correo</h1>
-        <p className="text-gray-400 text-[15px] text-center mb-8 leading-relaxed">
-          Enviamos un código de seguridad de 6 dígitos a <br/>
-          <strong className="text-white font-bold tracking-wide">{correo}</strong>
-        </p>
+      )}
 
-        {errorGlobal && (
-          <motion.div 
-            initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }}
-            className="w-full bg-red-500/10 border border-red-500/30 text-red-400 text-sm p-4 rounded-xl mb-6 flex items-center gap-3 font-medium"
-          >
-            <AlertCircle size={18} className="flex-shrink-0" /> {errorGlobal}
-          </motion.div>
-        )}
+      <form onSubmit={handleSubmit(onSubmit)} className="w-full space-y-6" noValidate>
+        <div>
+          <label htmlFor="codigo-otp" className="sr-only">Código de verificación</label>
+          <input
+            id="codigo-otp"
+            type="text"
+            inputMode="numeric"
+            autoComplete="one-time-code"
+            maxLength={6}
+            placeholder="000000"
+            aria-invalid={!!errors.codigo}
+            className={`w-full bg-white border ${errors.codigo ? 'border-red-500 focus:ring-red-500/20' : 'border-neutral-300 focus:border-[#131313] focus:ring-[#d7f250]/50'} focus:ring-4 rounded-2xl px-4 py-5 text-center font-principal text-3xl sm:text-4xl tracking-[0.3em] sm:tracking-[0.5em] focus:outline-none transition-all duration-200 text-[#131313] placeholder-neutral-300`}
+            {...register('codigo', {
+              required: 'Ingresá el código',
+              pattern: { value: /^[0-9]{6}$/, message: 'Debe contener exactamente 6 números' }
+            })}
+          />
+          {errors.codigo && <p className={`${claseError} text-center`}>{errors.codigo.message}</p>}
+        </div>
 
-        <form onSubmit={handleSubmit(onSubmit)} className="w-full space-y-6">
-          <div>
-            <div className="relative">
-              <input 
-                type="text" 
-                maxLength={6}
-                placeholder="000000" 
-                autoComplete="off"
-                className={`w-full bg-[#0a0a0a] border ${errors.codigo ? 'border-red-500 focus:ring-red-500/20' : 'border-gray-800 focus:border-[#d7f250] focus:ring-[#d7f250]/20'} focus:ring-4 rounded-2xl px-4 py-5 text-center text-4xl tracking-[0.5em] font-black focus:outline-none transition-all duration-300 text-white placeholder-gray-800 shadow-inner`}
-                {...register('codigo', { 
-                  required: 'Ingresa el código',
-                  pattern: { value: /^[0-9]{6}$/, message: 'Debe contener exactamente 6 números' }
-                })} 
-              />
-            </div>
-            {errors.codigo && (
-              <motion.span initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-red-400 text-xs flex justify-center mt-3 font-bold">
-                {errors.codigo.message}
-              </motion.span>
-            )}
-          </div>
-
-          <button 
-            type="submit" 
-            disabled={cargando} 
-            className="w-full bg-[#d7f250] hover:bg-[#c4dd46] text-[#131313] font-black text-[15px] py-4 px-4 rounded-xl transition-all duration-300 flex items-center justify-center disabled:opacity-70 hover:shadow-[0_0_20px_rgba(215,242,80,0.2)] hover:-translate-y-0.5 active:translate-y-0"
-          >
-            {cargando ? <><Loader2 className="animate-spin mr-2 h-5 w-5" /> VERIFICANDO...</> : 'CONFIRMAR CORREO'}
-          </button>
-        </form>
-
-        <button
-          type="button"
-          onClick={reenviarCodigo}
-          disabled={reenviando}
-          className="text-gray-400 hover:text-[#d7f250] text-sm font-bold transition-colors mt-6 disabled:opacity-50"
-        >
-          {reenviando ? 'Reenviando...' : '¿No te llegó o expiró? Reenviar código'}
+        <button type="submit" disabled={cargando} className={claseBotonPrincipal}>
+          {cargando ? <><Loader2 className="animate-spin h-5 w-5" /> Verificando…</> : 'Confirmar correo'}
         </button>
-        {mensajeReenvio && (
-          <p className="text-[#d7f250] text-xs text-center mt-2">{mensajeReenvio}</p>
-        )}
+      </form>
 
-        <button 
-          onClick={() => navigate('/registro')} 
-          className="group text-gray-500 hover:text-white text-xs font-bold flex items-center gap-2 transition-colors mt-8 uppercase tracking-widest"
-        >
-          <ArrowLeft size={14} className="group-hover:-translate-x-1 transition-transform duration-300" /> Corregir correo
-        </button>
-      </motion.div>
-    </div>
+      <button
+        type="button"
+        onClick={reenviarCodigo}
+        disabled={reenviando || restante > 0}
+        className={`${claseEnlace} text-sm mt-6 disabled:opacity-60 disabled:no-underline disabled:cursor-default cursor-pointer`}
+      >
+        {reenviando ? 'Reenviando…'
+          : restante > 0 ? `Podés pedir otro código en 0:${String(restante).padStart(2, '0')}`
+          : '¿No te llegó o expiró? Reenviar código'}
+      </button>
+      {mensajeReenvio && <p className="text-[#131313] bg-[#d7f250]/40 rounded-lg px-3 py-1.5 text-xs text-center mt-3">{mensajeReenvio}</p>}
+
+      <button
+        type="button"
+        onClick={() => { borrar(); navigate('/registro'); }}
+        className="group text-neutral-500 hover:text-[#131313] font-principal text-xs flex items-center gap-2 transition-colors mt-8 uppercase tracking-widest cursor-pointer"
+      >
+        <ArrowLeft size={14} className="group-hover:-translate-x-1 transition-transform duration-300" /> Corregir correo
+      </button>
+    </PantallaTarjeta>
   );
 };

@@ -1,11 +1,14 @@
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import { ArrowLeft } from "lucide-react";
+import { useTituloPagina } from "../hooks/useTituloPagina";
 
 const PaginaError = () => {
+  useTituloPagina("Página no encontrada");
+
   return (
-    // 👇 Eliminamos el fondo de color para que tu textura blanca se vea de fondo
-    <div className="min-h-screen flex flex-col items-center justify-center px-6 text-center overflow-hidden relative">
+    // pt: deja libre el header fijo; el fondo es la textura del sitio.
+    <div className="min-h-[calc(100vh-67px)] flex flex-col items-center justify-center px-6 pt-[100px] pb-16 lg:pt-[110px] text-center overflow-hidden relative">
       
       {/* =========================================
           EFECTOS DE FONDO (Adaptados a Modo Claro)
@@ -60,8 +63,8 @@ const PaginaError = () => {
         {/* IMAGEN FLOTANTE (Sin desenfoque, 100% nítida) */}
         <div className="relative flex items-center justify-center mb-8 lg:mb-12 w-full h-56 sm:h-72 md:h-80 lg:h-80 select-none pointer-events-none">
           <motion.img 
-            src="https://res.cloudinary.com/dmp7mcwie/image/upload/v1777746347/ChatGPT_Image_2_may_2026_02_58_29_p.m._dyv5lj.png"
-            alt="Error 404 - No encontrado"
+            src="https://res.cloudinary.com/dmp7mcwie/image/upload/f_auto,q_auto,c_limit,w_800/v1777746347/ChatGPT_Image_2_may_2026_02_58_29_p.m._dyv5lj.png"
+            alt=""
             animate={{ y: [-8, 8, -8] }}
             transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
             /* 👇 Solo las clases necesarias para que se vea nítida y mantenga proporción 👇 */
@@ -76,9 +79,9 @@ const PaginaError = () => {
           transition={{ duration: 0.8, delay: 0.2 }}
           className="max-w-2xl mx-auto"
         >
-          <h2 className="text-4xl md:text-5xl font-black text-[#131313] mb-6 tracking-tight leading-tight">
+          <h1 className="text-4xl md:text-5xl font-principal font-bold uppercase text-[#131313] mb-6 tracking-tight leading-tight">
             ¡Uf! Te has estirado <br className="hidden md:block" /> demasiado.
-          </h2>
+          </h1>
           
           <p className="text-gray-500 font-medium text-base md:text-lg mb-10 leading-relaxed px-4">
             No pudimos encontrar la página que buscas. Puede que se haya movido, 

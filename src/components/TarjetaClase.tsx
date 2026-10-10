@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom';
 import { Clock, ArrowRight, Star, PlaySquare, Infinity as InfinityIcon } from 'lucide-react';
 import { type Categoria } from '../api/categoria';
+import { IMAGEN_RESPALDO_CLASE, optimizarCloudinary } from '../imagenes';
 
 interface Props {
   servicio: Categoria;
@@ -10,7 +11,7 @@ interface Props {
 
 export const TarjetaClase = ({ servicio, flippedCard, setFlippedCard }: Props) => {
   const isFlipped = flippedCard === servicio.id;
-  const imagenFondo = servicio.imagenTarjeta || servicio.imagenHero || 'https://placehold.co/400x500/1a1a1a/FFF?text=Flex+Studio';
+  const imagenFondo = optimizarCloudinary(servicio.imagenTarjeta || servicio.imagenHero || IMAGEN_RESPALDO_CLASE, 800);
   const cantidadVideos = servicio.cantidadVideos || 0;
   const duracionTotal = servicio.duracionTotalFormateada || '0m';
 
@@ -20,7 +21,7 @@ export const TarjetaClase = ({ servicio, flippedCard, setFlippedCard }: Props) =
       onClick={() => setFlippedCard(isFlipped ? null : servicio.id)}
     >
       <div
-        className={`relative w-full h-full transition-transform duration-[700ms] [transform-style:preserve-3d] rounded-[32px] lg:group-hover:[transform:rotateY(180deg)] shadow-xl ${isFlipped ? '[transform:rotateY(180deg)]' : ''
+        className={`relative w-full h-full transition-transform duration-[700ms] [transform-style:preserve-3d] rounded-[32px] lg:group-hover:[transform:rotateY(180deg)] group-focus-within:[transform:rotateY(180deg)] shadow-xl ${isFlipped ? '[transform:rotateY(180deg)]' : ''
           }`}
       >
         {/* =======================
@@ -47,7 +48,7 @@ export const TarjetaClase = ({ servicio, flippedCard, setFlippedCard }: Props) =
 
             {/* Títulos y CTA Visual */}
             <div className="mt-auto">
-              <h3 className="text-white text-3xl sm:text-4xl lg:text-5xl font-black mb-3 leading-[1.05] drop-shadow-2xl">
+              <h3 className="text-white text-3xl sm:text-4xl lg:text-5xl font-principal font-bold uppercase tracking-tight mb-3 leading-[1.05] drop-shadow-2xl wrap-break-word">
                 {servicio.titulo}
               </h3>
             </div>
@@ -68,8 +69,8 @@ export const TarjetaClase = ({ servicio, flippedCard, setFlippedCard }: Props) =
           <div className="relative z-10 h-full flex flex-col p-6 sm:p-8">
 
             {/* Bloque superior que desliza hacia arriba */}
-            <div className={`flex-1 flex flex-col justify-center transition-all duration-800 delay-100 ${isFlipped ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8 lg:group-hover:opacity-100 lg:group-hover:translate-y-0'}`}>
-              <h4 className="text-[#d7f250] text-2xl sm:text-3xl font-black mb-2 sm:mb-4 leading-tight text-center drop-shadow-md">
+            <div className={`flex-1 flex flex-col justify-center transition-all duration-800 delay-100 ${isFlipped ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8 lg:group-hover:opacity-100 lg:group-hover:translate-y-0 group-focus-within:opacity-100 group-focus-within:translate-y-0'}`}>
+              <h4 className="text-[#d7f250] text-2xl sm:text-3xl font-principal font-bold uppercase tracking-tight mb-2 sm:mb-4 leading-tight text-center drop-shadow-md wrap-break-word">
                 {servicio.titulo}
               </h4>
               <p className="text-gray-200 text-xs sm:text-[15px] mb-4 sm:mb-6 line-clamp-4 sm:line-clamp-4 leading-relaxed font-medium drop-shadow-md wrap-break-word">
@@ -101,11 +102,13 @@ export const TarjetaClase = ({ servicio, flippedCard, setFlippedCard }: Props) =
             </div>
 
             {/* Botón Inferior Magnético */}
-            <div className={`mt-auto transition-all duration-700 delay-200 ${isFlipped ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8 lg:group-hover:opacity-100 lg:group-hover:translate-y-0'}`}>
+            <div className={`mt-auto transition-all duration-700 delay-200 ${isFlipped ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8 lg:group-hover:opacity-100 lg:group-hover:translate-y-0 group-focus-within:opacity-100 group-focus-within:translate-y-0'}`}>
+              {/* Con teclado: al llegar con Tab a este enlace la tarjeta se da vuelta (focus-within). */}
               <Link
                 to={`/categorias/${servicio.id}`}
                 onClick={(e) => e.stopPropagation()}
-                className="group/btn flex items-center justify-center w-full bg-[#d7f250] text-[#131313] font-black rounded-2xl px-6 py-3 sm:py-5 transition-all duration-300 hover:bg-white hover:shadow-[0_0_30px_rgba(215,242,80,0.3)] uppercase tracking-widest text-xs sm:text-sm"
+                aria-label={`Ver la clase ${servicio.titulo}`}
+                className="group/btn flex items-center justify-center w-full bg-[#d7f250] outline-none focus-visible:ring-4 focus-visible:ring-white/70 text-[#131313] font-black rounded-2xl px-6 py-3 sm:py-5 transition-all duration-300 hover:bg-white hover:shadow-[0_0_30px_rgba(215,242,80,0.3)] uppercase tracking-widest text-xs sm:text-sm"
               >
                 Ver Masterclass
                 <ArrowRight className="w-4 h-4 sm:w-5 sm:h-5 ml-2 transition-transform duration-300 group-hover/btn:translate-x-2" />

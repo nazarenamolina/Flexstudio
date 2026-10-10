@@ -1,6 +1,8 @@
 import { useState } from 'react';
-import { Edit2, Trash2, Image as ImageIcon, Loader2, ChevronDown, ChevronUp } from 'lucide-react';
+import { Edit2, Trash2, Image as ImageIcon, Loader2, ChevronDown, ChevronUp, AlertTriangle } from 'lucide-react';
 import { type VideoData } from '../api/videos';
+import { useSubidasStore } from '../store/subidasStore';
+import { optimizarCloudinary } from '../imagenes';
 
 
 interface Props {
@@ -24,7 +26,10 @@ const formatearDuracionVideo = (segundosTotales?: number) => {
 export const VideoCard = ({ video, viewMode, onEdit, onDelete }: Props) => {
   const [expanded, setExpanded] = useState(false);
   const isGrid = viewMode === 'grid';
-  const estaProcesando = video.estado === 'PROCESANDO' || !video.playbackId;
+  // Un video que falló en Mux no tiene playbackId: antes se mostraba "Procesando" para siempre.
+  const subida = useSubidasStore((s) => s.subidas.find((x) => x.idVideo === video.id && (x.estado === 'subiendo' || x.estado === 'pausada')));
+  const conError = video.estado === 'ERROR';
+  const estaProcesando = !conError && (video.estado === 'PROCESANDO' || !video.playbackId);
   const descripcion = video.descripcion || 'Sin descripción.';
   const duracionReloj = formatearDuracionVideo(video.duracion);
 
@@ -34,14 +39,21 @@ export const VideoCard = ({ video, viewMode, onEdit, onDelete }: Props) => {
       {/* IMAGEN — Solo visible en grid o desktop */}
       {isGrid && (
         <div className="absolute inset-0 overflow-hidden">
-          {estaProcesando ? (
+          {conError ? (
+            <div className="relative w-full h-full flex flex-col items-center justify-center gap-2 bg-black/80 px-6 text-center">
+              {video.imagenUrl && <img src={optimizarCloudinary(video.imagenUrl, 600)} alt="" className="absolute inset-0 w-full h-full object-cover opacity-10" />}
+              <AlertTriangle className="w-6 h-6 sm:w-8 sm:h-8 text-red-400 relative z-10" aria-hidden="true" />
+              <p className="text-[8px] sm:text-[10px] text-red-400 font-black uppercase tracking-[0.2em] relative z-10">Error en Mux</p>
+              <p className="text-[10px] sm:text-xs text-white/60 relative z-10">Borralo y volvé a subirlo</p>
+            </div>
+          ) : estaProcesando ? (
             <div className="relative w-full h-full flex flex-col items-center justify-center bg-black/80">
-              {video.imagenUrl && <img src={video.imagenUrl} className="absolute inset-0 w-full h-full object-cover opacity-20" />}
+              {video.imagenUrl && <img src={optimizarCloudinary(video.imagenUrl, 600)} className="absolute inset-0 w-full h-full object-cover opacity-20" />}
               <Loader2 className="w-6 h-6 sm:w-8 sm:h-8 animate-spin text-[#d7f250] relative z-10 mb-2" />
-              <p className="text-[8px] sm:text-[10px] text-[#d7f250] font-black uppercase tracking-[0.2em] relative z-10 text-center">Procesando</p>
+              <p className="text-[8px] sm:text-[10px] text-[#d7f250] font-black uppercase tracking-[0.2em] relative z-10 text-center">{subida ? `Subiendo ${subida.progreso}%` : 'Procesando'}</p>
             </div>
           ) : video.imagenUrl ? (
-            <img src={video.imagenUrl} alt={video.titulo} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110 opacity-60" />
+            <img src={optimizarCloudinary(video.imagenUrl, 600)} alt={video.titulo} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110 opacity-60" />
           ) : (
             <div className="w-full h-full flex items-center justify-center bg-[#0a0a0a]"><ImageIcon size={40} className="text-gray-700" /></div>
           )}
@@ -52,13 +64,18 @@ export const VideoCard = ({ video, viewMode, onEdit, onDelete }: Props) => {
       {/* Imagen en desktop list view */}
       {!isGrid && (
         <div className="hidden sm:block relative w-48 h-full overflow-hidden shrink-0">
-          {estaProcesando ? (
+          {conError ? (
+            <div className="relative w-full h-full flex flex-col items-center justify-center gap-1 bg-black/80">
+              <AlertTriangle className="w-5 h-5 text-red-400" aria-hidden="true" />
+              <p className="text-[9px] text-red-400 font-black uppercase tracking-[0.2em]">Error en Mux</p>
+            </div>
+          ) : estaProcesando ? (
             <div className="relative w-full h-full flex flex-col items-center justify-center bg-black/80">
-              {video.imagenUrl && <img src={video.imagenUrl} className="absolute inset-0 w-full h-full object-cover opacity-20" />}
+              {video.imagenUrl && <img src={optimizarCloudinary(video.imagenUrl, 600)} className="absolute inset-0 w-full h-full object-cover opacity-20" />}
               <Loader2 className="w-5 h-5 animate-spin text-[#d7f250] relative z-10" />
             </div>
           ) : video.imagenUrl ? (
-            <img src={video.imagenUrl} alt={video.titulo} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110 opacity-70" />
+            <img src={optimizarCloudinary(video.imagenUrl, 600)} alt={video.titulo} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110 opacity-70" />
           ) : (
             <div className="w-full h-full flex items-center justify-center bg-[#0a0a0a]"><ImageIcon size={32} className="text-gray-700" /></div>
           )}
@@ -66,7 +83,7 @@ export const VideoCard = ({ video, viewMode, onEdit, onDelete }: Props) => {
       )}
 
       {/* 👇 4. BADGE DE DURACIÓN (Muestra duracionReloj calculado arriba) */}
-      {!estaProcesando && duracionReloj && (
+      {!estaProcesando && !conError && duracionReloj && (
         <span className={`absolute bottom-3 right-3 bg-black/80 text-white text-[9px] font-bold px-2 py-1 rounded-md blur-s z-20 shadow-lg ${isGrid ? '' : 'sm:bottom-2 sm:right-2'}`}>
           {duracionReloj}
         </span>
@@ -82,6 +99,16 @@ export const VideoCard = ({ video, viewMode, onEdit, onDelete }: Props) => {
             <span className={`px-4 py-2 rounded-full bg-[#d7f250]/25 text-[#d7f250] text-[9px] sm:text-[10px] font-bold tracking-wide shrink-0`}>
               {video.categoria?.titulo || 'Sin categoría'}
             </span>
+            {conError && (
+              <span className="px-3 py-2 rounded-full bg-red-500/15 text-red-400 text-[9px] sm:text-[10px] font-bold tracking-wide shrink-0">
+                Error en Mux
+              </span>
+            )}
+            {estaProcesando && !isGrid && (
+              <span className="sm:hidden px-3 py-2 rounded-full bg-white/5 text-white/60 text-[9px] font-bold tracking-wide shrink-0">
+                Procesando
+              </span>
+            )}
           </div>
 
           {/* TITULO */}
@@ -121,13 +148,13 @@ export const VideoCard = ({ video, viewMode, onEdit, onDelete }: Props) => {
 
         {/* BOTONES ACCIÓN */}
         <div className={`flex items-center gap-2 shrink-0 ${isGrid ? 'mt-4' : ''}`}>
-          <button
+          <button aria-label={`Editar ${video.titulo}`} title={`Editar ${video.titulo}`}
             onClick={(e) => { e.stopPropagation(); onEdit(video.id); }}
             className="p-2 sm:p-2.5 rounded-xl bg-white/5 border border-white/10 text-white/70 hover:text-black hover:bg-[#d7f250] hover:border-[#d7f250] hover:shadow-[0_0_12px_rgba(215,242,80,0.3)] transition-all duration-200"
           >
             <Edit2 size={13} className="sm:w-[14px] sm:h-[14px]" />
           </button>
-          <button
+          <button aria-label={`Eliminar ${video.titulo}`} title={`Eliminar ${video.titulo}`}
             onClick={(e) => { e.stopPropagation(); onDelete(video.id, video.titulo); }}
             className="p-2 sm:p-2.5 rounded-xl bg-white/5 border border-white/10 text-white/70 hover:text-white hover:bg-red-500/90 hover:border-red-500 hover:shadow-[0_0_12px_rgba(239,68,68,0.3)] transition-all duration-200"
           >

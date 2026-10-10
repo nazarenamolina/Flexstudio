@@ -27,6 +27,22 @@ export const obtenerDetalleClase = async (id: string) => {
   return respuesta.data;
 };
 
+export type EstadoCompra = 'PENDIENTE' | 'APROBADO' | 'RECHAZADO' | 'EXPIRADO';
+
+/** Estado real de una compra (lo actualiza el webhook de la pasarela). */
+export const obtenerEstadoCompraRequest = async (grupoPagoId: string): Promise<{ estado: EstadoCompra }> => {
+  const respuesta = await api.get(`/compras/estado/${grupoPagoId}`);
+  return respuesta.data;
+};
+
+export type EstadoCapturaPaypal = 'APROBADO' | 'PENDIENTE' | 'NO_APROBADO' | 'RECHAZADO';
+
+/** Cobra la orden de PayPal que el comprador acaba de aprobar (vuelve con ?token=<idOrden>). */
+export const capturarPagoPaypalRequest = async (idOrden: string): Promise<{ estado: EstadoCapturaPaypal }> => {
+  const respuesta = await api.post('/compras/paypal/capturar', { idOrden });
+  return respuesta.data;
+};
+
 export const iniciarCompraRequest = async (datosCompra: PayloadCompra) => {
   const response = await api.post('/compras/iniciar', datosCompra);
   return response.data;

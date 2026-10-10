@@ -3,8 +3,10 @@ import { useForm, useFieldArray } from 'react-hook-form';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useQuery, useQueryClient } from '@tanstack/react-query'; 
 import toast from 'react-hot-toast';
-import * as UpChunk from '@mux/upchunk';
 import { obtenerCategoriaPorIdRequest, actualizarCategoriaRequest } from '../api/categoria';
+import { mensajeDeError } from '../api/errores';
+import { useSubidasStore } from '../store/subidasStore';
+import { isAxiosError } from 'axios';
 
 export interface EditarCategoriaForm {
   titulo: string;
@@ -21,6 +23,7 @@ export const useEditarCategoria = () => {
   const navigate = useNavigate();
   const { id } = useParams();
   const queryClient = useQueryClient(); 
+  const iniciarSubida = useSubidasStore((s) => s.iniciar);
   
   const {register, handleSubmit, reset, control, watch, formState: { errors, isSubmitting }} = useForm<EditarCategoriaForm>({
     defaultValues: { beneficios: [], destacada: false } 
@@ -31,8 +34,8 @@ export const useEditarCategoria = () => {
     name: "beneficios",
   });
 
-  const [estadoSubida, setEstadoSubida] = useState<'IDLE' | 'ACTUALIZANDO_CATEGORIA' | 'SUBIENDO_VIDEO' | 'COMPLETADO'>('IDLE');
-  const [progreso, setProgreso] = useState(0);
+  // El video de muestra nuevo se sube en segundo plano (PanelSubidas); acá solo se guardan los cambios.
+  const [estadoSubida, setEstadoSubida] = useState<'IDLE' | 'ACTUALIZANDO_CATEGORIA'>('IDLE');
   
   // 👇 MODIFICACIÓN 1: Aceptamos string (URL de la Galería) además de File
   const [archivos, setArchivos] = useState({
@@ -41,11 +44,6 @@ export const useEditarCategoria = () => {
     videoMuestra: null as File | null,
   });
 
-  const [imagenesActuales, setImagenesActuales] = useState({
-    imagenTarjeta: '',
-    imagenHero: '',
-    tieneVideo: false,
-  });
   const [borrar, setBorrar] = useState({ hero: false, tarjeta: false, video: false });
 
   const { data: categoria, isLoading: cargandoDatos } = useQuery({
@@ -68,13 +66,15 @@ export const useEditarCategoria = () => {
         destacada: categoria.destacada || false, 
       });
 
-      setImagenesActuales({
-        imagenTarjeta: categoria.imagenTarjeta || '',
-        imagenHero: categoria.imagenHero || '',
-        tieneVideo: !!categoria.playbackIdMuestra,
-      });
     }
   }, [categoria, reset]);
+
+  // Lo guardado, menos lo que se marcó para quitar (se aplica al guardar).
+  const imagenesActuales = {
+    imagenTarjeta: borrar.tarjeta ? '' : categoria?.imagenTarjeta || '',
+    imagenHero: borrar.hero ? '' : categoria?.imagenHero || '',
+    tieneVideo: !borrar.video && !!categoria?.playbackIdMuestra,
+  };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>, tipo: keyof typeof archivos) => {
     if (e.target.files && e.target.files.length > 0) {
@@ -95,17 +95,14 @@ export const useEditarCategoria = () => {
   const handleEliminarMultimedia = (tipo: 'hero' | 'tarjeta' | 'video') => {
     if (tipo === 'hero') {
       setArchivos(prev => ({ ...prev, imagenHero: null }));
-      setImagenesActuales(prev => ({ ...prev, imagenHero: '' }));
       setBorrar(prev => ({ ...prev, hero: true }));
     }
     if (tipo === 'tarjeta') {
       setArchivos(prev => ({ ...prev, imagenTarjeta: null }));
-      setImagenesActuales(prev => ({ ...prev, imagenTarjeta: '' }));
       setBorrar(prev => ({ ...prev, tarjeta: true }));
     }
     if (tipo === 'video') {
       setArchivos(prev => ({ ...prev, videoMuestra: null }));
-      setImagenesActuales(prev => ({ ...prev, tieneVideo: false }));
       setBorrar(prev => ({ ...prev, video: true }));
     }
   };
@@ -118,17 +115,16 @@ export const useEditarCategoria = () => {
     try {
       const formData = new FormData();
       formData.append('titulo', data.titulo);
-      formData.append('precioArs', data.precioArs.toString());
-      formData.append('precioUsd', data.precioUsd.toString());
+      formData.append('precioArs', String(Number(data.precioArs) || 0));
+      formData.append('precioUsd', String(Number(data.precioUsd) || 0));
       formData.append('destacada', String(data.destacada));
-      if (data.descripcionCard) formData.append('descripcionCard', data.descripcionCard);
-      if (data.descripcionBreve) formData.append('descripcionBreve', data.descripcionBreve);
-      if (data.descripcionDetallada) formData.append('descripcionDetallada', data.descripcionDetallada);
-      
-      if (data.beneficios && data.beneficios.length > 0) {
-        const beneficiosValidos = data.beneficios.filter(b => b.titulo.trim() !== '');
-        if (beneficiosValidos.length > 0) formData.append('beneficios', JSON.stringify(beneficiosValidos));
-      }
+      // Se mandan siempre, aunque estén vacíos: el back solo cambia los campos que recibe, así que
+      // antes no había forma de borrar una descripción ni de quitar todos los beneficios.
+      formData.append('descripcionCard', data.descripcionCard ?? '');
+      formData.append('descripcionBreve', data.descripcionBreve ?? '');
+      formData.append('descripcionDetallada', data.descripcionDetallada ?? '');
+      const beneficiosValidos = (data.beneficios ?? []).filter(b => b.titulo.trim() !== '');
+      formData.append('beneficios', JSON.stringify(beneficiosValidos));
       
       // 👇 MODIFICACIÓN 3: Diferenciar File local de string URL
       if (archivos.imagenTarjeta) {
@@ -162,40 +158,38 @@ export const useEditarCategoria = () => {
       toast.success('¡Textos y fotos actualizados!', { id: loadingToast });
       queryClient.invalidateQueries({ queryKey: ['categorias'] });
       queryClient.invalidateQueries({ queryKey: ['categoria', id] });
+      queryClient.invalidateQueries({ queryKey: ['dashboard-data'] });
       
       if (archivos.videoMuestra && uploadUrl) {
-        setEstadoSubida('SUBIENDO_VIDEO');
-        const upload = UpChunk.createUpload({
+        // La muestra actual sigue visible hasta que Mux procese la nueva (el back la reemplaza).
+        iniciarSubida({
+          tipo: 'muestra',
+          titulo: data.titulo,
+          archivo: archivos.videoMuestra,
           endpoint: uploadUrl,
-          file: archivos.videoMuestra,
-          chunkSize: 5120,
+          alCompletar: () => {
+            queryClient.invalidateQueries({ queryKey: ['categorias'] });
+            queryClient.invalidateQueries({ queryKey: ['categoria', id] });
+          },
         });
-        
-        upload.on('progress', (e) => setProgreso(Math.floor(e.detail)));
-        upload.on('success', () => {
-          setEstadoSubida('COMPLETADO');
-          setProgreso(100);
-          toast.success('¡Video actualizado!');
-          setTimeout(() => navigate('/admin/categorias'), 2000);
-        });
-        upload.on('error', () => {
-          toast.error('Error al subir el nuevo video. Lo demás sí se guardó.');
-          navigate('/admin/categorias');
-        });
-        return;
       }
 
       navigate('/admin/categorias');
-    } catch (error: any) {
-      const mensaje = error.response?.data?.message || 'Error al actualizar';
-      toast.error(Array.isArray(mensaje) ? mensaje[0] : mensaje, { id: loadingToast });
+    } catch (error) {
+      toast.error(mensajeDeError(error, 'No se pudieron guardar los cambios.'), { id: loadingToast, duration: 8000 });
       setEstadoSubida('IDLE');
+      // 503: los cambios se guardaron, pero Mux no aceptó el video de muestra nuevo.
+      if (isAxiosError(error) && error.response?.status === 503) {
+        queryClient.invalidateQueries({ queryKey: ['categorias'] });
+        queryClient.invalidateQueries({ queryKey: ['categoria', id] });
+        navigate('/admin/categorias');
+      }
     }
   };
 
   return {
     register, handleSubmit: handleSubmit(onSubmit), errors, isSubmitting, cargandoDatos, 
-    estadoSubida, progreso, archivos, imagenesActuales, handleFileChange, handleSelectFromGallery, 
+    estadoSubida, archivos, imagenesActuales, handleFileChange, handleSelectFromGallery, 
     handleEliminarMultimedia, watch, navigate, beneficiosFields, appendBeneficio, removeBeneficio, control
   };
 };

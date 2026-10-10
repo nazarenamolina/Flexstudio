@@ -1,11 +1,13 @@
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
+import { rutaDeRetorno } from '../router/rutaDeRetorno';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import toast from 'react-hot-toast';
 import { loginRequest } from '../api/auth';
 import { useAuthStore } from '../store/authStore';
+import { mensajeDeError, datosDeError } from '../api/errores';
 import { useGoogleReCaptcha } from 'react-google-recaptcha-v3'; // 👈 Usamos la v3
 
 const loginSchema = z.object({
@@ -18,6 +20,7 @@ export type LoginFormValues = z.infer<typeof loginSchema>;
 
 export const useLogin = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const setUsuario = useAuthStore((state) => state.setUsuario);
   const [errorServidor, setErrorServidor] = useState<string | null>(null);
   const { executeRecaptcha } = useGoogleReCaptcha(); 
@@ -37,17 +40,20 @@ export const useLogin = () => {
       const respuesta = await loginRequest({ ...data, captchaToken }); 
       setUsuario(respuesta.usuario);
       toast.success(respuesta.mensaje || '¡Bienvenida de vuelta!');
-      const redirectTo = respuesta.usuario.rol === 'ADMIN' ? '/admin/categorias' : '/';
-      navigate(redirectTo);
-    } catch (error: any) {
+      // Vuelve a la página que pidió el login (carrito, una clase, el retorno del pago…). El panel
+      // admin solo para administradores.
+      const desde = rutaDeRetorno(location.state);
+      const esAdmin = respuesta.usuario.rol === 'ADMIN';
+      const destino = desde && (esAdmin || !desde.startsWith('/admin')) ? desde : esAdmin ? '/admin/categorias' : '/';
+      navigate(destino, { replace: true });
+    } catch (error) {
       // Contraseña correcta pero correo sin verificar: el back ya mandó un código nuevo si hacía falta.
-      if (error.response?.data?.requiereVerificacion) {
-        toast(error.response.data.message);
+      if (datosDeError(error)?.requiereVerificacion) {
+        toast(mensajeDeError(error, 'Tenés que verificar tu correo.'));
         navigate('/verificar-email', { state: { correo: data.correo } });
         return;
       }
-      const mensajeError = error.response?.data?.message || 'Error al iniciar sesión. Verifica tus credenciales.';
-      setErrorServidor(mensajeError);
+      setErrorServidor(mensajeDeError(error, 'Error al iniciar sesión. Verificá tus datos.'));
       toast.error('Acceso denegado');
     }
   };

@@ -3,6 +3,7 @@ import { Dialog, Transition } from '@headlessui/react';
 import { useInfiniteQuery } from '@tanstack/react-query';
 import { X, Image as ImageIcon, Loader2 } from 'lucide-react';
 import { obtenerGaleriaRequest, type RespuestaGaleria } from '../api/galeria';
+import { optimizarCloudinary } from '../imagenes';
 
 interface Props {
   isOpen: boolean;
@@ -97,7 +98,7 @@ export const GaleriaModal = ({ isOpen, onClose, onSelectImagen }: Props) => {
                             className="group relative aspect-square rounded-xl overflow-hidden cursor-pointer border-2 border-transparent hover:border-[#d7f250] transition-all bg-gray-900"
                           >
                             <img 
-                              src={img.url} 
+                              src={optimizarCloudinary(img.url, 300)} 
                               alt="Miniatura Cloudinary" 
                               className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
                               loading="lazy"

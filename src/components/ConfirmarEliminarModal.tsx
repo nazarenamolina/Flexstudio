@@ -1,5 +1,5 @@
 import { Dialog, Transition } from '@headlessui/react';
-import { Fragment } from 'react';
+import { Fragment, type ReactNode } from 'react';
 import { AlertTriangle, Loader2 } from 'lucide-react';
 
 interface Props {
@@ -8,9 +8,17 @@ interface Props {
   onConfirm: () => void;
   tituloItem: string;
   estaEliminando: boolean;
+  /** Título del modal. Por defecto, "Eliminar". */
+  titulo?: string;
+  /** Qué pasa al confirmar. Por defecto, el borrado definitivo (videos). */
+  mensaje?: ReactNode;
+  textoConfirmar?: string;
 }
 
-export const ConfirmarEliminarModal = ({ isOpen, onClose, onConfirm, tituloItem, estaEliminando }: Props) => {
+export const ConfirmarEliminarModal = ({
+  isOpen, onClose, onConfirm, tituloItem, estaEliminando,
+  titulo = 'Eliminar', mensaje, textoConfirmar = 'Sí, eliminar',
+}: Props) => {
   return (
     <Transition appear show={isOpen} as={Fragment}>
       <Dialog as="div" className="relative z-50" onClose={estaEliminando ? () => {} : onClose}>
@@ -46,14 +54,18 @@ export const ConfirmarEliminarModal = ({ isOpen, onClose, onConfirm, tituloItem,
                     <AlertTriangle className="w-6 h-6 text-red-500" />
                   </div>
                   <Dialog.Title as="h3" className="text-xl font-extrabold text-white leading-tight">
-                    Eliminar
+                    {titulo}
                   </Dialog.Title>
                 </div>
 
                 <div className="mt-2">
                   <p className="text-sm text-gray-400">
-                    ¿Estás segura de que deseas eliminar <strong>"{tituloItem}"</strong>? 
-                    Esta acción borrará todas sus imágenes y videos asociados y no se puede deshacer.
+                    {mensaje ?? (
+                      <>
+                        ¿Segura que querés eliminar <strong className="text-white">"{tituloItem}"</strong>? Se borra
+                        definitivamente de Mux y de la clase, y no se puede deshacer.
+                      </>
+                    )}
                   </p>
                 </div>
 
@@ -69,7 +81,7 @@ export const ConfirmarEliminarModal = ({ isOpen, onClose, onConfirm, tituloItem,
                     className="inline-flex justify-center items-center gap-2 rounded-xl border border-transparent bg-red-500 px-4 py-2.5 text-sm font-bold text-white hover:bg-red-600 transition-colors shadow-lg shadow-red-500/20 disabled:opacity-70 cursor-pointer"
                     onClick={onConfirm}
                   >
-                    {estaEliminando ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Sí, Eliminar'}
+                    {estaEliminando ? <Loader2 className="w-4 h-4 animate-spin" /> : textoConfirmar}
                   </button>
                 </div>
               </Dialog.Panel>

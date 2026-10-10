@@ -2,55 +2,42 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import {
-  obtenerCategoriasRequest,
   eliminarCategoriaRequest,
   obtenerCategoriasEliminadasRequest,
   restaurarCategoriaRequest,
   type Categoria,
 } from '../api/categoria';
-
-interface CategoriaConVideos extends Categoria {
-  videos?: any[];
-}
+import { mensajeDeError } from '../api/errores';
+import { useCategoriasPublicas } from './useCategoriasPublicas';
 
 export const useCategorias = () => {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
 
-  const {
-    data: categorias = [],
-    isLoading,
-    isError,
-    refetch,
-  } = useQuery<CategoriaConVideos[]>({
-    queryKey: ['categorias'],
-    queryFn: async () => {
-      const data = await obtenerCategoriasRequest();
-      if (Array.isArray(data)) return data;
-      if (data && Array.isArray((data as any).categorias)) return (data as any).categorias;
-      return [];
-    },
-    staleTime: 1000 * 60 * 5,
-  });
+  // Misma consulta que la home y el carrito: un cambio en el admin se ve en todo el sitio.
+  // isLoadingError: solo si nunca cargó. Si falla una actualización, se sigue mostrando la lista que ya había.
+  const { data: categorias = [], isLoading, isLoadingError: isError, refetch, isFetching } = useCategoriasPublicas();
 
   const eliminarMutation = useMutation({
     mutationFn: eliminarCategoriaRequest,
     onMutate: async (id: string) => {
       await queryClient.cancelQueries({ queryKey: ['categorias'] });
-      const previous = queryClient.getQueryData(['categorias']);
-      queryClient.setQueryData(['categorias'], (old: CategoriaConVideos[] = []) =>
-        old.filter((c) => c.id !== id)
-      );
+      const previous = queryClient.getQueryData<Categoria[]>(['categorias']);
+      queryClient.setQueryData<Categoria[]>(['categorias'], (old = []) => old.filter((c) => c.id !== id));
       return { previous };
     },
     onSuccess: () => {
-      toast.success('Categoría eliminada exitosamente');
+      toast.success('Clase dada de baja. Podés restaurarla desde "Dadas de baja".');
+    },
+    onError: (error, _id, context) => {
+      queryClient.setQueryData(['categorias'], context?.previous);
+      toast.error(mensajeDeError(error, 'No se pudo dar de baja la clase.'));
+    },
+    onSettled: (_datos, _error, id) => {
       queryClient.invalidateQueries({ queryKey: ['categorias'] });
       queryClient.invalidateQueries({ queryKey: ['categorias-eliminadas'] });
-    },
-    onError: (_error, _id, context) => {
-      queryClient.setQueryData(['categorias'], context?.previous);
-      toast.error('Ocurrió un error al eliminar la categoría');
+      queryClient.invalidateQueries({ queryKey: ['categoria', id] });
+      queryClient.invalidateQueries({ queryKey: ['dashboard-data'] });
     },
   });
 
@@ -58,49 +45,34 @@ export const useCategorias = () => {
   const { data: categoriasEliminadas = [] } = useQuery<Categoria[]>({
     queryKey: ['categorias-eliminadas'],
     queryFn: obtenerCategoriasEliminadasRequest,
-    staleTime: 1000 * 60 * 5,
   });
 
   const restaurarMutation = useMutation({
     mutationFn: restaurarCategoriaRequest,
-    onSuccess: () => {
-      toast.success('Categoría restaurada: vuelve a estar en el catálogo');
+    onSuccess: (_datos, id) => {
+      toast.success('Clase restaurada: vuelve a estar en el catálogo');
       queryClient.invalidateQueries({ queryKey: ['categorias'] });
       queryClient.invalidateQueries({ queryKey: ['categorias-eliminadas'] });
+      queryClient.invalidateQueries({ queryKey: ['categoria', id] });
+      queryClient.invalidateQueries({ queryKey: ['dashboard-data'] });
     },
     onError: (error) => {
-      toast.error(typeof error === 'string' ? error : 'Ocurrió un error al restaurar la categoría');
+      toast.error(mensajeDeError(error, 'No se pudo restaurar la clase.'));
     },
   });
-
-  const abrirModalEliminacion = (id: string, titulo: string) => {
-    return { id, titulo };
-  };
-
-  const handleEliminar = (id: string) => {
-    eliminarMutation.mutate(id);
-  };
-
-  const navigateANueva = () => {
-    navigate('/admin/categorias/nueva');
-  };
-
-  const navigateAEditar = (id: string) => {
-    navigate(`/admin/categorias/editar/${id}`);
-  };
 
   return {
     categorias,
     isLoading,
     isError,
+    isFetching,
     refetch,
     estaEliminando: eliminarMutation.isPending,
     categoriasEliminadas,
     handleRestaurar: (id: string) => restaurarMutation.mutate(id),
     estaRestaurando: restaurarMutation.isPending,
-    abrirModalEliminacion,
-    handleEliminar,
-    navigateANueva,
-    navigateAEditar,
+    handleEliminar: (id: string) => eliminarMutation.mutate(id),
+    navigateANueva: () => navigate('/admin/categorias/nueva'),
+    navigateAEditar: (id: string) => navigate(`/admin/categorias/editar/${id}`),
   };
 };

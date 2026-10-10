@@ -2,10 +2,14 @@ import { api } from './axios';
 import { type Categoria } from './categoria';
 
 
+/** Estado del video en Mux: PROCESANDO hasta que llega el webhook; ERROR si la subida o el procesamiento fallaron. */
+export type EstadoVideo = 'PROCESANDO' | 'LISTO' | 'ERROR';
+
 export interface Video {
   id: string;
   titulo: string;
-  descripcion?: string; 
+  estado?: EstadoVideo;
+  descripcion?: string;
   assetId: string;
   playbackId: string;
   imagenUrl?: string;
@@ -20,7 +24,7 @@ export interface VideoData {
   id: string;
   titulo: string;
   descripcion?: string;
-  estado?: string;
+  estado?: EstadoVideo;
   playbackId?: string;
   imagenUrl?: string;
   duracion?: number;
@@ -29,9 +33,19 @@ export interface VideoData {
   };
 }
 
-export const obtenerCredencialesReproduccion = async (idVideo: string) => {
+/** Credenciales firmadas de Mux: un token por tipo (video, miniatura y storyboard). */
+export interface CredencialesReproduccion {
+  playbackId: string;
+  tokens: { playback: string; thumbnail?: string; storyboard?: string };
+  /** Momento (ms) en que vencen los tokens. */
+  expiraEn?: number;
+}
+
+export const obtenerCredencialesReproduccion = async (idVideo: string): Promise<CredencialesReproduccion> => {
   const respuesta = await api.get(`/videos/reproducir/${idVideo}`);
-  return respuesta.data;  
+  const datos = respuesta.data;
+  // Compatibilidad con un back anterior, que solo devolvía `token`.
+  return { ...datos, tokens: datos.tokens ?? { playback: datos.token } };
 };
 
 export const obtenerTodosLosVideosRequest = async (): Promise<Video[]> => {
@@ -55,6 +69,12 @@ export const solicitarUrlSubidaRequest = async (datos: FormData): Promise<{ uplo
       'Content-Type': 'multipart/form-data',
     },
   });
+  return respuesta.data;
+};
+
+/** URL de subida a Mux para reemplazar el archivo de un video; el actual sigue hasta que el nuevo esté listo. */
+export const solicitarReemplazoArchivoRequest = async (id: string): Promise<{ uploadUrl: string; videoId: string }> => {
+  const respuesta = await api.post(`/videos/${id}/reemplazar-archivo`);
   return respuesta.data;
 };
 

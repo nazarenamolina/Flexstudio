@@ -5,10 +5,11 @@ import { ConfirmarEliminarModal } from '../../../components/ConfirmarEliminarMod
 import { motion, AnimatePresence } from 'framer-motion';
 import { CategoriaCard } from '../../../components/CategoriaCard';
 import { AddCategoriaCard } from '../../../components/AddCategoriaCard';
+import { ErrorCargaAdmin } from '../../../components/ErrorCargaAdmin';
 
 export const CategoriasPage = () => {
   const {
-    categorias, isLoading, estaEliminando, handleEliminar, navigateANueva, navigateAEditar,
+    categorias, isLoading, isError, isFetching, refetch, estaEliminando, handleEliminar, navigateANueva, navigateAEditar,
     categoriasEliminadas, handleRestaurar, estaRestaurando,
   } = useCategorias();
   const [verEliminadas, setVerEliminadas] = useState(false);
@@ -74,8 +75,12 @@ export const CategoriasPage = () => {
         </div>
       </div>
 
+      {isError && (
+        <ErrorCargaAdmin que="las clases" onReintentar={() => refetch()} reintentando={isFetching} />
+      )}
+
       {/* GRILLA / LISTA CONTENEDORA */}
-      <AnimatePresence mode="wait">
+      {!isError && <AnimatePresence mode="wait">
         <motion.div 
           key={viewMode}
           variants={slideVariants}
@@ -97,7 +102,7 @@ export const CategoriasPage = () => {
             />
           ))}
         </motion.div>
-      </AnimatePresence>
+      </AnimatePresence>}
 
       {/* DADAS DE BAJA: siguen visibles para quienes las compraron y se pueden restaurar */}
       {categoriasEliminadas.length > 0 && (
@@ -143,6 +148,15 @@ export const CategoriasPage = () => {
         onConfirm={ejecutarEliminacion}
         tituloItem={categoriaAEliminar?.titulo || ''}
         estaEliminando={estaEliminando}
+        titulo="Dar de baja la clase"
+        textoConfirmar="Sí, dar de baja"
+        mensaje={
+          <>
+            <strong className="text-white">"{categoriaAEliminar?.titulo}"</strong> deja de aparecer en el catálogo y no se
+            puede comprar. Quienes ya la compraron la siguen viendo, y la podés restaurar cuando quieras desde
+            "Dadas de baja".
+          </>
+        }
       />
     </div>
   );

@@ -78,21 +78,23 @@ export const CarruselDestacadas = ({ categorias, flippedCard, setFlippedCard }: 
                   }}
                 />
               )}
-              {/* Tu hermosa tarjeta nativa */}
-              <TarjetaClase 
-                servicio={categoria} 
-                flippedCard={flippedCard} 
-                setFlippedCard={setFlippedCard} 
-              />
+              {/* Solo la tarjeta del centro recibe el foco del teclado: las demás están detrás o fuera de vista. */}
+              <div inert={!isCenter} className="w-full h-full">
+                <TarjetaClase
+                  servicio={categoria}
+                  flippedCard={flippedCard}
+                  setFlippedCard={setFlippedCard}
+                />
+              </div>
             </motion.div>
           );
         })}
         {categoriasOrdenadas.length > 1 && (
           <>
-            <button onClick={prev} className="absolute left-2 md:-left-30 z-20 p-4 rounded-full bg-[#131313]/80 border border-white/10 text-white hover:text-[#d7f250] hover:border-[#d7f250] hover:scale-110  transition-all hidden sm:block">
+            <button type="button" onClick={prev} aria-label="Clase anterior" className="absolute left-2 md:-left-30 z-20 p-4 rounded-full bg-[#131313]/80 border border-white/10 text-white hover:text-[#d7f250] hover:border-[#d7f250] hover:scale-110 transition-all hidden sm:block">
               <ChevronLeft size={24} />
             </button>
-            <button onClick={next} className="absolute right-2 md:-right-30 z-20 p-4 rounded-full bg-[#131313]/80 border border-white/10 text-white hover:text-[#d7f250] hover:border-[#d7f250] hover:scale-110 transition-all hidden sm:block">
+            <button type="button" onClick={next} aria-label="Clase siguiente" className="absolute right-2 md:-right-30 z-20 p-4 rounded-full bg-[#131313]/80 border border-white/10 text-white hover:text-[#d7f250] hover:border-[#d7f250] hover:scale-110 transition-all hidden sm:block">
               <ChevronRight size={24} />
             </button>
           </>

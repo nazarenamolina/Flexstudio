@@ -4,6 +4,8 @@ import { X, Mail, Loader2 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { useGoogleReCaptcha } from 'react-google-recaptcha-v3';
 import { solicitarRecuperacionRequest } from '../api/auth';
+import { mensajeDeError } from '../api/errores';
+import { claseTarjeta, claseEtiqueta, claseCampo, claseBotonPrincipal } from '../pages/auth/estilos';
 
 interface Props {
   isOpen: boolean;
@@ -31,8 +33,8 @@ export const RecuperarPasswordModal = ({ isOpen, onClose }: Props) => {
       toast.success(respuesta.mensaje || 'Revisa tu bandeja de entrada', { duration: 5000 });
       setCorreo('');
       onClose();
-    } catch (error: any) {
-      toast.error(error.response?.data?.message || 'Error al procesar la solicitud');
+    } catch (error) {
+      toast.error(mensajeDeError(error, 'No pudimos procesar la solicitud. Intentá de nuevo.'));
     } finally {
       setCargando(false);
     }
@@ -51,7 +53,7 @@ export const RecuperarPasswordModal = ({ isOpen, onClose }: Props) => {
           leaveFrom="opacity-100"
           leaveTo="opacity-0"
         >
-          <div className="fixed inset-0 bg-black/80"/>
+          <div className="fixed inset-0 bg-black/60"/>
         </Transition.Child>
 
         <div className="fixed inset-0 overflow-y-auto">
@@ -66,63 +68,51 @@ export const RecuperarPasswordModal = ({ isOpen, onClose }: Props) => {
               leaveFrom="opacity-100 scale-100 translate-y-0"
               leaveTo="opacity-0 scale-95 translate-y-4"
             >
-              <Dialog.Panel className="w-full max-w-md transform overflow-hidden rounded-2xl bg-[#111111] border border-neutral-800 p-6 sm:p-8 text-left align-middle shadow-2xl transition-all relative">
-                
-                {/* Botón de cerrar (X) */}
+              <Dialog.Panel className={`${claseTarjeta} w-full max-w-md transform overflow-hidden p-6 sm:p-8 text-left align-middle transition-all relative text-[#131313]`}>
                 <button
                   onClick={onClose}
-                  className="absolute top-4 right-4 text-neutral-500 hover:text-white transition-colors focus:outline-none focus:ring-2 focus:ring-[#d7f250] rounded-full p-1"
+                  aria-label="Cerrar"
+                  className="absolute top-4 right-4 text-neutral-500 hover:text-[#131313] transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[#131313] rounded-full p-1 cursor-pointer"
                 >
                   <X size={20} />
                 </button>
 
                 <div className="text-center mb-6">
-                  <Dialog.Title as="h2" className="text-2xl font-black text-white uppercase tracking-wide mb-2">
-                    Recuperar Contraseña
+                  <Dialog.Title as="h2" className="font-principal text-2xl uppercase mb-2">
+                    Recuperar contraseña
                   </Dialog.Title>
-                  <p className="text-sm text-neutral-400">
-                    Ingresa tu correo y te enviaremos un enlace mágico para restablecer tu acceso.
+                  <p className="text-sm text-neutral-600">
+                    Ingresá tu correo y te enviamos un enlace para elegir una contraseña nueva.
                   </p>
                 </div>
 
-                <form onSubmit={handleSubmit} className="space-y-6">
+                <form onSubmit={handleSubmit} className="space-y-6" noValidate>
                   <div>
-                    <label className="block text-[10px] font-bold text-neutral-400 uppercase tracking-widest mb-1">
-                      EMAIL
-                    </label>
+                    <label htmlFor="recuperar-correo" className={claseEtiqueta}>Email</label>
                     <div className="relative">
-                      <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                        <Mail className="h-4 w-4 text-neutral-500" />
-                      </div>
+                      <Mail className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-neutral-400 pointer-events-none" />
                       <input
+                        id="recuperar-correo"
                         type="email"
+                        autoComplete="email"
                         value={correo}
                         onChange={(e) => setCorreo(e.target.value)}
                         placeholder="tu@correo.com"
-                        className="w-full pl-10 pr-4 py-3 bg-[#1a1a1a] border border-neutral-800 focus:border-[#d7f250] focus:ring-[#d7f250]/20 rounded-lg text-white placeholder-neutral-600 focus:outline-none focus:ring-2 transition-all"
+                        className={`${claseCampo()} pl-11`}
                       />
                     </div>
                   </div>
 
-                  <button
-                    type="submit"
-                    disabled={cargando}
-                    className="w-full bg-[#d7f250] hover:bg-[#c4dd46] text-[#111111] font-black text-sm py-4 px-4 rounded-lg transition-all duration-200 flex items-center justify-center disabled:opacity-70 disabled:cursor-not-allowed uppercase tracking-widest focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-[#111111] focus:ring-[#d7f250]"
-                  >
-                    {cargando ? (
-                      <><Loader2 className="animate-spin -ml-1 mr-2 h-4 w-4" /> ENVIANDO...</>
-                    ) : (
-                      'ENVIAR ENLACE'
-                    )}
+                  <button type="submit" disabled={cargando} className={claseBotonPrincipal}>
+                    {cargando ? <><Loader2 className="animate-spin h-4 w-4" /> Enviando…</> : 'Enviar enlace'}
                   </button>
 
                   <p className="text-[10px] text-neutral-500 text-center leading-tight">
                     Este sitio está protegido por reCAPTCHA y se aplican la{' '}
-                    <a href="https://policies.google.com/privacy" target="_blank" rel="noopener noreferrer" className="text-neutral-400 hover:text-[#d7f250] underline focus:outline-none focus:ring-1 focus:ring-[#d7f250]">Política de privacidad</a> y los{' '}
-                    <a href="https://policies.google.com/terms" target="_blank" rel="noopener noreferrer" className="text-neutral-400 hover:text-[#d7f250] underline focus:outline-none focus:ring-1 focus:ring-[#d7f250]">Términos de servicio</a> de Google.
+                    <a href="https://policies.google.com/privacy" target="_blank" rel="noopener noreferrer" className="underline hover:text-[#131313]">Política de privacidad</a> y los{' '}
+                    <a href="https://policies.google.com/terms" target="_blank" rel="noopener noreferrer" className="underline hover:text-[#131313]">Términos de servicio</a> de Google.
                   </p>
                 </form>
-
               </Dialog.Panel>
             </Transition.Child>
           </div>

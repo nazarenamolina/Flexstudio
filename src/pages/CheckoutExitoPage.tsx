@@ -1,101 +1,159 @@
-import { useEffect } from 'react';
-import { Link, useSearchParams } from 'react-router-dom';
-import { CheckCircle2, ArrowRight, Trophy } from 'lucide-react';
-import { motion, type Variants } from 'framer-motion';
+import { useEffect, useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { Receipt } from 'lucide-react';
 import { useCartStore } from '../store/cartStore';
+import { capturarPagoPaypalRequest, obtenerEstadoCompraRequest } from '../api/compras';
+import { ResultadoPago, Resaltado } from '../components/ResultadoPago';
+import { mensajeDeError } from '../api/errores';
+
+// El acceso lo habilita el webhook de la pasarela, que puede tardar unos segundos: se consulta
+// el estado cada 3 s durante 1 minuto antes de pasar a "se está acreditando".
+const INTERVALO_MS = 3000;
+const ESPERA_MAXIMA_MS = 60_000;
+
+type Estado = 'confirmando' | 'exito' | 'acreditando' | 'rechazado' | 'sin-pagar' | 'sin-datos' | 'error';
+
+const ERROR_CONFIRMACION = 'No pudimos confirmar el pago. Si se te cobró, te llegará el comprobante por mail.';
 
 export const CheckoutExitoPage = () => {
   const clearCart = useCartStore((state) => state.clearCart);
+  const queryClient = useQueryClient();
   const [searchParams] = useSearchParams();
-  const paymentId = searchParams.get('payment_id');
+  // MercadoPago vuelve con external_reference y payment_id; PayPal con grupoId y token (ID de la orden).
+  const grupoPagoId = searchParams.get('external_reference') || searchParams.get('grupoId');
+  const idOrdenPaypal = searchParams.get('token');
+  const idOperacion = searchParams.get('payment_id');
+
+  // PayPal: la orden está aprobada pero falta cobrarla (la respuesta ya es el estado definitivo).
+  const captura = useQuery({
+    queryKey: ['paypal-captura', idOrdenPaypal],
+    queryFn: () => capturarPagoPaypalRequest(idOrdenPaypal!),
+    enabled: !!idOrdenPaypal,
+    retry: false,
+    staleTime: Infinity,
+  });
+
+  // MercadoPago: se espera a que el webhook apruebe la compra, hasta ESPERA_MAXIMA_MS.
+  const [esperaAgotada, setEsperaAgotada] = useState(false);
+  useEffect(() => {
+    const temporizador = setTimeout(() => setEsperaAgotada(true), ESPERA_MAXIMA_MS);
+    return () => clearTimeout(temporizador);
+  }, []);
+  const consulta = useQuery({
+    queryKey: ['estado-compra', grupoPagoId],
+    queryFn: () => obtenerEstadoCompraRequest(grupoPagoId!),
+    enabled: !!grupoPagoId && !idOrdenPaypal,
+    retry: 1,
+    // Son pocas consultas: siguen aunque el cliente cambie de pestaña mientras espera.
+    refetchIntervalInBackground: true,
+    refetchInterval: (q) => (q.state.data?.estado === 'PENDIENTE' && !esperaAgotada ? INTERVALO_MS : false),
+  });
+
+  let estado: Estado;
+  if (idOrdenPaypal) {
+    if (captura.isPending) estado = 'confirmando';
+    else if (captura.isError) estado = 'error';
+    else if (captura.data.estado === 'APROBADO') estado = 'exito';
+    else if (captura.data.estado === 'PENDIENTE') estado = 'acreditando';
+    else estado = 'sin-pagar';
+  } else if (grupoPagoId) {
+    const estadoCompra = consulta.data?.estado;
+    if (consulta.isError) estado = 'error';
+    else if (!estadoCompra) estado = 'confirmando';
+    else if (estadoCompra === 'APROBADO') estado = 'exito';
+    else if (estadoCompra === 'RECHAZADO' || estadoCompra === 'EXPIRADO') estado = 'rechazado';
+    else estado = esperaAgotada ? 'acreditando' : 'confirmando';
+  } else {
+    estado = 'sin-datos';
+  }
+
+  // El carrito se vacía solo si el pago se hizo o está acreditándose; si no, queda para reintentar.
+  useEffect(() => {
+    if (estado === 'exito' || estado === 'acreditando') clearCart();
+    // Las clases nuevas tienen que aparecer en "Mis clases" sin esperar a que venza la caché.
+    if (estado === 'exito') queryClient.invalidateQueries({ queryKey: ['mis-clases'] });
+  }, [estado, clearCart, queryClient]);
 
   useEffect(() => {
-    clearCart();
     window.scrollTo(0, 0);
-  }, [clearCart]);
+  }, []);
 
-  const containerVariants: Variants = {
-    hidden: { opacity: 0 },
-    visible: {
-      opacity: 1,
-      transition: {
-        staggerChildren: 0.2,
-      },
-    },
-  };
-  const itemVariants: Variants = {
-    hidden: { y: 20, opacity: 0 },
-    visible: {
-      y: 0,
-      opacity: 1,
-      transition: { duration: 0.5, ease: 'easeOut' },
-    },
-  };
+  const verClases = { to: '/mis-clases', label: 'Empezar entrenamiento' };
+  const alCarrito = { to: '/carrito', label: 'Volver al carrito' };
 
-  return (
-    <div className="min-h-screen flex items-center justify-center bg-[#131313] px-6 overflow-hidden relative">
-      {/* Energy Pulse Background Decor */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-[#d7f250]/10 rounded-full blur-[120px] animate-pulse" />
-        <div className="absolute top-0 left-0 w-full h-full bg-[radial-gradient(circle_at_center,rgba(215,242,80,0.05)_0%,transparent_70%)]" />
-      </div>
-
-      <motion.div
-        variants={containerVariants}
-        initial="hidden"
-        animate="visible"
-        className="relative z-10 max-w-lg w-full text-center"
-      >
-        {/* Hero Icon Section */}
-        <motion.div
-          variants={itemVariants}
-          className="relative mx-auto mb-8 w-32 h-32"
-        >
-          <div className="absolute inset-0 bg-[#d7f250]/20 rounded-full blur-2xl animate-pulse" />
-          <div className="relative w-full h-full bg-[#1a1a1a] border-2 border-[#d7f250]/30 rounded-full flex items-center justify-center shadow-[0_0_40px_rgba(215,242,80,0.1)]">
-            <motion.div
-              initial={{ scale: 0 }}
-              animate={{ scale: 1 }}
-              transition={{ type: 'spring', stiffness: 260, damping: 20, delay: 0.3 }}
-            >
-              <CheckCircle2 className="w-16 h-16 text-[#d7f250]" />
-            </motion.div>
-          </div>
-        </motion.div>
-
-        {/* Content */}
-        <motion.div variants={itemVariants} className="space-y-6">
-          <div className="space-y-2">
-            <h1 className="text-5xl font-black text-white tracking-tighter uppercase leading-none">
-              ¡Pago <span className="text-[#d7f250]">Exitoso!</span>
-            </h1>
-            <p className="text-gray-400 text-lg max-w-sm mx-auto leading-relaxed">
-              Tu pago se ha procesado. Ya tienes acceso a las clases de <span className="text-white font-semibold">Flex Studio</span>.
-            </p>
-          </div>
-
-          {paymentId && (
-            <motion.div
-              variants={itemVariants}
-              className="inline-flex items-center gap-3 bg-black/50 backdrop-blur-sm px-6 py-3 rounded-2xl border border-gray-800 text-gray-400"
-            >
-              <Trophy size={16} className="text-[#d7f250]" />
+  switch (estado) {
+    case 'confirmando':
+      return (
+        <ResultadoPago
+          tono="cargando"
+          titulo={<>Confirmando <Resaltado>pago…</Resaltado></>}
+          texto="Estamos confirmando tu pago. Esto tarda unos segundos, no cierres esta página."
+        />
+      );
+    case 'exito':
+      return (
+        <ResultadoPago
+          tono="exito"
+          titulo={<>¡Pago <Resaltado>exitoso!</Resaltado></>}
+          texto={<>Ya tenés acceso a tus clases de <span className="font-semibold text-[#131313]">Flex Studio</span>. Te enviamos el comprobante por mail.</>}
+          accion={verClases}
+          extra={idOperacion && (
+            <div className="inline-flex items-center gap-3 rounded-xl border border-neutral-400 px-5 py-3 text-neutral-700">
+              <Receipt size={16} className="text-[#131313]" />
               <span className="text-xs font-bold uppercase tracking-widest">
-                Comprobante: <span className="text-[#d7f250] font-mono ml-1">{paymentId}</span>
+                N° de operación: <span className="text-[#131313] font-mono ml-1">{idOperacion}</span>
               </span>
-            </motion.div>
+            </div>
           )}
-
-          <motion.div variants={itemVariants} className="pt-8">
-            <Link
-              to="/mi-perfil"
-              className="group relative w-full inline-flex items-center justify-center gap-3 bg-[#d7f250] hover:bg-[#c4dd46] text-[#131313] font-black py-5 rounded-2xl transition-all duration-300 hover:scale-[1.02] active:scale-[0.98] uppercase tracking-tighter text-lg shadow-[0_10px_20px_rgba(215,242,80,0.2)]"
-            >
-              Empezar Entrenamiento <ArrowRight size={22} className="group-hover:translate-x-1 transition-transform" />
-            </Link>
-          </motion.div>
-        </motion.div>
-      </motion.div>
-    </div>
-  );
+        />
+      );
+    case 'acreditando':
+      return (
+        <ResultadoPago
+          tono="espera"
+          titulo={<>Pago en <Resaltado>proceso</Resaltado></>}
+          texto="Tu pago se está acreditando. Cuando se confirme te llega el comprobante por mail y tus clases aparecen en Mis clases."
+          accion={{ to: '/mis-clases', label: 'Ir a mis clases' }}
+        />
+      );
+    case 'rechazado':
+      return (
+        <ResultadoPago
+          tono="error"
+          titulo={<>Pago no <Resaltado tono="error">aprobado</Resaltado></>}
+          texto="La pasarela no aprobó el pago. Tus clases siguen en el carrito para que lo intentes con otro medio."
+          accion={alCarrito}
+        />
+      );
+    case 'sin-pagar':
+      return (
+        <ResultadoPago
+          tono="error"
+          titulo={<>Pago no <Resaltado tono="error">completado</Resaltado></>}
+          texto="PayPal no completó el cobro. Tus clases siguen en el carrito para que lo intentes de nuevo."
+          accion={alCarrito}
+        />
+      );
+    case 'sin-datos':
+      return (
+        <ResultadoPago
+          tono="espera"
+          titulo={<>¿Completaste <Resaltado>el pago?</Resaltado></>}
+          texto="Si pagaste, tus clases aparecen en Mis clases en unos minutos y te llega el comprobante por mail."
+          accion={{ to: '/mis-clases', label: 'Ir a mis clases' }}
+          accionSecundaria={{ to: '/carrito', label: 'Volver al carrito' }}
+        />
+      );
+    case 'error':
+      return (
+        <ResultadoPago
+          tono="error"
+          titulo={<>No pudimos <Resaltado tono="error">confirmarlo</Resaltado></>}
+          texto={mensajeDeError(captura.error ?? consulta.error, ERROR_CONFIRMACION)}
+          accion={{ to: '/mis-clases', label: 'Ir a mis clases' }}
+          accionSecundaria={{ to: '/carrito', label: 'Volver al carrito' }}
+        />
+      );
+  }
 };

@@ -1,15 +1,17 @@
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { useNavigate } from 'react-router-dom';
-import { useQuery } from '@tanstack/react-query';
-import * as UpChunk from '@mux/upchunk';
-import { solicitarUrlSubidaRequest } from '../api/videos'; 
-import { obtenerCategoriasRequest} from '../api/categoria';
+import { useQueryClient } from '@tanstack/react-query';
+import { solicitarUrlSubidaRequest, eliminarVideoRequest } from '../api/videos';
+import { mensajeDeError } from '../api/errores';
+import { useCategoriasPublicas } from './useCategoriasPublicas';
+import { CLAVE_VIDEOS_ADMIN } from './useAdminVideos';
+import { useSubidasStore } from '../store/subidasStore';
 import toast from 'react-hot-toast';
 
 export interface NuevoVideoForm {
   titulo: string;
-  descripcion?: string;  
+  descripcion?: string;
   idCategoria: string;
   orden: number | string;
 }
@@ -17,20 +19,16 @@ export interface NuevoVideoForm {
 export const useNuevoVideo = () => {
   const navigate = useNavigate();
   const { register, handleSubmit, formState: { errors, isSubmitting } } = useForm<NuevoVideoForm>();
-  const { data: categorias = [], isLoading: cargandoCategorias } = useQuery({
-    queryKey: ['categorias'],
-    queryFn: async () => {
-      const res = await obtenerCategoriasRequest();
-      return Array.isArray(res) ? res : (res as any).categorias || [];
-    }
-  });
+  const queryClient = useQueryClient();
+  const iniciarSubida = useSubidasStore((s) => s.iniciar);
+  const { data: categorias = [], isLoading: cargandoCategorias } = useCategoriasPublicas();
   const [archivos, setArchivos] = useState({
     video: null as File | null,
     imagen: null as File | string | null,
   });
 
-  const [estadoSubida, setEstadoSubida] = useState<'IDLE' | 'PIDIENDO_URL' | 'SUBIENDO' | 'COMPLETADO'>('IDLE');
-  const [progreso, setProgreso] = useState(0);
+  // Solo el pedido de la URL: la subida en sí sigue en segundo plano (PanelSubidas).
+  const [estadoSubida, setEstadoSubida] = useState<'IDLE' | 'PIDIENDO_URL'>('IDLE');
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>, tipo: 'video' | 'imagen') => {
     if (e.target.files && e.target.files.length > 0) {
@@ -42,8 +40,15 @@ export const useNuevoVideo = () => {
     setArchivos({ ...archivos, imagen: url });
   };
 
+  const quitarVideo = () => setArchivos((prev) => ({ ...prev, video: null }));
+
   const handleEliminarMiniatura = () => {
     setArchivos({ ...archivos, imagen: null });
+  };
+
+  const refrescarListas = () => {
+    queryClient.invalidateQueries({ queryKey: CLAVE_VIDEOS_ADMIN });
+    queryClient.invalidateQueries({ queryKey: ['categorias'] });
   };
 
   const onSubmit = async (data: NuevoVideoForm) => {
@@ -63,49 +68,42 @@ export const useNuevoVideo = () => {
         if (typeof archivos.imagen === 'string') {
           formData.append('imagenUrl', archivos.imagen);
         } else {
-          formData.append('imagen', archivos.imagen); 
+          formData.append('imagen', archivos.imagen);
         }
       }
 
-      const { uploadUrl } = await solicitarUrlSubidaRequest(formData);
-      setEstadoSubida('SUBIENDO');
-      
-      const upload = UpChunk.createUpload({
+      const { uploadUrl, videoId } = await solicitarUrlSubidaRequest(formData);
+      // El back ya creó el video en PROCESANDO: la lista lo muestra al volver.
+      refrescarListas();
+
+      iniciarSubida({
+        tipo: 'video',
+        titulo: data.titulo,
+        archivo: archivos.video,
         endpoint: uploadUrl,
-        file: archivos.video,
-        chunkSize: 5120,
+        idVideo: videoId,
+        alCompletar: refrescarListas,
+        // Sin archivo, el video quedaría "Procesando" para siempre: se borra para que no estorbe.
+        alFallar: async () => {
+          try {
+            await eliminarVideoRequest(videoId);
+          } finally {
+            refrescarListas();
+          }
+        },
       });
-
-      upload.on('progress', (e) => setProgreso(Math.floor(e.detail)));
-      upload.on('success', () => {
-        setEstadoSubida('COMPLETADO');
-        setProgreso(100);
-        toast.success('¡Video subido exitosamente!');
-        setTimeout(() => navigate('/admin/videos'), 2000);
-      });
-
-      upload.on('error', () => {
-        toast.error('Error al subir el video a Mux. Reintentando...');
-        setEstadoSubida('IDLE');
-      });
-
-      upload.on('offline', () => {
-        toast.error('Se cortó el internet. La subida está pausada...', { duration: 5000 });
-      });
-
-      upload.on('online', () => {
-        toast.success('Internet recuperado. Retomando subida...');
-      });
-
+      toast.success('Subida iniciada: podés seguir usando el panel mientras se sube.');
+      navigate('/admin/videos');
     } catch (error) {
-      toast.error('Error al contactar con el servidor');
+      // Incluye el 503 de Mux cuando se alcanzó el límite de videos del plan.
+      toast.error(mensajeDeError(error, 'No se pudo iniciar la subida. Revisá tu conexión y volvé a intentar.'), { duration: 8000 });
       setEstadoSubida('IDLE');
     }
   };
 
   return {
-    register, handleSubmit: handleSubmit(onSubmit), errors, isSubmitting, 
-    categorias, cargandoCategorias, archivos, estadoSubida, progreso, 
-    handleFileChange, handleSelectFromGallery, handleEliminarMiniatura, navigate
+    register, handleSubmit: handleSubmit(onSubmit), errors, isSubmitting,
+    categorias, cargandoCategorias, archivos, estadoSubida,
+    handleFileChange, handleSelectFromGallery, handleEliminarMiniatura, quitarVideo, navigate
   };
 };

@@ -1,16 +1,17 @@
 import { useState } from 'react';
-import { Navigate, Outlet, useLocation, useNavigate, Link } from 'react-router-dom';
-import { Home, Menu, X, Users, LayoutDashboard, Video, LogOut, ChartNoAxesCombined } from 'lucide-react';
+import { Navigate, Outlet, useLocation, Link } from 'react-router-dom';
+import { Home, Menu, X, Users, LayoutDashboard, Video, LogOut, ChartNoAxesCombined, GalleryHorizontal } from 'lucide-react';
 import { useAuthStore } from '../../store/authStore';
 import { Sidebar } from './Sidebar';
 import { motion, AnimatePresence } from 'framer-motion';
-import { logoutRequest } from '../../api/auth';
-import toast from 'react-hot-toast';
+import { PanelSubidas } from '../PanelSubidas';
+import { useCerrarSesionAdmin } from '../../hooks/useCerrarSesionAdmin';
+import { type ItemMenuAdmin } from './Sidebar';
+import { ContenidoSeguro } from '../ContenidoSeguro';
 
 export const AdminLayout = () => {
-  const { isAuthenticated, logout } = useAuthStore();
+  const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
   const location = useLocation();
-  const navigate = useNavigate();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   const menuItems = [
@@ -19,36 +20,28 @@ export const AdminLayout = () => {
     { name: 'Clientes', path: '/admin/clientes', icon: Users },
     { name: 'Categorías', path: '/admin/categorias', icon: LayoutDashboard },
     { name: 'Videos', path: '/admin/videos', icon: Video },
+    { name: 'Carrusel', path: '/admin/carrusel', icon: GalleryHorizontal },
   ];
 
-  const handleLogout = async () => {
-    try {
-      await logoutRequest();
-      logout();
-      toast.success('Sesión cerrada');
-      navigate('/login');
-    } catch (error) {
-      toast.error('Error al cerrar sesión');
-    }
-  };
+  const handleLogout = useCerrarSesionAdmin();
 
   if (!isAuthenticated) {
     return <Navigate to="/login" replace />;
   }
 
   return (
-    <div className="min-h-screen bg-[url('https://res.cloudinary.com/dmp7mcwie/image/upload/v1776644116/bgoscuro_vxdjim.png')] text-white font-sans flex relative">
+    <div className="min-h-screen bg-[url('https://res.cloudinary.com/dmp7mcwie/image/upload/f_auto,q_auto/v1776644116/bgoscuro_vxdjim.png')] text-white font-sans flex relative">
       <Sidebar />
       <main className="flex flex-col overflow-hidden w-full pl-0 md:pl-28 relative">
 
         <header className="h-16 bg-[#131313] border-b border-neutral-800 flex md:hidden items-center justify-between px-3 z-40">
           <Link to="/" className="flex-shrink-3">
-            <img src="https://res.cloudinary.com/dmp7mcwie/image/upload/v1774490155/logofooter_u3j6cz.png" className="w-30 object-contain" alt="Logo" />
+            <img src="https://res.cloudinary.com/dmp7mcwie/image/upload/f_auto,q_auto,c_limit,w_500/v1774490155/logofooter_u3j6cz.png" className="w-30 object-contain" alt="Logo" />
           </Link>
           <button
             onClick={() => setIsMobileMenuOpen(true)}
             className="text-gray-400 hover:text-white transition-colors"
-            aria-label="Toggle menu"
+            aria-label="Abrir menú"
           >
             <Menu size={28} />
           </button>
@@ -64,9 +57,9 @@ export const AdminLayout = () => {
             >
               <div className="h-16 flex items-center justify-between px-4">
                 <Link to="/" className="flex-shrink-3">
-                  <img src="https://res.cloudinary.com/dmp7mcwie/image/upload/v1774490155/logofooter_u3j6cz.png" className="w-30 object-contain" alt="Logo" />
+                  <img src="https://res.cloudinary.com/dmp7mcwie/image/upload/f_auto,q_auto,c_limit,w_500/v1774490155/logofooter_u3j6cz.png" className="w-30 object-contain" alt="Logo" />
                 </Link>
-                <button
+                <button aria-label="Cerrar menú" title="Cerrar menú"
                   onClick={() => setIsMobileMenuOpen(false)}
                   className="text-gray-400 hover:text-[#d7f250] transition-colors"
                 >
@@ -108,16 +101,19 @@ export const AdminLayout = () => {
         </AnimatePresence>
 
         <div className="flex-1 overflow-y-auto p-4 md:p-8">
-          <Outlet />
+          <ContenidoSeguro oscuro>
+            <Outlet />
+          </ContenidoSeguro>
         </div>
 
       </main>
+      <PanelSubidas />
     </div>
   );
 };
 
 
-const MobileMenuItem = ({ item, isActive, onClick }: { item: any, isActive: boolean, onClick: () => void }) => {
+const MobileMenuItem = ({ item, isActive, onClick }: { item: ItemMenuAdmin, isActive: boolean, onClick: () => void }) => {
   const Icon = item.icon;
 
   return (

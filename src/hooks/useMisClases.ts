@@ -1,49 +1,30 @@
-
-import { useState, useEffect } from 'react';
-import { obtenerMisClasesCompradas, type ClaseComprada } from '../api/compras';
+import { useQuery } from '@tanstack/react-query';
+import { obtenerMisClasesCompradas } from '../api/compras';
+import { mensajeDeError } from '../api/errores';
 import { useAuthStore } from '../store/authStore';
 
+/** Clave de caché de las clases compradas. Lleva el id del usuario para no mezclar cuentas. */
+export const claveMisClases = (idUsuario: string | undefined) => ['mis-clases', idUsuario] as const;
+
+/**
+ * Clases compradas del usuario logueado. Una sola consulta compartida por "Mis clases", el detalle
+ * de cada clase (¿ya es tuya?) y la revalidación del carrito; antes cada uno la pedía por su lado.
+ */
 export const useMisClases = () => {
-  const [clases, setClases] = useState<ClaseComprada[]>([]);
-  const [cargando, setCargando] = useState<boolean>(true);
-  const [error, setError] = useState<string | null>(null);
-   const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
+  const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
+  const idUsuario = useAuthStore((state) => state.usuario?.id);
 
-  useEffect(() => {
-    let isMounted = true;  
+  const consulta = useQuery({
+    queryKey: claveMisClases(idUsuario),
+    queryFn: obtenerMisClasesCompradas,
+    enabled: isAuthenticated,
+  });
 
-    const cargarClases = async () => {
-      if (!isAuthenticated) {
-        setCargando(false);
-        return;
-      }
-      
-      try {
-        setCargando(true);
-        setError(null);
-        const data = await obtenerMisClasesCompradas();
-        
-        if (isMounted) {
-          setClases(data);
-        }
-      } catch (err: any) {
-        console.error('Error al cargar mis clases:', err);
-        if (isMounted) {
-          setError('No pudimos cargar tus clases en este momento. Intenta recargar la página.');
-        }
-      } finally {
-        if (isMounted) {
-          setCargando(false);
-        }
-      }
-    };
-
-    cargarClases();
-
-    return () => {
-      isMounted = false;  
-    };
-  }, [isAuthenticated]); 
-
-  return { clases, cargando, error };
+  return {
+    clases: consulta.data ?? [],
+    cargando: isAuthenticated && consulta.isPending,
+    error: consulta.isError ? mensajeDeError(consulta.error, 'No pudimos cargar tus clases. Probá de nuevo en unos segundos.') : null,
+    reintentar: () => consulta.refetch(),
+    listo: !isAuthenticated || consulta.isSuccess,
+  };
 };

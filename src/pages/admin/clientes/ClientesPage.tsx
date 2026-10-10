@@ -2,6 +2,7 @@ import React from 'react';
 import { Users, Search, ChevronUp, ChevronDown, ChevronRight, Phone, Calendar, Globe, FileText, ExternalLink, Loader2, ChevronLeft } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useClientes, type SortField } from '../../../hooks/useClientes';
+import { ErrorCargaAdmin } from '../../../components/ErrorCargaAdmin';
 import { type ResumenCliente } from '../../../api/admin';
 
 const obtenerCodigoBandera = (pais: string | null | undefined) => {
@@ -13,20 +14,24 @@ const obtenerCodigoBandera = (pais: string | null | undefined) => {
 
 export const ClientesPage = () => {
   const {
-    clientesFiltrados, cargando, busqueda, setBusqueda, sortField, sortDir, handleSort, 
+    clientesFiltrados, isError, refetch, isFetching, totalClientes, buscando, busquedaAplicada, cargando, busqueda, setBusqueda, sortField, sortDir, handleSort, 
     expandedId, handleExpand, comprobantes, cargandoComprobantes, 
     formatearFecha, formatearFechaRegistro, formatCurrency,
     paginaActual, totalPages, setPagina, isPlaceholderData
   } = useClientes();
 
-  const SortIcon = ({ field }: { field: SortField }) => {
+  // Para lectores de pantalla: qué columna ordena la tabla y en qué sentido.
+  const ariaOrden = (field: SortField) =>
+    sortField !== field ? undefined : sortDir === 'asc' ? 'ascending' as const : 'descending' as const;
+
+  const iconoOrden = (field: SortField) => {
     if (sortField !== field) return <ChevronUp className="opacity-0 group-hover:opacity-30 w-3 h-3" />;
     return sortDir === 'asc' 
       ? <ChevronUp className="w-3 h-3 text-[#d7f250]" /> 
       : <ChevronDown className="w-3 h-3 text-[#d7f250]" />;
   };
 
-  const DetallesExpandidos = ({ cliente }: { cliente: ResumenCliente }) => (
+  const detallesExpandidos = (cliente: ResumenCliente) => (
     <div className="px-4 pb-4 pt-4 border-t border-white/5 bg-[#1a1a1a]">
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         
@@ -116,10 +121,13 @@ export const ClientesPage = () => {
 
         {/* Buscador */}
         <div className="relative w-full sm:w-72">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
+          {buscando
+            ? <Loader2 className="absolute left-3 top-1/2 -translate-y-1/2 text-[#d7f250] animate-spin" size={18} aria-hidden="true" />
+            : <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={18} aria-hidden="true" />}
           <input
-            type="text"
-            placeholder="Buscar en esta página..."
+            type="search"
+            aria-label="Buscar clientes por nombre o correo"
+            placeholder="Buscar por nombre o correo..."
             value={busqueda}
             onChange={(e) => setBusqueda(e.target.value)}
             className="w-full bg-[#131313] border border-white/10 rounded-full py-2 pl-10 pr-4 text-white placeholder:text-gray-500 focus:outline-none focus:border-[#d7f250] focus:ring-1 focus:ring-[#d7f250]/30 transition-all text-sm"
@@ -136,6 +144,8 @@ export const ClientesPage = () => {
         >
           Cargando base de datos...
         </motion.div>
+      ) : isError ? (
+        <ErrorCargaAdmin que="los clientes" onReintentar={() => refetch()} reintentando={isFetching} />
       ) : clientesFiltrados.length === 0 ? (
         <motion.div
           initial={{ opacity: 0, y: 10 }}
@@ -145,11 +155,25 @@ export const ClientesPage = () => {
           <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-white/5 mb-4">
             <Users className="w-8 h-8 text-gray-500" />
           </div>
-          <p className="text-gray-400 text-lg">No se encontraron clientes</p>
-          <p className="text-gray-600 text-sm mt-1">Intenta con otro término o en otra página</p>
+          {busquedaAplicada ? (
+            <>
+              <p className="text-gray-400 text-lg">Ningún cliente coincide con "{busquedaAplicada}"</p>
+              <p className="text-gray-600 text-sm mt-1">Probá con otra parte del nombre, el apellido o el correo.</p>
+            </>
+          ) : (
+            <>
+              <p className="text-gray-400 text-lg">Todavía no hay clientes</p>
+              <p className="text-gray-600 text-sm mt-1">Aparecen acá cuando una alumna se registra y verifica su correo.</p>
+            </>
+          )}
         </motion.div>
       ) : (
         <div className={isPlaceholderData ? "opacity-50 pointer-events-none transition-opacity" : "transition-opacity"}>
+          {busquedaAplicada && (
+            <p className="text-gray-500 text-sm mb-3" aria-live="polite">
+              {totalClientes === 1 ? '1 cliente coincide' : `${totalClientes} clientes coinciden`} con "{busquedaAplicada}"
+            </p>
+          )}
           <AnimatePresence mode="wait">
             <motion.div
               key={paginaActual}
@@ -164,23 +188,23 @@ export const ClientesPage = () => {
                   <table className="w-full text-left">
                     <thead className="bg-[#131313] border-b border-white/10 sticky top-0 z-10">
                       <tr className="text-xs uppercase tracking-wider text-[#a1a1aa] font-bold">
-                        <th className="p-4 pl-6 cursor-pointer hover:text-white transition-colors group" onClick={() => handleSort('nombreCompleto')}>
-                          <span className="flex items-center gap-1">Cliente <SortIcon field="nombreCompleto" /></span>
+                        <th className="p-4 pl-6" aria-sort={ariaOrden('nombreCompleto')}>
+                          <button type="button" onClick={() => handleSort('nombreCompleto')} className="inline-flex w-full items-center gap-1 uppercase tracking-wider font-bold cursor-pointer hover:text-white transition-colors group">Cliente {iconoOrden('nombreCompleto')}</button>
                         </th>
-                        <th className="p-4 cursor-pointer hover:text-white transition-colors group" onClick={() => handleSort('pais')}>
-                          <span className="flex items-center gap-1">País <SortIcon field="pais" /></span>
+                        <th className="p-4" aria-sort={ariaOrden('pais')}>
+                          <button type="button" onClick={() => handleSort('pais')} className="inline-flex w-full items-center gap-1 uppercase tracking-wider font-bold cursor-pointer hover:text-white transition-colors group">País {iconoOrden('pais')}</button>
                         </th>
-                        <th className="p-4 text-center cursor-pointer hover:text-white transition-colors group" onClick={() => handleSort('totalClasesCompradas')}>
-                          <span className="flex items-center justify-center gap-1">Clases <SortIcon field="totalClasesCompradas" /></span>
+                        <th className="p-4 text-center" aria-sort={ariaOrden('totalClasesCompradas')}>
+                          <button type="button" onClick={() => handleSort('totalClasesCompradas')} className="inline-flex w-full items-center justify-center gap-1 uppercase tracking-wider font-bold cursor-pointer hover:text-white transition-colors group">Clases {iconoOrden('totalClasesCompradas')}</button>
                         </th>
-                        <th className="p-4 text-right cursor-pointer hover:text-white transition-colors group" onClick={() => handleSort('totalInvertidoArs')}>
-                          <span className="flex items-center justify-end gap-1">Inversión (ARS) <SortIcon field="totalInvertidoArs" /></span>
+                        <th className="p-4 text-right" aria-sort={ariaOrden('totalInvertidoArs')}>
+                          <button type="button" onClick={() => handleSort('totalInvertidoArs')} className="inline-flex w-full items-center justify-end gap-1 uppercase tracking-wider font-bold cursor-pointer hover:text-white transition-colors group">Inversión (ARS) {iconoOrden('totalInvertidoArs')}</button>
                         </th>
-                        <th className="p-4 text-right cursor-pointer hover:text-white transition-colors group" onClick={() => handleSort('totalInvertidoUsd')}>
-                          <span className="flex items-center justify-end gap-1">Inversión (USD) <SortIcon field="totalInvertidoUsd" /></span>
+                        <th className="p-4 text-right" aria-sort={ariaOrden('totalInvertidoUsd')}>
+                          <button type="button" onClick={() => handleSort('totalInvertidoUsd')} className="inline-flex w-full items-center justify-end gap-1 uppercase tracking-wider font-bold cursor-pointer hover:text-white transition-colors group">Inversión (USD) {iconoOrden('totalInvertidoUsd')}</button>
                         </th>
-                        <th className="p-4 pr-6 text-right cursor-pointer hover:text-white transition-colors group" onClick={() => handleSort('fechaUltimaCompra')}>
-                          <span className="flex items-center justify-end gap-1">Última Compra <SortIcon field="fechaUltimaCompra" /></span>
+                        <th className="p-4 pr-6 text-right" aria-sort={ariaOrden('fechaUltimaCompra')}>
+                          <button type="button" onClick={() => handleSort('fechaUltimaCompra')} className="inline-flex w-full items-center justify-end gap-1 uppercase tracking-wider font-bold cursor-pointer hover:text-white transition-colors group">Última Compra {iconoOrden('fechaUltimaCompra')}</button>
                         </th>
                       </tr>
                     </thead>
@@ -193,6 +217,9 @@ export const ClientesPage = () => {
                           <React.Fragment key={cliente.id}>
                             <motion.tr
                               onClick={() => handleExpand(cliente.id)}
+                              onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handleExpand(cliente.id); } }}
+                              tabIndex={0}
+                              aria-expanded={expandedId === cliente.id}
                               initial={{ opacity: 0, y: 5 }}
                               animate={{ opacity: 1, y: 0 }}
                               transition={{ delay: idx * 0.03, duration: 0.2 }}
@@ -245,7 +272,7 @@ export const ClientesPage = () => {
                                       transition={{ duration: 0.2, ease: 'easeInOut' }}
                                       className="overflow-hidden"
                                     >
-                                      <DetallesExpandidos cliente={cliente} />
+                                      {detallesExpandidos(cliente)}
                                     </motion.div>
                                   </td>
                                 </tr>
@@ -274,6 +301,8 @@ export const ClientesPage = () => {
                     >
                       <div className={`bg-[#1a1a1a] rounded-xl border border-white/10 overflow-hidden transition-colors ${isExpanded ? 'border-[#d7f250]/30' : ''}`}>
                         <button
+                          type="button"
+                          aria-expanded={isExpanded}
                           onClick={() => handleExpand(cliente.id)}
                           className="w-full p-4 text-left active:bg-white/[0.02]"
                         >
@@ -323,7 +352,7 @@ export const ClientesPage = () => {
                               transition={{ duration: 0.2, ease: 'easeInOut' }}
                               className="overflow-hidden"
                             >
-                              <DetallesExpandidos cliente={cliente} />
+                              {detallesExpandidos(cliente)}
                             </motion.div>
                           )}
                         </AnimatePresence>
