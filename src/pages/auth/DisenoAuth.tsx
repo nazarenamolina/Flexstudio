@@ -22,7 +22,7 @@ export const PantallaDividida = ({ frase, children }: { frase?: string; children
     {/* La foto va con su proporción exacta (1671×941) para que nunca se recorte a la gimnasta, y los
         bordes se funden con el fondo oscuro. El ancho máximo (177vh) evita que sea más alta que la pantalla. */}
     <div
-      className="hidden lg:block fixed left-[12vw] top-1/2 -translate-y-1/2 w-[min(72vw,177vh)] aspect-[1671/941] bg-cover grayscale [mask-image:linear-gradient(to_right,transparent,#000_10%,#000_75%,transparent),linear-gradient(to_bottom,transparent,#000_12%,#000_90%,transparent)] [mask-composite:intersect]"
+      className="hidden lg:block fixed left-[12vw] top-1/2 -translate-y-1/2 w-[min(72vw,177vh)] aspect-[1671/941] bg-cover grayscale [mask-image:linear-gradient(to_right,transparent,#000_8%,#000_75%,transparent),linear-gradient(to_bottom,transparent,#000_12%,#000_90%,transparent)] [mask-composite:intersect]"
       style={{ backgroundImage: `url('${IMAGEN_ESCRITORIO}')` }}
     />
     <div className={`hidden lg:block fixed inset-0 ${DEGRADADO}`} />

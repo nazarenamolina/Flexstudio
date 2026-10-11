@@ -69,7 +69,7 @@ export const MiPerfilPage = () => {
                             </div>
                             <div>
                                 <label htmlFor="perfil-telefono" className={labelClass}>Teléfono</label>
-                                <input id="perfil-telefono" type="tel" autoComplete="tel" {...register('telefono')} placeholder="Ej: 3815790448" className={inputClass} />
+                                <input id="perfil-telefono" type="tel" autoComplete="tel" {...register('telefono')} placeholder="Ej: 3815790448 o +56 9 6123 4567" className={inputClass} />
                             </div>
                             <div>
                                 <label htmlFor="perfil-fechaNacimiento" className={labelClass}>Fecha de Nacimiento</label>

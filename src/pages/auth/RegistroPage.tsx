@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Loader2, Eye, EyeOff, Lock } from 'lucide-react';
 import { useRegistro } from '../../hooks/useRegistro';
-import PhoneInput from 'react-phone-number-input';
+import PhoneInput, { isSupportedCountry } from 'react-phone-number-input';
 import 'react-phone-number-input/style.css';
 import { Controller, useWatch } from 'react-hook-form';
 import { Country, State } from 'country-state-city';
@@ -21,6 +21,8 @@ export const RegistroPage = () => {
   const paisSeleccionadoNombre = useWatch({ control, name: 'pais' });
   const contrasena = useWatch({ control, name: 'contrasena' }) ?? '';
   const paisIsoCode = Country.getAllCountries().find(c => c.name === paisSeleccionadoNombre)?.isoCode;
+  // Mientras el teléfono esté vacío, su código sigue al país elegido abajo.
+  const paisTelefono = paisIsoCode && isSupportedCountry(paisIsoCode) ? paisIsoCode : 'AR';
 
   return (
     <PantallaDividida frase="Creá tu cuenta y empezá a entrenar.">
@@ -114,8 +116,7 @@ export const RegistroPage = () => {
                     <PhoneInput
                       id="registro-telefono"
                       international
-                      defaultCountry="AR"
-                      countryCallingCodeEditable={false}
+                      defaultCountry={paisTelefono}
                       autoComplete="tel"
                       value={value}
                       onChange={onChange}
@@ -124,7 +125,9 @@ export const RegistroPage = () => {
                   </div>
                 )}
               />
-              {errors.telefono && <p className={claseError}>{errors.telefono.message}</p>}
+              {errors.telefono
+                ? <p className={claseError}>{errors.telefono.message}</p>
+                : <p className="mt-1.5 text-xs text-neutral-500">¿No sos de Argentina? Tocá la bandera para elegir tu país.</p>}
             </div>
 
             <div>
