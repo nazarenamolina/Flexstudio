@@ -11,7 +11,7 @@
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Caveat:wght@600&family=Oswald:wght@700&display=swap" />
 
     <title>Flex Studio | Entrenamiento de Flexibilidad</title>
-    <meta name="description" content="Clases online de flexibilidad para gimnastas, bailarinas y deportistas, con Cande Imbaud. Mejorá tu rendimiento y tu amplitud con acceso de por vida." />
+    <meta name="description" content="Clases online de flexibilidad para patinadoras, gimnastas, bailarinas y deportistas, con Cande Imbaud. Mejorá tu rendimiento y tu amplitud a tu ritmo, desde casa." />
 
     <!-- Vista previa al compartir el link (WhatsApp, Instagram, Facebook, X). Los bots no ejecutan JS: solo leen esto. -->
     <meta property="og:type" content="website" />
@@ -19,12 +19,64 @@
     <meta property="og:locale" content="es_AR" />
     <meta property="og:url" content="https://www.flexstudio.com.ar/" />
     <meta property="og:title" content="Flex Studio | Entrenamiento de Flexibilidad" />
-    <meta property="og:description" content="Clases online de flexibilidad con Cande Imbaud. Acceso de por vida." />
+    <meta property="og:description" content="Clases online de flexibilidad con Cande Imbaud para patinadoras, gimnastas, bailarinas y deportistas." />
     <meta property="og:image" content="https://res.cloudinary.com/dmp7mcwie/image/upload/c_fill,w_1200,h_630,g_auto,q_auto,f_jpg/v1774312483/Banner_jntyks.png" />
     <meta property="og:image:width" content="1200" />
     <meta property="og:image:height" content="630" />
     <meta property="og:image:alt" content="Cande Imbaud haciendo posturas de flexibilidad" />
     <meta name="twitter:card" content="summary_large_image" />
+
+    <!-- Datos para buscadores (Schema.org): nombre del sitio, logo y redes de la marca. -->
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@graph": [
+          {
+            "@type": "WebSite",
+            "@id": "https://www.flexstudio.com.ar/#sitio",
+            "name": "Flex Studio",
+            "alternateName": "Flex Studio | Cande Imbaud",
+            "url": "https://www.flexstudio.com.ar/",
+            "inLanguage": "es-AR",
+            "publisher": {
+              "@id": "https://www.flexstudio.com.ar/#organizacion"
+            }
+          },
+          {
+            "@type": "EducationalOrganization",
+            "@id": "https://www.flexstudio.com.ar/#organizacion",
+            "name": "Flex Studio",
+            "url": "https://www.flexstudio.com.ar/",
+            "logo": "https://res.cloudinary.com/dmp7mcwie/image/upload/f_png,c_limit,w_512/v1774488885/Logo_hfou8a.png",
+            "email": "flexstudio89@gmail.com",
+            "description": "Clases online de flexibilidad para patinadoras, gimnastas, bailarinas y deportistas, con Cande Imbaud. Mejorá tu rendimiento y tu amplitud a tu ritmo, desde casa.",
+            "address": {
+              "@type": "PostalAddress",
+              "addressLocality": "Yerba Buena",
+              "addressRegion": "Tucumán",
+              "addressCountry": "AR"
+            },
+            "founder": {
+              "@id": "https://www.flexstudio.com.ar/#cande"
+            },
+            "sameAs": [
+              "https://www.instagram.com/flex_studioc/",
+              "https://www.tiktok.com/@flexstudioc"
+            ]
+          },
+          {
+            "@type": "Person",
+            "@id": "https://www.flexstudio.com.ar/#cande",
+            "name": "Candelaria Imbaud Lima",
+            "alternateName": "Cande Imbaud",
+            "jobTitle": "Profesora de educación física y entrenadora de flexibilidad",
+            "worksFor": {
+              "@id": "https://www.flexstudio.com.ar/#organizacion"
+            }
+          }
+        ]
+      }
+    </script>
   </head>
   <body>
     <div id="root"></div>

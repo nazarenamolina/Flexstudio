@@ -10,10 +10,26 @@ import { useCartStore } from "../store/cartStore";
 import { useMisClases } from "../hooks/useMisClases";
 import { ScrollReveal } from "../components/ScrollReveal";
 import { useTituloPagina } from "../hooks/useTituloPagina";
+import { DatosCurso } from "../components/DatosCurso";
 import { precioEn, formatearPrecio } from "../precios";
 import { IMAGEN_RESPALDO_CLASE, optimizarCloudinary } from "../imagenes";
 import { claseTarjeta, claseBotonPrincipal } from "./auth/estilos";
 import { partesDelTitulo, tituloVisible } from "../titulos";
+
+// Texto que muestra Google debajo del título de una clase. Usa el más completo que haya cargado
+// el admin (la descripción de la tarjeta suele ser de pocas palabras); si no hay ninguno, uno
+// genérico, para que nunca quede vacío o con la descripción de la home.
+const LARGO_MINIMO_TEXTO = 60;
+const descripcionParaGoogle = (clase: { titulo: string; descripcionCard?: string | null; descripcionBreve?: string | null; descripcionDetallada?: string | null }) => {
+  const nombre = tituloVisible(clase.titulo);
+  const textos = [clase.descripcionDetallada, clase.descripcionBreve, clase.descripcionCard]
+    .map((t) => t?.replace(/\s+/g, ' ').trim())
+    .filter((t): t is string => !!t);
+  const texto = textos.find((t) => t.length >= LARGO_MINIMO_TEXTO) ?? textos[0];
+  return texto
+    ? `${nombre}: ${texto}`
+    : `${nombre}: clase online de flexibilidad con Cande Imbaud. Videos para entrenar a tu ritmo, desde casa.`;
+};
 
 const CategoriaDetailPage = () => {
   const { id } = useParams<{ id: string }>();
@@ -27,7 +43,8 @@ const CategoriaDetailPage = () => {
     retry: 1,
   });
   const { moneda, cargandoMoneda } = useMoneda();
-  useTituloPagina(categoria && tituloVisible(categoria.titulo));
+  const descripcionGoogle = categoria ? descripcionParaGoogle(categoria) : null;
+  useTituloPagina(categoria && tituloVisible(categoria.titulo), descripcionGoogle);
   const addToCart = useCartStore((state) => state.addToCart);
   const cartItems = useCartStore((state) => state.cartItems);
   const { clases: misClases, cargando: cargandoMisClases } = useMisClases();
@@ -87,6 +104,7 @@ const CategoriaDetailPage = () => {
 
   return (
     <main className="min-h-screen w-full overflow-x-hidden">
+      <DatosCurso clase={categoria} titulo={titulo} descripcion={descripcionGoogle ?? titulo} />
       
       {/* SECCIÓN HERO */}
       <section className="relative flex min-h-[50em] w-full items-start pt-25 pb-20 md:pt-30 lg:pt-30 overflow-hidden">
@@ -101,7 +119,7 @@ const CategoriaDetailPage = () => {
 
         <ScrollReveal direction="up" className="relative z-10 mx-auto w-full px-6 lg:ml-24 xl:ml-32">
           <span className="inline-block tracking-[3px] text-neon-pink font-bold uppercase text-[0.6rem] md:text-[1rem]">
-            Clase online · Acceso de por vida
+            Clase online · A tu ritmo
           </span>
           <h1 className="flex flex-col items-start leading-none mb-10 w-full max-w-full">
             {primeraParte && (
@@ -183,7 +201,7 @@ const CategoriaDetailPage = () => {
           ) : (
             <ScrollReveal direction="up" className="col-span-2">
               <div className="p-6 rounded-xl border border-neutral-200 bg-white">
-                <p className="text-neutral-600">Acceso de por vida a todos los videos de la clase, a tu ritmo y desde cualquier dispositivo.</p>
+                <p className="text-neutral-600">Acceso a todos los videos de la clase, a tu ritmo y desde cualquier dispositivo.</p>
               </div>
             </ScrollReveal>
           )}

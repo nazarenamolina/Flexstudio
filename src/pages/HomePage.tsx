@@ -55,6 +55,7 @@ const HomePage = () => {
 
   return (
     <main className="min-h-screen font-sans text-[#161616] pt-[67px] lg:pt-[78px]">
+      <h1 className="sr-only">Flex Studio: clases online de flexibilidad con Cande Imbaud</h1>
       <HeroCarrusel />
       <section id="biografia" className="w-full flex flex-col lg:flex-row bg-[#FDFDF8] overflow-hidden">
         <ScrollReveal direction="right" className="w-full lg:w-1/2 relative min-h-[50vh] lg:min-h-full">

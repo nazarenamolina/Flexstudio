@@ -7,7 +7,7 @@ import {
 import type { ReactNode } from 'react';
 import { useTituloPagina } from '../hooks/useTituloPagina';
 
-const ULTIMA_ACTUALIZACION = '10 de octubre de 2026';
+const ULTIMA_ACTUALIZACION = '11 de octubre de 2026';
 const CORREO = 'flexstudio89@gmail.com';
 
 // Proveedores que reciben datos (ley 25.326: informar a quién se ceden).
@@ -49,7 +49,7 @@ const EnlaceCorreo = () => (
 );
 
 export const PoliticaPrivacidad = () => {
-  useTituloPagina('Política de Privacidad');
+  useTituloPagina('Política de Privacidad', 'Cómo Flex Studio cuida tus datos: qué información usamos, con qué proveedores la compartimos, cookies y tus derechos según la Ley 25.326.');
 
   return (
     <div className="min-h-screen font-sans pt-[115px] lg:pt-[126px] pb-12 px-4 sm:px-6 lg:px-8">
@@ -112,7 +112,7 @@ export const PoliticaPrivacidad = () => {
               <p>Utilizamos tus datos exclusivamente para:</p>
               <ul className="list-disc pl-5 space-y-2">
                 <li>Crear y gestionar tu cuenta de alumna en la plataforma.</li>
-                <li>Procesar tus compras, emitir el comprobante y habilitar el acceso vitalicio a las clases que adquieras.</li>
+                <li>Procesar tus compras, emitir el comprobante y habilitar el acceso a las clases que adquieras.</li>
                 <li>Enviarte correos transaccionales: códigos de verificación, restablecimiento de contraseña y confirmaciones de compra.</li>
                 <li>Responder tus consultas.</li>
                 <li>Proteger la plataforma contra fraudes, spam y abusos.</li>
@@ -173,7 +173,7 @@ export const PoliticaPrivacidad = () => {
 
             <Section icono={Clock} titulo="8. Cuánto tiempo guardamos tus datos">
               <p>
-                Guardamos los datos de tu cuenta mientras esté activa, para que mantengas el acceso vitalicio a tus clases. Si pedís la baja, los eliminamos. La excepción son los registros de compras, que podemos conservar el tiempo que exijan las normas contables e impositivas.
+                Guardamos los datos de tu cuenta mientras esté activa, para que mantengas el acceso a tus clases. Si pedís la baja, los eliminamos. La excepción son los registros de compras, que podemos conservar el tiempo que exijan las normas contables e impositivas.
               </p>
             </Section>
 

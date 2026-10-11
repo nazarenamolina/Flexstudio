@@ -105,7 +105,7 @@ export const FloatingCart = () => {
                             {tituloVisible(item.titulo)}
                           </h3>
                           <p className="text-[10px] text-[#131313]/60 font-medium uppercase tracking-wider mt-1">
-                            Acceso de por vida
+                            Clase online
                           </p>
                         </div>
 

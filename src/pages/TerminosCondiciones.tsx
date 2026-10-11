@@ -4,7 +4,7 @@ import { ArrowLeft } from 'lucide-react';
 import type { ReactNode } from 'react';
 import { useTituloPagina } from '../hooks/useTituloPagina';
 
-const ultimaActualizacion = "29 de mayo de 2026";
+const ultimaActualizacion = "11 de octubre de 2026";
 
 const Section = ({ titulo, children }: { titulo: string; children: ReactNode }) => (
   <section className="mb-10">
@@ -18,7 +18,7 @@ const Section = ({ titulo, children }: { titulo: string; children: ReactNode }) 
 );
 
 export const TerminosCondiciones = () => {
-  useTituloPagina('Términos y Condiciones');
+  useTituloPagina('Términos y Condiciones', 'Términos y condiciones de Flex Studio: compra de clases online de flexibilidad, pagos con Mercado Pago y PayPal, reembolsos y uso de la plataforma.');
 
   return (
     <div className="min-h-screen font-sans pt-[115px] lg:pt-[126px] pb-12 px-4 sm:px-6 lg:px-8">
@@ -58,7 +58,7 @@ export const TerminosCondiciones = () => {
 
             <Section titulo="2. Descripción del Servicio">
               <p>
-                Flex Studio ofrece la comercialización de clases en video enfocadas en el entrenamiento físico y flexibilidad. Al adquirir una clase, el usuario obtiene un <strong>acceso vitalicio</strong> al contenido digital correspondiente, el cual podrá visualizar de forma ilimitada a través de su cuenta personal en nuestra plataforma.
+                Flex Studio ofrece la comercialización de clases en video enfocadas en el entrenamiento físico y flexibilidad. Al adquirir una clase, el usuario obtiene <strong>acceso</strong> al contenido digital correspondiente, que podrá ver de forma ilimitada desde su cuenta personal en nuestra plataforma.
               </p>
             </Section>
 <Section titulo="3. Requisitos de Edad y Acceso">

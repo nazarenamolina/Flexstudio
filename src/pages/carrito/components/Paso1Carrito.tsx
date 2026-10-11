@@ -68,7 +68,7 @@ const Paso1Carrito = ({ onNext }: Props) => {
                       {tituloVisible(item.titulo)}
                     </h3>
                     <p className="text-[9px] sm:text-sm text-[#131313]/60 font-principal font-bold uppercase tracking-[0.15em] mt-1 flex items-center gap-1.5">
-                      Acceso de por vida
+                      Clase online
                     </p>
                   </div>
 
