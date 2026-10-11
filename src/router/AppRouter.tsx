@@ -10,6 +10,7 @@ import { ValidadorSesion } from '../components/ValidadorSesion';
 import { FloatingCart } from '../components/FloatingCart';
 import { ContenidoSeguro } from '../components/ContenidoSeguro';
 import { Avisos } from '../components/Avisos';
+import { AvisoCookies } from '../components/AvisoCookies';
 
 // Cada pantalla se descarga recién cuando se abre. Antes el sitio era un solo archivo de 3,3 MB:
 // la home bajaba también el panel admin, el reproductor de Mux, los gráficos y el registro.
@@ -67,6 +68,7 @@ export const AppRouter = () => {
       <ScrollToTop />
       <ValidadorSesion />
       <Avisos />
+      <AvisoCookies />
       <ContenidoSeguro>
         <Routes>
           {/*RUTAS PÚBLICAS CON NAVBAR Y FOOTER */}

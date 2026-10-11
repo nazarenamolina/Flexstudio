@@ -1,4 +1,5 @@
 import { Link } from "react-router-dom";
+import { analyticsDisponible, reabrirAvisoCookies } from "../analytics";
 import { Mail, MapPin } from "lucide-react";
 import { Tiktok, Instagram } from "react-bootstrap-icons";
 
@@ -63,6 +64,9 @@ export const FooterComponent = () => {
             <li><Link to="/#clases" className="block text-[0.95rem] text-[#cdcdcd] transition-all duration-300 hover:pl-1.5 hover:text-[#d7f250]">Ver clases</Link></li>
             <li><Link to="/terminos-condiciones" className="block text-[0.95rem] text-[#cdcdcd] transition-all duration-300 hover:pl-1.5 hover:text-[#d7f250]">Términos y Condiciones</Link></li>
             <li><Link to="/politica-de-privacidad" className="block text-[0.95rem] text-[#cdcdcd] transition-all duration-300 hover:pl-1.5 hover:text-[#d7f250]">Política de Privacidad</Link></li>
+            {analyticsDisponible() && (
+              <li><button type="button" onClick={reabrirAvisoCookies} className="block text-left text-[0.95rem] text-[#cdcdcd] transition-all duration-300 hover:pl-1.5 hover:text-[#d7f250]">Preferencias de cookies</button></li>
+            )}
           </ul>
         </article>
 

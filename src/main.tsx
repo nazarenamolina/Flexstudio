@@ -6,6 +6,10 @@ import { isAxiosError } from 'axios'
 import './index.css'
 import App from './App.tsx'
 import { recargarPorVersionNueva } from './versionNueva'
+import { iniciarAnalytics } from './analytics'
+
+// Google Analytics solo si la persona ya aceptó las cookies en una visita anterior.
+iniciarAnalytics()
 
 // Vite avisa cuando no puede descargar una parte del sitio (por ejemplo, después de un deploy).
 // Se recarga una vez para traer la versión nueva; si vuelve a fallar, lo muestra LimiteDeError.

@@ -6,6 +6,7 @@ import { useCartStore } from '../store/cartStore';
 import { capturarPagoPaypalRequest, obtenerEstadoCompraRequest } from '../api/compras';
 import { ResultadoPago, Resaltado } from '../components/ResultadoPago';
 import { mensajeDeError } from '../api/errores';
+import { registrarCompra } from '../analytics';
 
 // El acceso lo habilita el webhook de la pasarela, que puede tardar unos segundos: se consulta
 // el estado cada 3 s durante 1 minuto antes de pasar a "se está acreditando".
@@ -70,10 +71,27 @@ export const CheckoutExitoPage = () => {
 
   // El carrito se vacía solo si el pago se hizo o está acreditándose; si no, queda para reintentar.
   useEffect(() => {
+    // Google Analytics: la compra se registra con lo que había en el carrito (antes de vaciarlo).
+    // Al recargar esta página el carrito ya está vacío, así que no se cuenta dos veces.
+    if (estado === 'exito') {
+      const items = useCartStore.getState().cartItems;
+      const moneda = idOrdenPaypal ? 'USD' : 'ARS';
+      if (items.length) {
+        registrarCompra({
+          id: grupoPagoId || idOrdenPaypal || `compra-${Date.now()}`,
+          moneda,
+          items: items.map((item) => ({
+            id: item.id,
+            nombre: item.titulo,
+            precio: Number(moneda === 'USD' ? item.precioUsd : item.precioArs) || 0,
+          })),
+        });
+      }
+    }
     if (estado === 'exito' || estado === 'acreditando') clearCart();
     // Las clases nuevas tienen que aparecer en "Mis clases" sin esperar a que venza la caché.
     if (estado === 'exito') queryClient.invalidateQueries({ queryKey: ['mis-clases'] });
-  }, [estado, clearCart, queryClient]);
+  }, [estado, clearCart, queryClient, grupoPagoId, idOrdenPaypal]);
 
   useEffect(() => {
     window.scrollTo(0, 0);

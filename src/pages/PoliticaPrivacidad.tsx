@@ -21,6 +21,7 @@ const PROVEEDORES: { nombre: string; para: string; datos: string }[] = [
   { nombre: 'Google Fonts', para: 'Tipografías del sitio', datos: 'Dirección IP' },
   { nombre: 'GeoJS', para: 'Detectar tu país para la moneda', datos: 'Dirección IP' },
   { nombre: 'Vercel', para: 'Alojamiento de la página web', datos: 'Dirección IP y datos técnicos' },
+  { nombre: 'Google Analytics', para: 'Estadísticas de visitas, solo si aceptás las cookies', datos: 'Páginas vistas, datos técnicos del navegador, IP abreviada y, al comprar, el monto y las clases' },
   { nombre: 'Hostinger', para: 'Servidor donde funciona la plataforma y se guarda la base de datos', datos: 'Todos los datos de la cuenta' },
 ];
 
@@ -159,8 +160,11 @@ export const PoliticaPrivacidad = () => {
                 <li>
                   <strong>reCAPTCHA de Google:</strong> puede usar sus propias cookies para distinguir personas de bots.
                 </li>
+                <li>
+                  <strong>Google Analytics (solo si aceptás):</strong> cookies de medición que nos dicen qué páginas se visitan, desde dónde se llega al sitio y cuántas compras se hacen, para mejorarlo. Si las rechazás no se activan. Podés cambiar tu elección cuando quieras desde "Preferencias de cookies", al pie de cada página.
+                </li>
               </ul>
-              <Destacado>No usamos cookies de publicidad ni de seguimiento.</Destacado>
+              <Destacado>No usamos cookies de publicidad. Las de estadísticas se activan solo con tu consentimiento.</Destacado>
             </Section>
 
             <Section icono={Shield} titulo="7. Seguridad">
