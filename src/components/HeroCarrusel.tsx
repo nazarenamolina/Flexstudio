@@ -18,7 +18,9 @@ const SLIDES_DE_RESPALDO: HeroSlide[] = [
 const optimizar = optimizarCloudinary;
 
 // Proporciones fijas del carrusel: deben coincidir con MEDIDAS_HERO (las que recomienda el panel admin).
-const ALTO_CARRUSEL = 'aspect-[4/5] md:aspect-[16/9] md:max-h-[calc(100svh-78px)] w-full';
+// Sin alto máximo: limitarlo al alto de la pantalla recortaba arriba y abajo los banners de 1920×1080
+// (por ejemplo, el "BIENVENID@") en pantallas anchas y bajas. Así el banner se ve siempre entero.
+const ALTO_CARRUSEL = 'aspect-[4/5] md:aspect-[16/9] w-full';
 
 const dosDigitos = (n: number) => String(n).padStart(2, '0');
 

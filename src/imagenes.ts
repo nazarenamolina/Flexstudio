@@ -14,4 +14,4 @@ export function optimizarCloudinary(url: string | null | undefined, ancho: numbe
 // Imagen de respaldo para clases sin portada. Es propia (Cloudinary): las de servicios externos
 // (placehold.co, Unsplash) las bloquea la CSP de vercel.json y se veían rotas en producción.
 export const IMAGEN_RESPALDO_CLASE =
-  'https://res.cloudinary.com/dmp7mcwie/image/upload/f_auto,q_auto,c_fill,w_800/v1779666110/flex-studio/categorias/zf6in7hepy8t9iookjei.jpg';
+  'https://res.cloudinary.com/dmp7mcwie/image/upload/f_auto,q_auto,c_fill,w_800/v1791730474/bio-cande_fjzalb.webp';

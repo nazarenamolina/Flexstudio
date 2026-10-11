@@ -59,7 +59,7 @@ const HomePage = () => {
       <section id="biografia" className="w-full flex flex-col lg:flex-row bg-[#FDFDF8] overflow-hidden">
         <ScrollReveal direction="right" className="w-full lg:w-1/2 relative min-h-[50vh] lg:min-h-full">
           <img
-            src="https://res.cloudinary.com/dmp7mcwie/image/upload/f_auto,q_auto,c_limit,w_1200/v1779666110/flex-studio/categorias/zf6in7hepy8t9iookjei.jpg"
+            src="https://res.cloudinary.com/dmp7mcwie/image/upload/f_auto,q_auto,c_limit,w_1200/v1791730474/bio-cande_fjzalb.webp"
             alt="Cande Imbaud - Profesora de Flexibilidad"
             className="absolute inset-0 w-full h-full object-cover object-center"
           />
