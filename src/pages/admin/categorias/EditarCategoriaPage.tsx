@@ -6,7 +6,7 @@ import { IconPicker } from '../../../components/IconPicker';
 import { ConfirmarEliminarModal } from '../../../components/ConfirmarEliminarModal';
 import { ToggleDestacada } from '../../../components/ToggleDestacada';
 import { GaleriaModal } from '../../../components/GaleriaModal';
-import { CamposPrecio } from '../../../components/CamposPrecio';
+import { ModulosAdmin } from '../../../components/ModulosAdmin';
 import { AyudaTitulo } from '../../../components/AyudaTitulo';
 import { optimizarCloudinary } from '../../../imagenes';
 
@@ -15,7 +15,7 @@ export const EditarCategoriaPage = () => {
     register, handleSubmit, errors, isSubmitting, cargandoDatos, estadoSubida,
      archivos, imagenesActuales, handleFileChange, handleSelectFromGallery, 
     handleEliminarMultimedia, watch, navigate, beneficiosFields, appendBeneficio, 
-    removeBeneficio, control 
+    removeBeneficio, control, idCategoria, modulos,
   } = useEditarCategoria();
 
   const [itemAEliminar, setItemAEliminar] = useState<{
@@ -97,20 +97,19 @@ export const EditarCategoriaPage = () => {
         </div>
       </div>
 
+      {idCategoria && <ModulosAdmin idCategoria={idCategoria} modulos={modulos} />}
+
       <form onSubmit={handleSubmit} className="flex flex-col xl:flex-row gap-8">
         <div className="flex-1 space-y-6">
 
           <div className="bg-[#1a1a1a] p-6 md:p-8 rounded-[24px] shadow-sm">
             <h3 className="text-xl font-bold text-white mb-6 border-b border-neutral-800 pb-4">Editar Información de la Categoría</h3>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-              <div>
-                <label className={labelClass}>Título:</label>
-                <input type="text" {...register('titulo', { required: 'Obligatorio' })} className={inputClass} />
-                {errors.titulo && <p className="text-red-500 text-xs mt-1">{errors.titulo.message}</p>}
-                <AyudaTitulo />
-              </div>
-              <CamposPrecio register={register} control={control} errors={errors} labelClass={labelClass} inputClass={inputClass} />
+            <div className="mb-6">
+              <label className={labelClass}>Título:</label>
+              <input type="text" {...register('titulo', { required: 'Obligatorio' })} className={inputClass} />
+              {errors.titulo && <p className="text-red-500 text-xs mt-1">{errors.titulo.message}</p>}
+              <AyudaTitulo />
             </div>
 
             <div className="mb-6">

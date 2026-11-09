@@ -19,6 +19,8 @@ export interface Subida {
   estado: EstadoSubida;
   /** Id del video en el back (subidas de video nuevo o de reemplazo). */
   idVideo?: string;
+  /** Milisegundos hasta que se quita sola del panel (terminadas y canceladas). El panel lo muestra con una barra. */
+  msParaCerrar?: number;
 }
 
 interface NuevaSubida {
@@ -43,9 +45,17 @@ interface SubidasState {
 // Las instancias de UpChunk no van en el estado (no son serializables ni hace falta re-renderizar).
 const cargas = new Map<string, { upload: UpChunk.UpChunk; alFallar?: NuevaSubida['alFallar'] }>();
 
-// Trozos de 30 MB (en KB, como pide UpChunk; es su valor por defecto): menos pedidos a Mux que con 5 MB.
+// Trozos de 30 MB para empezar (en KB, como pide UpChunk). Con dynamicChunkSize, UpChunk los agranda
+// si la conexión es rápida y los achica si es lenta: así un reintento en una conexión mala no repite
+// 30 MB. El máximo queda en 100 MB (el de UpChunk es 500 MB, demasiado para reintentar).
 // Cada trozo se reintenta solo si falla la conexión.
 const TAMANO_TROZO_KB = 30720;
+const TROZO_MINIMO_KB = 5120;
+const TROZO_MAXIMO_KB = 102400;
+
+// Las terminadas y canceladas se quitan solas del panel; las que fallaron quedan hasta que se cierran.
+const MS_QUITAR_COMPLETADA = 8000;
+const MS_QUITAR_CANCELADA = 4000;
 
 const TEXTO_TIPO: Record<TipoSubida, string> = {
   video: 'El video',
@@ -66,7 +76,14 @@ export const useSubidasStore = create<SubidasState>((set, get) => {
         subidas: [...s.subidas, { id, tipo, titulo, nombreArchivo: archivo.name, progreso: 0, estado: 'subiendo', idVideo }],
       }));
 
-      const upload = UpChunk.createUpload({ endpoint, file: archivo, chunkSize: TAMANO_TROZO_KB });
+      const upload = UpChunk.createUpload({
+        endpoint,
+        file: archivo,
+        chunkSize: TAMANO_TROZO_KB,
+        dynamicChunkSize: true,
+        minChunkSize: TROZO_MINIMO_KB,
+        maxChunkSize: TROZO_MAXIMO_KB,
+      });
       cargas.set(id, { upload, alFallar });
 
       // UpChunk avisa decenas de veces por segundo: solo se actualiza el estado cuando cambia el porcentaje entero.
@@ -81,9 +98,10 @@ export const useSubidasStore = create<SubidasState>((set, get) => {
       upload.on('online', () => actualizar(id, { estado: 'subiendo' }));
       upload.on('success', () => {
         cargas.delete(id);
-        actualizar(id, { progreso: 100, estado: 'completada' });
+        actualizar(id, { progreso: 100, estado: 'completada', msParaCerrar: MS_QUITAR_COMPLETADA });
         toast.success(`${TEXTO_TIPO[tipo]} "${titulo}" se subió. Mux lo está procesando: en unos minutos queda listo.`, { duration: 6000 });
         alCompletar?.();
+        setTimeout(() => get().quitar(id), MS_QUITAR_COMPLETADA);
       });
       upload.on('error', () => {
         // UpChunk ya reintentó cada trozo antes de rendirse.
@@ -100,8 +118,9 @@ export const useSubidasStore = create<SubidasState>((set, get) => {
       if (!carga) return;
       carga.upload.abort();
       cargas.delete(id);
-      actualizar(id, { estado: 'cancelada' });
+      actualizar(id, { estado: 'cancelada', msParaCerrar: MS_QUITAR_CANCELADA });
       carga.alFallar?.('cancelada');
+      setTimeout(() => get().quitar(id), MS_QUITAR_CANCELADA);
     },
 
     quitar: (id) => {

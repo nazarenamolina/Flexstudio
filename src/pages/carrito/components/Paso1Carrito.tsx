@@ -4,6 +4,7 @@ import { CartX } from 'react-bootstrap-icons';
 import { useCartStore } from '../../../store/cartStore';
 import { useMoneda } from '../../../hooks/useMoneda';
 import { IMAGEN_RESPALDO_CLASE, optimizarCloudinary } from '../../../imagenes';
+import { MESES_ACCESO } from '../../../modulos';
 import { tituloVisible } from '../../../titulos';
 
 interface Props {
@@ -40,7 +41,7 @@ const Paso1Carrito = ({ onNext }: Props) => {
   return (
     
     <div className="max-w-2xl mx-auto flex flex-col items-center w-full">
-      <h2 className="mb-6 font-principal text-4xl uppercase leading-tight md:text-5xl text-[#131313]">Tus clases</h2>
+      <h2 className="mb-6 font-principal text-4xl uppercase leading-tight md:text-5xl text-[#131313]">Tu compra</h2>
       <div className="w-full space-y-4">
         <div className="rounded-xl overflow-hidden">
           {cartItems.map((item) => {
@@ -67,8 +68,8 @@ const Paso1Carrito = ({ onNext }: Props) => {
                     <h3 className="text-[13px] sm:text-2xl font-principal font-bold text-[#131313] uppercase leading-tight line-clamp-2">
                       {tituloVisible(item.titulo)}
                     </h3>
-                    <p className="text-[9px] sm:text-sm text-[#131313]/60 font-principal font-bold uppercase tracking-[0.15em] mt-1 flex items-center gap-1.5">
-                      Clase online
+                    <p className="text-[9px] sm:text-sm text-[#131313]/70 font-principal font-bold uppercase tracking-[0.15em] mt-1">
+                      {item.nombreModulo} · {MESES_ACCESO} meses de acceso
                     </p>
                   </div>
 

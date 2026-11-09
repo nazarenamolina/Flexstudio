@@ -8,11 +8,14 @@ import { useSubidasStore } from '../store/subidasStore';
 import { mensajeDeError } from '../api/errores';
 import { useCategoriasPublicas } from './useCategoriasPublicas';
 import { CLAVE_VIDEOS_ADMIN } from './useAdminVideos';
+import { prepararImagen } from '../prepararImagen';
 
 export interface EditarVideoForm {
   titulo: string;
   descripcion?: string;
+  // Solo para filtrar los meses: al back va el mes, y la categoría sale de ahí.
   idCategoria: string;
+  idModulo: string;
   orden: number | string;
 }
 
@@ -20,7 +23,7 @@ export const useEditarVideo = () => {
   const navigate = useNavigate();
   const { id } = useParams();
   const queryClient = useQueryClient();
-  const { register, handleSubmit, reset, formState: { errors, isSubmitting } } = useForm<EditarVideoForm>();
+  const { register, handleSubmit, reset, watch, setValue, formState: { errors, isSubmitting } } = useForm<EditarVideoForm>();
   const [archivoImagen, setArchivoImagen] = useState<File | string | null>(null);
   // Archivo de video nuevo: reemplaza al actual cuando Mux lo termina de procesar.
   const [archivoVideo, setArchivoVideo] = useState<File | null>(null);
@@ -39,6 +42,7 @@ export const useEditarVideo = () => {
         titulo: video.titulo || '',
         descripcion: video.descripcion || '',
         idCategoria: video.categoria?.id || video.idCategoria || '',
+        idModulo: video.idModulo || '',
         orden: video.orden || '1',
       });
     }
@@ -76,7 +80,7 @@ export const useEditarVideo = () => {
     try {
       const formData = new FormData();
       formData.append('titulo', data.titulo);
-      formData.append('idCategoria', data.idCategoria);
+      formData.append('idModulo', data.idModulo);
       formData.append('orden', data.orden.toString());
       // Siempre, aunque esté vacía: si no, no había forma de borrar la descripción.
       formData.append('descripcion', data.descripcion ?? '');
@@ -84,7 +88,7 @@ export const useEditarVideo = () => {
         if (typeof archivoImagen === 'string') {
           formData.append('imagenUrl', archivoImagen);
         } else {
-          formData.append('imagen', archivoImagen);
+          formData.append('imagen', await prepararImagen(archivoImagen));
         }
       }
 
@@ -117,6 +121,6 @@ export const useEditarVideo = () => {
     navigate('/admin/videos');
   };
 
-  return {register, handleSubmit: handleSubmit(onSubmit), errors, isSubmitting,cargando: cargandoCat || cargandoVideo, categorias, archivoImagen, imagenActual, 
+  return {register, watch, setValue, handleSubmit: handleSubmit(onSubmit), errors, isSubmitting,cargando: cargandoCat || cargandoVideo, categorias, archivoImagen, imagenActual, 
     handleImageChange, handleSelectFromGallery, handleEliminarMiniaturaNueva, navigate,
     archivoVideo, handleVideoChange, quitarArchivoVideo, estado: video?.estado};};

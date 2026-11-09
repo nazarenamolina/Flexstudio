@@ -7,9 +7,11 @@ import { crearCategoriaRequest } from '../api/categoria';
 import { mensajeDeError } from '../api/errores';
 import { useSubidasStore } from '../store/subidasStore';
 import { isAxiosError } from 'axios';
+import { prepararImagen } from '../prepararImagen';
 
 export interface NuevaCategoriaForm {
   titulo: string;
+  tituloPrimerModulo: string;
   precioArs: number | string;
   precioUsd: number | string;
   descripcionCard: string;
@@ -67,6 +69,7 @@ export const useNuevaCategoria = () => {
     try {
       const formData = new FormData();
       formData.append('titulo', data.titulo);
+      if (data.tituloPrimerModulo?.trim()) formData.append('tituloPrimerModulo', data.tituloPrimerModulo.trim());
       formData.append('precioArs', String(Number(data.precioArs) || 0));
       formData.append('precioUsd', String(Number(data.precioUsd) || 0));
       formData.append('destacada', String(data.destacada));
@@ -85,7 +88,7 @@ export const useNuevaCategoria = () => {
         if (typeof archivos.imagenTarjeta === 'string') {
           formData.append('imagenTarjetaUrl', archivos.imagenTarjeta);  
         } else {
-          formData.append('imagenTarjeta', archivos.imagenTarjeta); 
+          formData.append('imagenTarjeta', await prepararImagen(archivos.imagenTarjeta));
         }
       }
 
@@ -93,7 +96,7 @@ export const useNuevaCategoria = () => {
         if (typeof archivos.imagenHero === 'string') {
           formData.append('imagenHeroUrl', archivos.imagenHero); 
         } else {
-          formData.append('imagenHero', archivos.imagenHero) 
+          formData.append('imagenHero', await prepararImagen(archivos.imagenHero));
         }
       }
 

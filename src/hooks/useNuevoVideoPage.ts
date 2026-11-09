@@ -8,17 +8,20 @@ import { useCategoriasPublicas } from './useCategoriasPublicas';
 import { CLAVE_VIDEOS_ADMIN } from './useAdminVideos';
 import { useSubidasStore } from '../store/subidasStore';
 import toast from 'react-hot-toast';
+import { prepararImagen } from '../prepararImagen';
 
 export interface NuevoVideoForm {
   titulo: string;
   descripcion?: string;
+  // Solo para filtrar los meses: al back va el mes, y la categoría sale de ahí.
   idCategoria: string;
+  idModulo: string;
   orden: number | string;
 }
 
 export const useNuevoVideo = () => {
   const navigate = useNavigate();
-  const { register, handleSubmit, formState: { errors, isSubmitting } } = useForm<NuevoVideoForm>();
+  const { register, handleSubmit, watch, setValue, formState: { errors, isSubmitting } } = useForm<NuevoVideoForm>();
   const queryClient = useQueryClient();
   const iniciarSubida = useSubidasStore((s) => s.iniciar);
   const { data: categorias = [], isLoading: cargandoCategorias } = useCategoriasPublicas();
@@ -61,14 +64,14 @@ export const useNuevoVideo = () => {
       setEstadoSubida('PIDIENDO_URL');
       const formData = new FormData();
       formData.append('titulo', data.titulo);
-      formData.append('idCategoria', data.idCategoria);
+      formData.append('idModulo', data.idModulo);
       formData.append('orden', data.orden.toString() || '1');
       if (data.descripcion) formData.append('descripcion', data.descripcion);
       if (archivos.imagen) {
         if (typeof archivos.imagen === 'string') {
           formData.append('imagenUrl', archivos.imagen);
         } else {
-          formData.append('imagen', archivos.imagen);
+          formData.append('imagen', await prepararImagen(archivos.imagen));
         }
       }
 
@@ -102,7 +105,7 @@ export const useNuevoVideo = () => {
   };
 
   return {
-    register, handleSubmit: handleSubmit(onSubmit), errors, isSubmitting,
+    register, handleSubmit: handleSubmit(onSubmit), errors, isSubmitting, watch, setValue,
     categorias, cargandoCategorias, archivos, estadoSubida,
     handleFileChange, handleSelectFromGallery, handleEliminarMiniatura, quitarVideo, navigate
   };

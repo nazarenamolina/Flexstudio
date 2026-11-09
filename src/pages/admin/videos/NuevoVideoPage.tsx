@@ -3,9 +3,11 @@ import { ArrowLeft, Image as ImageIcon, Loader2, Library, Trash2, Film } from 'l
 import { useNuevoVideo } from '../../../hooks/useNuevoVideoPage';
 import { GaleriaModal } from '../../../components/GaleriaModal'; 
 import { tituloVisible } from '../../../titulos';
+import { nombreModulo } from '../../../modulos';
 
 export const NuevoVideoPage = () => {
-  const {register, handleSubmit, errors, categorias, cargandoCategorias, archivos, estadoSubida, handleFileChange, handleSelectFromGallery, handleEliminarMiniatura, quitarVideo, navigate} = useNuevoVideo();
+  const {register, handleSubmit, errors, watch, setValue, categorias, cargandoCategorias, archivos, estadoSubida, handleFileChange, handleSelectFromGallery, handleEliminarMiniatura, quitarVideo, navigate} = useNuevoVideo();
+  const modulos = categorias.find((cat) => cat.id === watch('idCategoria'))?.modulos ?? [];
   const [isGaleriaOpen, setIsGaleriaOpen] = useState(false);
   const inputClass = "w-full bg-[#131313] border border-gray-800 focus:border-[#d7f250] focus:ring-1 focus:ring-[#d7f250]/50 rounded-xl px-4 py-3 text-white placeholder-gray-600 outline-none transition-all shadow-sm";
   const labelClass = "block text-sm font-bold text-gray-400 mb-2";
@@ -58,8 +60,8 @@ export const NuevoVideoPage = () => {
 
           <div>
             <label className={labelClass}>Categoría / Disciplina *</label>
-            <select {...register('idCategoria', { required: 'Debes elegir una categoría' })} className={`${inputClass} appearance-none cursor-pointer`}>
-              <option value="" disabled selected>Selecciona una categoría...</option>
+            <select {...register('idCategoria', { required: 'Debes elegir una categoría', onChange: () => setValue('idModulo', '') })} defaultValue="" className={`${inputClass} appearance-none cursor-pointer`}>
+              <option value="" disabled>Selecciona una categoría...</option>
               {cargandoCategorias ? (
                 <option disabled>Cargando...</option>
               ) : (
@@ -67,6 +69,15 @@ export const NuevoVideoPage = () => {
               )}
             </select>
             {errors.idCategoria && <span className="text-red-500 text-xs mt-1">{errors.idCategoria.message}</span>}
+          </div>
+
+          <div>
+            <label className={labelClass}>Mes *</label>
+            <select {...register('idModulo', { required: 'Debes elegir un mes' })} value={watch('idModulo') ?? ''} disabled={modulos.length === 0} className={`${inputClass} appearance-none cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed`}>
+              <option value="" disabled>{watch('idCategoria') ? 'Selecciona un mes...' : 'Primero elegí una categoría'}</option>
+              {modulos.map((modulo) => <option key={modulo.id} value={modulo.id}>{nombreModulo(modulo)}</option>)}
+            </select>
+            {errors.idModulo && <span className="text-red-500 text-xs mt-1">{errors.idModulo.message}</span>}
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">

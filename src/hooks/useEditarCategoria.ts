@@ -7,11 +7,10 @@ import { obtenerCategoriaPorIdRequest, actualizarCategoriaRequest } from '../api
 import { mensajeDeError } from '../api/errores';
 import { useSubidasStore } from '../store/subidasStore';
 import { isAxiosError } from 'axios';
+import { prepararImagen } from '../prepararImagen';
 
 export interface EditarCategoriaForm {
   titulo: string;
-  precioArs: number | string;
-  precioUsd: number | string;
   descripcionCard: string;
   descripcionBreve: string;
   descripcionDetallada: string;
@@ -57,8 +56,6 @@ export const useEditarCategoria = () => {
     if (categoria) {
       reset({
         titulo: categoria.titulo || '',
-        precioArs: categoria.precioArs || '',
-        precioUsd: categoria.precioUsd || '',
         descripcionCard: categoria.descripcionCard || '',
         descripcionBreve: categoria.descripcionBreve || '',
         descripcionDetallada: categoria.descripcionDetallada || '',
@@ -115,8 +112,6 @@ export const useEditarCategoria = () => {
     try {
       const formData = new FormData();
       formData.append('titulo', data.titulo);
-      formData.append('precioArs', String(Number(data.precioArs) || 0));
-      formData.append('precioUsd', String(Number(data.precioUsd) || 0));
       formData.append('destacada', String(data.destacada));
       // Se mandan siempre, aunque estén vacíos: el back solo cambia los campos que recibe, así que
       // antes no había forma de borrar una descripción ni de quitar todos los beneficios.
@@ -131,7 +126,7 @@ export const useEditarCategoria = () => {
         if (typeof archivos.imagenTarjeta === 'string') {
           formData.append('imagenTarjetaUrl', archivos.imagenTarjeta);
         } else {
-          formData.append('imagenTarjeta', archivos.imagenTarjeta);
+          formData.append('imagenTarjeta', await prepararImagen(archivos.imagenTarjeta));
         }
       }
       
@@ -139,7 +134,7 @@ export const useEditarCategoria = () => {
         if (typeof archivos.imagenHero === 'string') {
           formData.append('imagenHeroUrl', archivos.imagenHero);
         } else {
-          formData.append('imagenHero', archivos.imagenHero);
+          formData.append('imagenHero', await prepararImagen(archivos.imagenHero));
         }
       }
 
@@ -190,6 +185,7 @@ export const useEditarCategoria = () => {
   return {
     register, handleSubmit: handleSubmit(onSubmit), errors, isSubmitting, cargandoDatos, 
     estadoSubida, archivos, imagenesActuales, handleFileChange, handleSelectFromGallery, 
-    handleEliminarMultimedia, watch, navigate, beneficiosFields, appendBeneficio, removeBeneficio, control
+    handleEliminarMultimedia, watch, navigate, beneficiosFields, appendBeneficio, removeBeneficio, control,
+    idCategoria: id, modulos: categoria?.modulos ?? [],
   };
 };

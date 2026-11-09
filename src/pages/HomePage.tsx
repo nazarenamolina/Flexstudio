@@ -148,7 +148,7 @@ const HomePage = () => {
           </ScrollReveal>
         )}
         <ScrollReveal direction="up" delay={0.3}>
-          <article className="w-[100%] sm:w-[80%] lg:w-[60%] xl:w-[50%] mx-auto border border-gray-300 bg-white/80 bg-[url('https://res.cloudinary.com/dmp7mcwie/image/upload/f_auto,q_auto/v1774312699/fondo_hwrosv.png')] bg-cover rounded-2xl p-6 md:p-10 shadow-inner">
+          <article id="consulta" className="scroll-mt-32 w-[100%] sm:w-[80%] lg:w-[60%] xl:w-[50%] mx-auto border border-gray-300 bg-white/80 bg-[url('https://res.cloudinary.com/dmp7mcwie/image/upload/f_auto,q_auto/v1774312699/fondo_hwrosv.png')] bg-cover rounded-2xl p-6 md:p-10 shadow-inner">
             <div className="text-center mb-6">
               <h3 className="text-3xl font-bold uppercase text-[#161616] tracking-tight mb-2 font-principal">¿Tenés una consulta?</h3>
               <p className="text-gray-500 text-sm">Completa con tus datos y te respondo lo antes posible.</p>

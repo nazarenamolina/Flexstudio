@@ -1,5 +1,6 @@
 import { useState } from 'react';
-import { PencilLine, LayoutGrid, List, ArchiveRestore, ChevronDown } from 'lucide-react';
+import { Link } from 'react-router-dom';
+import { PencilLine, LayoutGrid, List, ArchiveRestore, ChevronDown, Eye } from 'lucide-react';
 import { useCategorias } from '../../../hooks/useCategorias';
 import { ConfirmarEliminarModal } from '../../../components/ConfirmarEliminarModal';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -129,13 +130,21 @@ export const CategoriasPage = () => {
                       Fuera del catálogo. Quienes la compraron la siguen viendo.
                     </p>
                   </div>
-                  <button
-                    onClick={() => handleRestaurar(cat.id)}
-                    disabled={estaRestaurando}
-                    className="flex items-center justify-center gap-2 bg-[#d7f250] hover:bg-[#c4dd46] text-[#131313] text-xs font-black uppercase tracking-widest px-4 py-2 rounded-full transition-colors disabled:opacity-50"
-                  >
-                    <ArchiveRestore size={14} /> Restaurar
-                  </button>
+                  <div className="flex flex-wrap items-center gap-2">
+                    <Link
+                      to={`/mis-clases/${cat.id}`}
+                      className="flex items-center justify-center gap-2 border border-white/20 hover:bg-white/10 text-white text-xs font-bold uppercase tracking-widest px-4 py-2 rounded-full transition-colors"
+                    >
+                      <Eye size={14} /> Ver
+                    </Link>
+                    <button
+                      onClick={() => handleRestaurar(cat.id)}
+                      disabled={estaRestaurando}
+                      className="flex items-center justify-center gap-2 bg-[#d7f250] hover:bg-[#c4dd46] text-[#131313] text-xs font-black uppercase tracking-widest px-4 py-2 rounded-full transition-colors disabled:opacity-50"
+                    >
+                      <ArchiveRestore size={14} /> Restaurar
+                    </button>
+                  </div>
                 </li>
               ))}
             </ul>

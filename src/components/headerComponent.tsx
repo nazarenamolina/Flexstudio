@@ -4,6 +4,7 @@ import { useAuthStore } from "../store/authStore";
 import { useCartStore } from "../store/cartStore";
 import { ShoppingCart, CircleUser, LogOut, Menu, X, ChevronDown, UserPlus } from "lucide-react";
 import { AvatarIniciales } from "./AvatarIniciales";
+import { BarraConsumidor } from "./BarraConsumidor";
 import { useCategoriasPublicas } from "../hooks/useCategoriasPublicas";
 import { logoutRequest } from "../api/auth";
 import { tituloVisible } from "../titulos";
@@ -53,6 +54,7 @@ export const HeaderComponent = () => {
   return (
     <>
       <header className={`fixed top-0 left-0 z-40 w-full transition-all duration-200 ${scrolled ? 'bg-white shadow-md' : 'bg-white border-b border-gray-100'}`}>
+        <BarraConsumidor />
         <nav className="container mx-auto flex items-center justify-between py-3 px-5 lg:px-8">
 
           {/* LOGO */}

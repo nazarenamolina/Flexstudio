@@ -10,6 +10,7 @@ import { HeroSlideVista } from '../../../components/HeroCarrusel';
 import { GaleriaModal } from '../../../components/GaleriaModal';
 import { ConfirmarEliminarModal } from '../../../components/ConfirmarEliminarModal';
 import { optimizarCloudinary } from '../../../imagenes';
+import { prepararImagen } from '../../../prepararImagen';
 
 // Mismo límite y misma regla de enlaces que el back.
 const MAXIMO_SLIDES = 8;
@@ -143,6 +144,8 @@ export const HeroAdminPage = () => {
   const [imagenMovil, setImagenMovil] = useState<Imagen>(null);
   const [galeriaPara, setGaleriaPara] = useState<CampoImagen | null>(null);
   const [aEliminar, setAEliminar] = useState<HeroSlide | null>(null);
+  // Mientras se achican las imágenes todavía no hay pedido en curso: sin esto, un doble click guardaba dos veces.
+  const [preparando, setPreparando] = useState(false);
   const editorRef = useRef<HTMLDivElement>(null);
 
   const refrescar = () => {
@@ -224,25 +227,31 @@ export const HeroAdminPage = () => {
     ordenarMutation.mutate(ids);
   };
 
-  const guardar = (e: React.FormEvent) => {
+  const guardar = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!imagen) return toast.error('Elegí una imagen principal');
     const enlace = form.enlace.trim();
     if (enlace && !ENLACE_PERMITIDO.test(enlace)) return toast.error('El enlace debe empezar con / (página del sitio) o con https://');
     if (form.textoBoton.trim() && !enlace) return toast.error('El botón necesita un enlace');
 
+    if (preparando || guardarMutation.isPending) return;
     const existente = editando !== 'nueva' && editando ? editando : null;
     const datos = new FormData();
     (['etiqueta', 'titulo', 'subtitulo', 'textoBoton'] as const).forEach(campo => datos.append(campo, form[campo].trim()));
     datos.append('enlace', enlace);
     datos.append('activo', String(form.activo));
 
-    if (imagen instanceof File) datos.append('imagen', imagen);
-    else if (imagen !== existente?.imagenUrl) datos.append('imagenUrl', imagen);
+    setPreparando(true);
+    try {
+      if (imagen instanceof File) datos.append('imagen', await prepararImagen(imagen));
+      else if (imagen !== existente?.imagenUrl) datos.append('imagenUrl', imagen);
 
-    if (imagenMovil instanceof File) datos.append('imagenMovil', imagenMovil);
-    else if (imagenMovil && imagenMovil !== existente?.imagenMovilUrl) datos.append('imagenMovilUrl', imagenMovil);
-    else if (!imagenMovil && existente?.imagenMovilUrl) datos.append('eliminarImagenMovil', 'true');
+      if (imagenMovil instanceof File) datos.append('imagenMovil', await prepararImagen(imagenMovil));
+      else if (imagenMovil && imagenMovil !== existente?.imagenMovilUrl) datos.append('imagenMovilUrl', imagenMovil);
+      else if (!imagenMovil && existente?.imagenMovilUrl) datos.append('eliminarImagenMovil', 'true');
+    } finally {
+      setPreparando(false);
+    }
 
     guardarMutation.mutate({ id: existente?.id, datos });
   };
@@ -423,8 +432,8 @@ export const HeroAdminPage = () => {
               </label>
 
               <div className="flex gap-3 pt-2">
-                <button type="submit" disabled={guardarMutation.isPending} className="flex-1 flex items-center justify-center gap-2 bg-[#d7f250] text-[#131313] border-2 border-[#d7f250] px-4 py-3 font-principal text-xs uppercase tracking-[0.12em] hover:bg-transparent hover:text-[#d7f250] disabled:opacity-60 cursor-pointer transition-colors">
-                  {guardarMutation.isPending ? <><Loader2 size={16} className="animate-spin" /> Guardando…</> : 'Guardar'}
+                <button type="submit" disabled={preparando || guardarMutation.isPending} className="flex-1 flex items-center justify-center gap-2 bg-[#d7f250] text-[#131313] border-2 border-[#d7f250] px-4 py-3 font-principal text-xs uppercase tracking-[0.12em] hover:bg-transparent hover:text-[#d7f250] disabled:opacity-60 cursor-pointer transition-colors">
+                  {preparando || guardarMutation.isPending ? <><Loader2 size={16} className="animate-spin" /> Guardando…</> : 'Guardar'}
                 </button>
                 <button type="button" onClick={cerrarEditor} className="px-5 border-2 border-neutral-700 font-principal text-xs uppercase tracking-[0.12em] text-neutral-300 hover:border-white hover:text-white cursor-pointer transition-colors">
                   Cancelar

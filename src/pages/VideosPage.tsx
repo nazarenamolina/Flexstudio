@@ -1,7 +1,9 @@
 import { useEffect, useRef, useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import { useClaseDetalle } from "../hooks/useClaseDetalle";
-import { Play, Loader2, Video, Clock, CheckCircle, TextAlignStart, AlertTriangle, RotateCcw } from "lucide-react";
+import { useAuthStore } from "../store/authStore";
+import { Play, Loader2, Video, Clock, CheckCircle, TextAlignStart, AlertTriangle, RotateCcw, Lock } from "lucide-react";
+import { formatearFecha, nombreModulo } from "../modulos";
 import MuxPlayer from "@mux/mux-player-react";
 import { mensajeDeError } from "../api/errores";
 import { useTituloPagina } from "../hooks/useTituloPagina";
@@ -21,12 +23,17 @@ export const VideosPage = () => {
     cargandoVideo,
     errorVideo,
     renovarCredenciales,
-    fijarVideoActivo,
+    alEmpezarReproduccion,
     videosCompletados,
     marcarCompletado
   } = useClaseDetalle(id);
 
   useTituloPagina(clase && tituloVisible(clase.titulo));
+
+  // El admin llega desde el panel: vuelve ahí, porque no tiene "Mis clases".
+  const esAdmin = useAuthStore((state) => state.usuario?.rol === 'ADMIN');
+  const rutaVolver = esAdmin ? '/admin/categorias' : '/mis-clases';
+  const textoVolver = esAdmin ? 'Volver al panel' : 'Volver a mis clases';
 
   // Posición del video: si hay que pedir un token nuevo (venció o falló), sigue desde ahí.
   const posicionRef = useRef(0);
@@ -68,21 +75,38 @@ export const VideosPage = () => {
         <p className="text-gray-700 font-medium text-center max-w-sm">
           {mensajeDeError(error, 'No pudimos cargar la clase. Revisá tu conexión e intentá de nuevo.')}
         </p>
-        <Link to="/mis-clases" className="font-principal uppercase tracking-wide underline underline-offset-4 decoration-[#d7f250] decoration-2 hover:decoration-[#131313]">
-          Volver a mis clases
+        <Link to={rutaVolver} className="font-principal uppercase tracking-wide underline underline-offset-4 decoration-[#d7f250] decoration-2 hover:decoration-[#131313]">
+          {textoVolver}
         </Link>
       </div>
     </div>
   );
 
-  // Cálculos para la UI
-  const videosOrdenados = [...(clase.videos || [])].sort((a, b) => a.orden - b.orden);
+  // Cálculos para la UI (el back manda los videos ordenados por mes y por orden)
+  const videosOrdenados = clase.videos || [];
   const videoIndex = videosOrdenados.findIndex((v) => v.id === videoActivo?.id);
+  const modulos = clase.modulos ?? [];
+  const mesesVigentes = modulos.filter((m) => m.estado === 'VIGENTE');
+  const moduloActivo = modulos.find((m) => m.id === videoActivo?.idModulo);
+  const videosDelMes = videosOrdenados.filter((v) => v.idModulo === videoActivo?.idModulo);
+  const indiceEnElMes = videosDelMes.findIndex((v) => v.id === videoActivo?.id);
+  const esUltimoDelMes = indiceEnElMes >= 0 && indiceEnElMes === videosDelMes.length - 1;
+  const siguienteVideo = videoIndex >= 0 ? videosOrdenados[videoIndex + 1] : undefined;
+  // Al terminar el mes, el siguiente video puede ser del próximo mes o haber que comprarlo.
+  const mesSiguiente = moduloActivo ? modulos.find((m) => m.numero > moduloActivo.numero && m.estado !== 'NO_DISPONIBLE') : undefined;
+  const completadosVisibles = videosOrdenados.filter((v) => videosCompletados.has(v.id)).length;
 
   // --- UI PRINCIPAL ---
   return (
     <div className="min-h-screen">
       <div className="max-w-[1600px] mx-auto px-6 lg:px-10 pt-24 pb-12">
+
+        {esAdmin && (
+          <div className="mb-6 flex flex-wrap items-center justify-between gap-3 rounded-2xl bg-[#131313] px-5 py-3 text-sm text-white">
+            <span>Estás viendo la clase en modo admin, sin comprarla.</span>
+            <Link to={rutaVolver} className="font-bold text-[#d7f250] underline underline-offset-4">{textoVolver}</Link>
+          </div>
+        )}
 
         {/* Header con título */}
         <div className="mb-8">
@@ -143,7 +167,7 @@ export const VideosPage = () => {
                     renovarDesdeDondeIba();
                   }}
                   onLoadedMetadata={() => { reintentoAutomaticoRef.current = false; }}
-                  onPlay={fijarVideoActivo}
+                  onPlay={alEmpezarReproduccion}
                   onEnded={() => { marcarCompletado(videoActivo.id); setTerminado(videoActivo.id); }}
                   style={{ width: '100%', height: '100%', aspectRatio: '16/9' }}
                 >
@@ -169,8 +193,12 @@ export const VideosPage = () => {
                     <div className="w-16 h-16 rounded-full bg-white/10 flex items-center justify-center">
                       <Play size={28} className="text-white ml-1" />
                     </div>
-                    <p className="text-gray-400 text-sm">
-                      {videosOrdenados.length === 0 ? 'Esta clase todavía no tiene videos disponibles.' : 'Elegí una lección para comenzar'}
+                    <p className="text-gray-400 text-sm text-center px-6">
+                      {videosOrdenados.length > 0
+                        ? 'Elegí una lección para comenzar'
+                        : modulos.some((m) => m.estado === 'VENCIDO')
+                          ? 'Tu acceso a esta clase venció. Podés volver a comprar el mes que quieras ver.'
+                          : 'Esta clase todavía no tiene videos disponibles.'}
                     </p>
                   </div>
                 </div>
@@ -178,24 +206,34 @@ export const VideosPage = () => {
               {terminado === videoActivo?.id && (
                 <div role="dialog" aria-label="Lección terminada" className="absolute inset-0 z-10 flex flex-col items-center justify-center gap-5 bg-[#131313]/90 p-6 text-center">
                   <CheckCircle className="w-12 h-12 text-[#d7f250]" />
-                  {videoIndex < videosOrdenados.length - 1 ? (
+                  {siguienteVideo ? (
                     <>
-                      <p className="font-principal text-2xl sm:text-3xl uppercase text-white">¡Terminaste esta lección!</p>
+                      <p className="font-principal text-2xl sm:text-3xl uppercase text-white">
+                        {esUltimoDelMes && moduloActivo ? `¡Terminaste el Mes ${moduloActivo.numero}!` : '¡Terminaste esta lección!'}
+                      </p>
                       <button
                         type="button"
                         autoFocus
-                        onClick={() => { setTerminado(null); setVideoActivo(videosOrdenados[videoIndex + 1]); }}
+                        onClick={() => { setTerminado(null); setVideoActivo(siguienteVideo); }}
                         className="inline-flex items-center gap-2 rounded-full bg-[#d7f250] px-6 py-3 font-principal font-bold uppercase text-[#131313] hover:bg-white transition-colors cursor-pointer max-w-full"
                       >
                         <Play size={18} className="shrink-0" />
-                        <span className="truncate">Ver siguiente: {videosOrdenados[videoIndex + 1].titulo}</span>
+                        <span className="truncate">Ver siguiente: {siguienteVideo.titulo}</span>
                       </button>
+                    </>
+                  ) : esUltimoDelMes && moduloActivo && mesSiguiente && !esAdmin ? (
+                    <>
+                      <p className="font-principal text-2xl sm:text-3xl uppercase text-white">¡Terminaste el Mes {moduloActivo.numero}!</p>
+                      <p className="text-white/80">Ya podés seguir con el Mes {mesSiguiente.numero}.</p>
+                      <Link to={`/categorias/${clase.id}#meses`} className="inline-flex items-center gap-2 rounded-full bg-[#d7f250] px-6 py-3 font-principal font-bold uppercase text-[#131313] hover:bg-white transition-colors">
+                        Ver el Mes {mesSiguiente.numero}
+                      </Link>
                     </>
                   ) : (
                     <>
                       <p className="font-principal text-2xl sm:text-3xl uppercase text-white">¡Terminaste la clase!</p>
-                      <Link to="/mis-clases" className="inline-flex items-center gap-2 rounded-full bg-[#d7f250] px-6 py-3 font-principal font-bold uppercase text-[#131313] hover:bg-white transition-colors">
-                        Volver a mis clases
+                      <Link to={rutaVolver} className="inline-flex items-center gap-2 rounded-full bg-[#d7f250] px-6 py-3 font-principal font-bold uppercase text-[#131313] hover:bg-white transition-colors">
+                        {textoVolver}
                       </Link>
                     </>
                   )}
@@ -261,13 +299,22 @@ export const VideosPage = () => {
             <div className="bg-white bg-[url('https://res.cloudinary.com/dmp7mcwie/image/upload/f_auto,q_auto/v1774312699/fondo_hwrosv.png')] rounded-3xl border border-neutral-100 p-6 shadow-sm lg:sticky lg:top-28 lg:max-h-[calc(100vh-8rem)] lg:overflow-y-auto">
               <div className="flex items-center justify-between mb-6">
                 <h2 className="font-principal text-xl uppercase text-[#131313]">Contenido de la clase</h2>
-                <span className="text-sm font-bold text-[#131313] bg-[#d7f250] px-3 py-1 rounded-full" aria-label={`${videosCompletados.size} de ${videosOrdenados.length} videos completados`}>
-                  {videosCompletados.size}/{videosOrdenados.length}
+                <span className="text-sm font-bold text-[#131313] bg-[#d7f250] px-3 py-1 rounded-full" aria-label={`${completadosVisibles} de ${videosOrdenados.length} videos completados`}>
+                  {completadosVisibles}/{videosOrdenados.length}
                 </span>
               </div>
 
+              <div className="flex flex-col gap-6">
+              {mesesVigentes.map((mes) => (
+              <section key={mes.id} aria-label={nombreModulo(mes)}>
+              <div className="mb-3">
+                <h3 className="font-principal text-lg uppercase leading-tight text-[#131313]">{nombreModulo(mes)}</h3>
+                {mes.fechaVencimiento && !esAdmin && (
+                  <p className="text-xs font-semibold text-neutral-600">Acceso hasta el {formatearFecha(mes.fechaVencimiento)}</p>
+                )}
+              </div>
               <ol className="flex flex-col gap-3">
-                {videosOrdenados.map((video, index) => {
+                {videosOrdenados.filter((v) => v.idModulo === mes.id).map((video, index) => {
                   const isActivo = videoActivo?.id === video.id;
                   const isCompletado = videosCompletados.has(video.id);
 
@@ -314,6 +361,31 @@ export const VideosPage = () => {
                   );
                 })}
               </ol>
+              </section>
+              ))}
+
+              {/* Meses sin acceso vigente: vencidos, bloqueados o sin comprar. */}
+              {!esAdmin && modulos.some((m) => m.estado !== 'VIGENTE' && m.estado !== 'NO_DISPONIBLE') && (
+                <div className="border-t border-neutral-200 pt-4">
+                  <ul className="flex flex-col gap-2 text-sm">
+                    {modulos.filter((m) => m.estado !== 'VIGENTE' && m.estado !== 'NO_DISPONIBLE').map((mes) => (
+                      <li key={mes.id} className="flex items-start gap-2 text-neutral-700">
+                        <Lock size={15} className="mt-0.5 shrink-0" aria-hidden="true" />
+                        <span>
+                          <strong>{nombreModulo(mes)}:</strong>{' '}
+                          {mes.estado === 'BLOQUEADO' ? `se habilita al terminar el Mes ${mes.requiereNumero}.`
+                            : mes.estado === 'VENCIDO' && mes.fechaVencimiento ? `venció el ${formatearFecha(mes.fechaVencimiento)}.`
+                            : 'todavía no lo compraste.'}
+                          {mes.comprable && (
+                            <> <Link to={`/categorias/${clase.id}#meses`} className="font-bold underline underline-offset-2">{mes.estado === 'VENCIDO' ? 'Volver a comprar' : 'Comprar'}</Link></>
+                          )}
+                        </span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+              </div>
             </div>
           </div>
           

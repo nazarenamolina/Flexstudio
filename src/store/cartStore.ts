@@ -1,43 +1,50 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
+import { type CuponAplicado } from '../api/cupones';
 
-export interface CategoriaReal {
+/** Lo que se compra es un mes. El título y la imagen son los de su categoría. */
+export interface ItemCarrito {
   id: string;
+  idCategoria: string;
   titulo: string;
-  precioArs: string | number; 
+  nombreModulo: string;
+  precioArs: string | number | null | undefined;
+  precioUsd: string | number | null | undefined;
   imagenTarjeta?: string;
-  precioUsd: string | number; 
 }
 
 interface CartState {
-  cartItems: CategoriaReal[];
-  addToCart: (item: CategoriaReal) => void;
+  cartItems: ItemCarrito[];
+  // Vale para el mes y el precio con los que se calculó: cualquier cambio en el carrito lo quita.
+  cupon: CuponAplicado | null;
+  /** Se compra de a un mes: agregar otro reemplaza al que estaba. */
+  addToCart: (item: ItemCarrito) => void;
   removeFromCart: (id: string) => void;
   clearCart: () => void;
   /** Reemplaza el carrito por su versión revalidada contra el catálogo (ver useSincronizarCarrito). */
-  reemplazarCarrito: (items: CategoriaReal[]) => void;
+  reemplazarCarrito: (items: ItemCarrito[]) => void;
+  setCupon: (cupon: CuponAplicado | null) => void;
 }
 
 export const useCartStore = create<CartState>()(
   persist(
     (set) => ({
       cartItems: [],
-      addToCart: (item) => 
-        set((state) => {
-          const existe = state.cartItems.some((i) => i.id === item.id);
-          if (existe) return state;
-          return { cartItems: [...state.cartItems, item] };
-        }),
+      cupon: null,
+      addToCart: (item) => set({ cartItems: [item], cupon: null }),
 
-      removeFromCart: (id) => 
+      removeFromCart: (id) =>
         set((state) => ({
-          cartItems: state.cartItems.filter((item) => item.id !== id)
+          cartItems: state.cartItems.filter((item) => item.id !== id),
+          cupon: null,
         })),
-      clearCart: () => set({ cartItems: [] }),
-      reemplazarCarrito: (items) => set({ cartItems: items }),
+      clearCart: () => set({ cartItems: [], cupon: null }),
+      reemplazarCarrito: (items) => set({ cartItems: items, cupon: null }),
+      setCupon: (cupon) => set({ cupon }),
     }),
     {
-      name: 'flex-studio-cart',  
+      // Clave nueva: los carritos anteriores guardaban categorías, que ya no se compran.
+      name: 'flex-studio-cart-modulos',
     }
   )
 );

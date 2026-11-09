@@ -5,9 +5,10 @@ import { useSubidasStore } from '../../../store/subidasStore';
 import { useEditarVideo } from '../../../hooks/useEditarVideo';
 import { GaleriaModal } from '../../../components/GaleriaModal';
 import { tituloVisible } from '../../../titulos';
+import { nombreModulo } from '../../../modulos';
 
 export const EditarVideoPage = () => {
-  const { register, handleSubmit, errors, isSubmitting, cargando, categorias, archivoImagen, imagenActual, handleImageChange, handleSelectFromGallery, handleEliminarMiniaturaNueva, navigate, archivoVideo, handleVideoChange, quitarArchivoVideo, estado } = useEditarVideo();
+  const { register, watch, setValue, handleSubmit, errors, isSubmitting, cargando, categorias, archivoImagen, imagenActual, handleImageChange, handleSelectFromGallery, handleEliminarMiniaturaNueva, navigate, archivoVideo, handleVideoChange, quitarArchivoVideo, estado } = useEditarVideo();
   const { id } = useParams();
   const subidaEnCurso = useSubidasStore((s) => s.subidas.some((x) => x.idVideo === id && (x.estado === 'subiendo' || x.estado === 'pausada')));
   const [isGaleriaOpen, setIsGaleriaOpen] = useState(false);
@@ -64,11 +65,21 @@ export const EditarVideoPage = () => {
           </div>
           <div>
             <label className={labelClass}>Categoría / Disciplina *</label>
-            <select {...register('idCategoria', { required: 'Obligatorio' })} className={`${inputClass} appearance-none cursor-pointer`}>
+            <select {...register('idCategoria', { required: 'Obligatorio', onChange: () => setValue('idModulo', '') })} className={`${inputClass} appearance-none cursor-pointer`}>
               <option value="" disabled>Selecciona una categoría...</option>
               {categorias.map((cat) => <option key={cat.id} value={cat.id}>{tituloVisible(cat.titulo)}</option>)}
             </select>
             {errors.idCategoria && <span className="text-red-500 text-xs mt-1">{errors.idCategoria.message}</span>}
+          </div>
+          <div>
+            <label className={labelClass}>Mes *</label>
+            <select {...register('idModulo', { required: 'Debes elegir un mes' })} value={watch('idModulo') ?? ''} className={`${inputClass} appearance-none cursor-pointer`}>
+              <option value="" disabled>Selecciona un mes...</option>
+              {(categorias.find((cat) => cat.id === watch('idCategoria'))?.modulos ?? []).map((modulo) => (
+                <option key={modulo.id} value={modulo.id}>{nombreModulo(modulo)}</option>
+              ))}
+            </select>
+            {errors.idModulo && <span className="text-red-500 text-xs mt-1">{errors.idModulo.message}</span>}
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>

@@ -9,7 +9,7 @@ interface Props {
 
 /**
  * Retornos de la pasarela que no son un pago aprobado:
- *  - /checkout/pendiente: MercadoPago con pago en efectivo o transferencia, todavía sin acreditar.
+ *  - /checkout/pendiente: MercadoPago con un pago todavía sin acreditar (por ejemplo, en revisión).
  *  - /checkout/error: MercadoPago rechazado (?status=rejected), o el comprador canceló o volvió
  *    sin pagar (MercadoPago sin status, o PayPal con ?token=…).
  * Es pública: si la sesión no sobrevivió al viaje a la pasarela, igual se informa qué pasó.
@@ -34,7 +34,7 @@ export const CheckoutResultadoPage = ({ tipo }: Props) => {
       <ResultadoPago
         tono="espera"
         titulo={<>Pago <Resaltado>pendiente</Resaltado></>}
-        texto="Tu pago todavía no se acreditó (por ejemplo, si elegiste efectivo o transferencia). Cuando se acredite te llega el comprobante por mail y tus clases aparecen en Mis clases."
+        texto="Tu pago todavía no se acreditó (por ejemplo, si quedó en revisión). Cuando se acredite te llega el comprobante por mail y tus clases aparecen en Mis clases."
         accion={{ to: '/mis-clases', label: 'Ir a mis clases' }}
         accionSecundaria={{ to: '/', label: 'Volver al inicio' }}
       />

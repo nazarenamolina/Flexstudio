@@ -176,6 +176,10 @@ export const RegistroPage = () => {
           {isSubmitting ? <><Loader2 className="animate-spin h-5 w-5" /> Creando cuenta…</> : 'Crear cuenta'}
         </button>
 
+        <p className="text-center text-neutral-600 text-xs leading-relaxed">
+          Al crear tu cuenta aceptás los <Link to="/terminos-condiciones" target="_blank" rel="noopener noreferrer" className={claseEnlace}>Términos y Condiciones</Link> y la <Link to="/politica-de-privacidad" target="_blank" rel="noopener noreferrer" className={claseEnlace}>Política de Privacidad</Link>.
+        </p>
+
         <p className="text-center text-neutral-600 text-sm">
           ¿Ya tenés una cuenta? <Link to="/login" className={claseEnlace}>Iniciar sesión</Link>
         </p>

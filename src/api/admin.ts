@@ -52,6 +52,10 @@ export interface ComprobanteData {
   fechaEmision: string;
   urlPdf: string;
   grupoPagoId: string;
+  /** La compra de este comprobante se devolvió. El PDF no cambia: es el documento de la venta. */
+  devuelto: boolean;
+  fechaReembolso: string | null;
+  montoReembolsado: number | null;
 }
 
 export const obtenerEstadisticasRequest = async (): Promise<EstadisticasDashboard> => {

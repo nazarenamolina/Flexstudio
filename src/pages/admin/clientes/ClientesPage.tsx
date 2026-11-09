@@ -86,7 +86,14 @@ export const ClientesPage = () => {
               comprobantes[cliente.id].map(comp => (
                 <div key={comp.id} className="flex items-center justify-between bg-[#1a1a1a] p-2.5 rounded border border-white/5 hover:border-[#d7f250]/30 transition-colors">
                   <div>
-                    <p className="text-sm text-white font-medium">{comp.numeroRecibo}</p>
+                    <p className="flex flex-wrap items-center gap-2 text-sm text-white font-medium">
+                      {comp.numeroRecibo}
+                      {comp.devuelto && (
+                        <span className="rounded bg-sky-400/15 px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wider text-sky-300">
+                          Devuelto{comp.fechaReembolso ? ` el ${formatearFecha(comp.fechaReembolso)}` : ''}
+                        </span>
+                      )}
+                    </p>
                     <p className="text-xs text-gray-500">{formatearFecha(comp.fechaEmision)}</p>
                   </div>
                   <button

@@ -1,4 +1,5 @@
 import { api } from './axios';
+import { type ModuloPublico } from '../modulos';
 
 export interface Categoria {
   id: string;
@@ -6,8 +7,8 @@ export interface Categoria {
   descripcionCard?: string;
   descripcionBreve?: string;
   descripcionDetallada?: string;
-  precioArs:number;
-  precioUsd: number;
+  // El precio está en cada mes. Las categorías dadas de baja llegan sin esta lista.
+  modulos?: ModuloPublico[];
   playbackIdMuestra?: string;
   imagenHero?: string;
   imagenTarjeta?: string;

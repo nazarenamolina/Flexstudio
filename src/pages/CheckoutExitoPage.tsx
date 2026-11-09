@@ -13,7 +13,7 @@ import { registrarCompra } from '../analytics';
 const INTERVALO_MS = 3000;
 const ESPERA_MAXIMA_MS = 60_000;
 
-type Estado = 'confirmando' | 'exito' | 'acreditando' | 'rechazado' | 'sin-pagar' | 'sin-datos' | 'error';
+type Estado = 'confirmando' | 'exito' | 'acreditando' | 'rechazado' | 'sin-pagar' | 'vencido' | 'ya-tenia-acceso' | 'sin-datos' | 'error';
 
 const ERROR_CONFIRMACION = 'No pudimos confirmar el pago. Si se te cobró, te llegará el comprobante por mail.';
 
@@ -57,13 +57,15 @@ export const CheckoutExitoPage = () => {
     else if (captura.isError) estado = 'error';
     else if (captura.data.estado === 'APROBADO') estado = 'exito';
     else if (captura.data.estado === 'PENDIENTE') estado = 'acreditando';
+    else if (captura.data.estado === 'VENCIDO') estado = 'vencido';
+    else if (captura.data.estado === 'YA_TIENE_ACCESO') estado = 'ya-tenia-acceso';
     else estado = 'sin-pagar';
   } else if (grupoPagoId) {
     const estadoCompra = consulta.data?.estado;
     if (consulta.isError) estado = 'error';
     else if (!estadoCompra) estado = 'confirmando';
     else if (estadoCompra === 'APROBADO') estado = 'exito';
-    else if (estadoCompra === 'RECHAZADO' || estadoCompra === 'EXPIRADO') estado = 'rechazado';
+    else if (estadoCompra === 'RECHAZADO' || estadoCompra === 'EXPIRADO' || estadoCompra === 'REEMBOLSADO') estado = 'rechazado';
     else estado = esperaAgotada ? 'acreditando' : 'confirmando';
   } else {
     estado = 'sin-datos';
@@ -74,7 +76,7 @@ export const CheckoutExitoPage = () => {
     // Google Analytics: la compra se registra con lo que había en el carrito (antes de vaciarlo).
     // Al recargar esta página el carrito ya está vacío, así que no se cuenta dos veces.
     if (estado === 'exito') {
-      const items = useCartStore.getState().cartItems;
+      const { cartItems: items, cupon } = useCartStore.getState();
       const moneda = idOrdenPaypal ? 'USD' : 'ARS';
       if (items.length) {
         registrarCompra({
@@ -82,15 +84,20 @@ export const CheckoutExitoPage = () => {
           moneda,
           items: items.map((item) => ({
             id: item.id,
-            nombre: item.titulo,
-            precio: Number(moneda === 'USD' ? item.precioUsd : item.precioArs) || 0,
+            nombre: `${item.titulo}, ${item.nombreModulo}`,
+            // Lo que se pagó de verdad: con cupón es menos que el precio de lista.
+            precio: (cupon?.moneda === moneda ? cupon.montoFinal : Number(moneda === 'USD' ? item.precioUsd : item.precioArs)) || 0,
           })),
         });
       }
     }
-    if (estado === 'exito' || estado === 'acreditando') clearCart();
+    if (estado === 'exito' || estado === 'acreditando' || estado === 'ya-tenia-acceso') clearCart();
     // Las clases nuevas tienen que aparecer en "Mis clases" sin esperar a que venza la caché.
-    if (estado === 'exito') queryClient.invalidateQueries({ queryKey: ['mis-clases'] });
+    if (estado === 'exito') {
+      queryClient.invalidateQueries({ queryKey: ['mis-clases'] });
+      queryClient.invalidateQueries({ queryKey: ['estados-modulos'] });
+      queryClient.invalidateQueries({ queryKey: ['clase'] });
+    }
   }, [estado, clearCart, queryClient, grupoPagoId, idOrdenPaypal]);
 
   useEffect(() => {
@@ -151,6 +158,24 @@ export const CheckoutExitoPage = () => {
           titulo={<>Pago no <Resaltado tono="error">completado</Resaltado></>}
           texto="PayPal no completó el cobro. Tus clases siguen en el carrito para que lo intentes de nuevo."
           accion={alCarrito}
+        />
+      );
+    case 'vencido':
+      return (
+        <ResultadoPago
+          tono="error"
+          titulo={<>Este link <Resaltado tono="error">venció</Resaltado></>}
+          texto="No se te cobró nada. Tus clases siguen en el carrito: iniciá el pago de nuevo para generar un link nuevo."
+          accion={alCarrito}
+        />
+      );
+    case 'ya-tenia-acceso':
+      return (
+        <ResultadoPago
+          tono="exito"
+          titulo={<>Ya tenés <Resaltado>acceso</Resaltado></>}
+          texto="Ya tenías este mes activo, así que no se te cobró de nuevo."
+          accion={{ to: '/mis-clases', label: 'Ir a mis clases' }}
         />
       );
     case 'sin-datos':

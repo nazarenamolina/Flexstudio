@@ -23,9 +23,11 @@ interface Props {
  * (#organizacion) está definida en index.html.
  */
 export const DatosCurso = ({ clase, titulo, descripcion }: Props) => {
+  // Se empieza por el primer mes: ese es el precio que paga quien entra hoy.
+  const primerMes = clase.modulos?.find((m) => m.cantidadVideos > 0);
   const ofertas = [
-    { precio: Number(clase.precioArs), moneda: 'ARS' },
-    { precio: Number(clase.precioUsd), moneda: 'USD' },
+    { precio: Number(primerMes?.precioArs), moneda: 'ARS' },
+    { precio: Number(primerMes?.precioUsd), moneda: 'USD' },
   ]
     .filter((o) => Number.isFinite(o.precio) && o.precio > 0)
     .map((o) => ({

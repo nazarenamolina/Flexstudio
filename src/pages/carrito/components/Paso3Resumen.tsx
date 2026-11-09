@@ -1,14 +1,22 @@
-import { Loader2 } from 'lucide-react';
+import { Link } from 'react-router-dom';
+import { Loader2, Tag } from 'lucide-react';
+import { validarCuponRequest } from '../../../api/cupones';
+import { mensajeDeError } from '../../../api/errores';
+import { RUTA_ARREPENTIMIENTO } from '../../../legal';
+import { MESES_ACCESO } from '../../../modulos';
 import { useCartStore } from '../../../store/cartStore';
 import { useCheckout } from '../../../hooks/useCheckout';
 import { type CheckoutPerfilData } from '../../../api/usuario';
 import { type Usuario } from '../../../api/auth';
 import { useGoogleReCaptcha } from 'react-google-recaptcha-v3';
 import toast from 'react-hot-toast';
-import { useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
+import { isAxiosError } from 'axios';
 import { useMoneda } from '../../../hooks/useMoneda';
 import { useSincronizarCarrito } from '../../../hooks/useSincronizarCarrito';
 import { tituloVisible } from '../../../titulos';
+import { PagoEnProceso } from '../../../components/PagoEnProceso';
+import { useAlAcreditarPago } from '../../../hooks/useAlAcreditarPago';
 
 interface Props {
   formData: CheckoutPerfilData;
@@ -22,7 +30,17 @@ const Paso3Resumen = ({ formData, usuario, onPrev }: Props) => {
   const { executeRecaptcha } = useGoogleReCaptcha();
   const { esArgentina, pasarela, cargandoMoneda } = useMoneda();
   const [redirigiendo, setRedirigiendo] = useState(false);
-  const { sincronizando } = useSincronizarCarrito();
+  const [aceptaTerminos, setAceptaTerminos] = useState(false);
+  const cupon = useCartStore((state) => state.cupon);
+  const setCupon = useCartStore((state) => state.setCupon);
+  const [codigoCupon, setCodigoCupon] = useState('');
+  const [errorCupon, setErrorCupon] = useState<string | null>(null);
+  const [validandoCupon, setValidandoCupon] = useState(false);
+  const { sincronizando, pagoEnProceso } = useSincronizarCarrito();
+  const alAcreditar = useAlAcreditarPago();
+  // "Empezar un pago nuevo": se deja el link pendiente (el back lo anula) y se paga con otro.
+  const [linkNuevo, setLinkNuevo] = useState(false);
+  const mostrarPagoEnProceso = !!pagoEnProceso && !linkNuevo;
   const ocupado = cargando || redirigiendo || cargandoMoneda || sincronizando;
 
   const total = cartItems.reduce((acc, item) => {
@@ -30,8 +48,53 @@ const Paso3Resumen = ({ formData, usuario, onPrev }: Props) => {
     return acc + Number(precio || 0);
   }, 0);
 
+  // El cupón se calculó para una moneda: si cambiara, no se aplica.
+  const cuponVigente = cupon && cupon.moneda === (esArgentina ? 'ARS' : 'USD') ? cupon : null;
+  const totalAPagar = cuponVigente?.montoFinal ?? total;
   const moneda = esArgentina ? '$' : 'U$D';
-  const totalFormateado = esArgentina ? total.toLocaleString('es-AR') : total.toFixed(2);
+  const formatear = (valor: number) => (esArgentina ? valor.toLocaleString('es-AR') : valor.toFixed(2));
+  const totalFormateado = formatear(totalAPagar);
+
+  // El cupón aplicado queda guardado en el navegador junto con el carrito: puede haber vencido, haberse
+  // agotado o cambiado desde que se aplicó. Se revisa al llegar a este paso y si el pago falla; si ya
+  // no vale, se quita y se dice por qué. Un error de conexión no lo quita.
+  const idModulo = cartItems[0]?.id;
+  const revalidarCupon = useCallback(async (codigo: string) => {
+    if (!idModulo) return;
+    try {
+      setCupon(await validarCuponRequest({ codigo, idModulo, plataforma: pasarela }));
+    } catch (e) {
+      if (isAxiosError(e) && e.response?.status === 400) {
+        setCupon(null);
+        setErrorCupon(`Quitamos el cupón ${codigo}: ${mensajeDeError(e, 'ya no se puede usar.')}`);
+      }
+    }
+  }, [idModulo, pasarela, setCupon]);
+
+  const codigoGuardado = cuponVigente?.codigo;
+  const revisado = useRef<string | null>(null);
+  useEffect(() => {
+    if (!codigoGuardado || !idModulo || cargandoMoneda) return;
+    const clave = `${codigoGuardado}-${idModulo}-${pasarela}`;
+    if (revisado.current === clave) return;
+    revisado.current = clave;
+    revalidarCupon(codigoGuardado);
+  }, [codigoGuardado, idModulo, pasarela, cargandoMoneda, revalidarCupon]);
+
+  const aplicarCupon = async () => {
+    const codigo = codigoCupon.trim();
+    if (!codigo || validandoCupon || cartItems.length === 0) return;
+    setErrorCupon(null);
+    setValidandoCupon(true);
+    try {
+      setCupon(await validarCuponRequest({ codigo, idModulo: cartItems[0].id, plataforma: pasarela }));
+      setCodigoCupon('');
+    } catch (e) {
+      setErrorCupon(mensajeDeError(e, 'No pudimos revisar el cupón. Intentá de nuevo.'));
+    } finally {
+      setValidandoCupon(false);
+    }
+  };
 
   const handleConfirmar = async () => {
     if (!executeRecaptcha) {
@@ -39,12 +102,20 @@ const Paso3Resumen = ({ formData, usuario, onPrev }: Props) => {
       return;
     }
     
-    if (ocupado) return;
+    if (ocupado || !aceptaTerminos || cartItems.length === 0) return;
 
     try {
       const captchaToken = await executeRecaptcha('compra');
-      const idsCategorias = cartItems.map((item) => item.id);
-      const urlDePago = await procesarCheckout({ idsCategorias, plataforma: pasarela, captchaToken }, formData);
+      const idModulo = cartItems[0].id;
+      const respuesta = await procesarCheckout({ idModulo, cupon: cuponVigente?.codigo, plataforma: pasarela, aceptaTerminos: true, captchaToken, ...(linkNuevo ? { linkNuevo: true } : {}) }, formData);
+      // Si el pago no arrancó y había un cupón, puede ser que el cupón ya no valga: se revisa.
+      if (!respuesta && cuponVigente) await revalidarCupon(cuponVigente.codigo);
+      // Al revisar, apareció acreditado un pago anterior de este mes: no se paga otra vez.
+      if (respuesta && 'yaPagado' in respuesta) {
+        alAcreditar(idModulo, respuesta.idCategoria);
+        return;
+      }
+      const urlDePago = respuesta?.url;
       // Se paga en la misma pestaña (flujo estándar de MercadoPago y PayPal): al volver, las
       // páginas de resultado vacían o conservan el carrito según cómo terminó el pago. Abrir otra
       // pestaña dejaba esta con el carrito lleno (se podía pagar dos veces) y Safari en iOS la
@@ -76,14 +147,60 @@ const Paso3Resumen = ({ formData, usuario, onPrev }: Props) => {
 
       {/* Resumen de la Orden */}
       <div className="w-full border-t border-neutral-400 p-3 text-center space-y-2">
-        <p className="font-principal font-bold text-[#131313] mb-2">Tus clases seleccionadas:</p>
+        <p className="font-principal font-bold text-[#131313] mb-2">Estás comprando:</p>
         {cartItems.map(item => (
-          <p key={item.id} className="text-sm text-neutral-800">{tituloVisible(item.titulo)}</p>
+          <p key={item.id} className="text-sm text-neutral-800">{tituloVisible(item.titulo)}, {item.nombreModulo}</p>
         ))}
+        <p className="text-sm font-semibold text-neutral-800">Acceso por {MESES_ACCESO} meses desde que se acredita el pago.</p>
+      </div>
+
+      {/* Cupón */}
+      <div className="w-full mb-4">
+        {cuponVigente ? (
+          <div className="flex flex-wrap items-center justify-between gap-2 rounded-xl border border-neutral-400 bg-[#d7f250]/40 p-3 text-sm text-[#131313]">
+            <span className="inline-flex items-center gap-2 font-semibold">
+              <Tag size={16} aria-hidden="true" /> Cupón {cuponVigente.codigo}: {moneda} {formatear(cuponVigente.descuento)} de descuento
+            </span>
+            <button type="button" onClick={() => setCupon(null)} disabled={ocupado} className="font-bold underline underline-offset-2 cursor-pointer disabled:opacity-60">
+              Quitar
+            </button>
+          </div>
+        ) : (
+          <>
+            <label htmlFor="checkout-cupon" className="mb-1 block text-sm font-semibold text-[#131313]">¿Tenés un cupón?</label>
+            <div className="flex gap-2">
+              <input
+                id="checkout-cupon"
+                type="text"
+                maxLength={30}
+                autoComplete="off"
+                value={codigoCupon}
+                onChange={(e) => { setCodigoCupon(e.target.value); setErrorCupon(null); }}
+                onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); aplicarCupon(); } }}
+                aria-invalid={!!errorCupon}
+                aria-describedby={errorCupon ? 'checkout-cupon-error' : undefined}
+                placeholder="Código"
+                className="min-w-0 flex-1 rounded-xl border border-neutral-400 bg-white px-4 py-2.5 uppercase text-[#131313] placeholder:normal-case placeholder-neutral-400 focus:border-[#131313] focus:outline-none focus:ring-4 focus:ring-[#d7f250]/50"
+              />
+              <button
+                type="button"
+                onClick={aplicarCupon}
+                disabled={!codigoCupon.trim() || validandoCupon || ocupado}
+                className="inline-flex shrink-0 items-center gap-2 rounded-xl bg-[#131313] px-4 py-2.5 font-bold text-white transition-colors hover:bg-[#d7f250] hover:text-[#131313] disabled:pointer-events-none disabled:opacity-50 cursor-pointer"
+              >
+                {validandoCupon && <Loader2 className="h-4 w-4 animate-spin" />} Aplicar
+              </button>
+            </div>
+            {errorCupon && <p id="checkout-cupon-error" role="alert" className="mt-1.5 ml-1 text-xs font-semibold text-red-600">{errorCupon}</p>}
+          </>
+        )}
       </div>
 
       {/* Total Gigante Dinámico */}
       <div className="w-full rounded-xl border-[1px] border-neutral-400 p-3 text-center mb-6 bg-[#131313]/90">
+        {cuponVigente && (
+          <p className="text-sm text-white/70 line-through">{moneda} {formatear(cuponVigente.montoOriginal)}</p>
+        )}
         <p className="text-2xl font-principal font-bold text-[#d7f250]">
           Total a pagar: {moneda} {totalFormateado}
         </p>
@@ -143,6 +260,38 @@ const Paso3Resumen = ({ formData, usuario, onPrev }: Props) => {
         </div>
       )}
 
+      {/* Información y aceptación inmediatamente antes de confirmar (art. 1111 del Código Civil y Comercial). */}
+      <div className="w-full mb-6 space-y-4">
+        {/* Mismo contenido que el punto 2 bis de los Términos (plazo de acceso y volver a comprar). */}
+        <p className="rounded-xl border border-neutral-400 bg-neutral-50 p-4 text-sm font-medium leading-relaxed text-neutral-800">
+          <strong className="font-bold text-[#131313]">Duración del acceso:</strong> podés ver los videos de este mes durante {MESES_ACCESO} meses desde que se acredita el pago. Al terminar ese plazo dejan de estar disponibles en tu cuenta, sin reembolso por el vencimiento. Si querés volver a verlos, podés comprar el mes otra vez al precio vigente, y tu avance se conserva.
+        </p>
+        <p className="rounded-xl border border-neutral-400 bg-neutral-50 p-4 text-sm font-medium leading-relaxed text-neutral-800">
+          <strong className="font-bold text-[#131313]">Derecho de arrepentimiento:</strong> tenés 10 días corridos para revocar esta compra, sin costo y sin dar motivos, siempre que no hayas empezado más de un video de este mes. Podés hacerlo desde el{' '}
+          <Link to={RUTA_ARREPENTIMIENTO} target="_blank" rel="noopener noreferrer" className="font-bold underline underline-offset-2">Botón de arrepentimiento</Link>.
+        </p>
+        <label htmlFor="checkout-terminos" className="flex items-start gap-3 text-sm leading-relaxed text-neutral-800 cursor-pointer">
+          <input
+            id="checkout-terminos"
+            type="checkbox"
+            checked={aceptaTerminos}
+            onChange={(e) => setAceptaTerminos(e.target.checked)}
+            className="mt-0.5 h-5 w-5 shrink-0 cursor-pointer accent-[#131313]"
+          />
+          <span>
+            Leí y acepto los{' '}
+            <Link to="/terminos-condiciones" target="_blank" rel="noopener noreferrer" className="font-bold underline underline-offset-2">Términos y Condiciones</Link> y la{' '}
+            <Link to="/politica-de-privacidad" target="_blank" rel="noopener noreferrer" className="font-bold underline underline-offset-2">Política de Privacidad</Link>.
+          </span>
+        </label>
+      </div>
+
+      {mostrarPagoEnProceso && cartItems[0] && (
+        <div className="w-full mb-6">
+          <PagoEnProceso idModulo={cartItems[0].id} idCategoria={cartItems[0].idCategoria} pago={pagoEnProceso} variante="completo" onEmpezarDeNuevo={() => setLinkNuevo(true)} />
+        </div>
+      )}
+
       {/* Botones Finales */}
       <div className="flex justify-center items-center gap-4 w-full">
         <button
@@ -152,13 +301,13 @@ const Paso3Resumen = ({ formData, usuario, onPrev }: Props) => {
         >
           Anterior
         </button>
-        <button
+        {!mostrarPagoEnProceso && <button
           onClick={handleConfirmar}
-          disabled={ocupado}
+          disabled={ocupado || !aceptaTerminos}
           className="flex items-center justify-center gap-3 rounded-full bg-neon-pink px-3 sm:px-8 py-3 sm:py-4 font-principal text-lg sm:text-xl font-bold text-[#131313]/90 shadow-sm transition-all duration-400 hover:-translate-y-1 hover:bg-[#131313] hover:text-white hover:shadow-md cursor-pointer disabled:pointer-events-none disabled:opacity-60"
         >
           {cargando || redirigiendo ? <><Loader2 className="animate-spin w-4 h-4" /> {redirigiendo ? 'Abriendo el pago' : 'Procesando'}</> : 'Confirmar y Pagar'}
-        </button>
+        </button>}
       </div>
       <p className="text-[10px] text-gray-500 text-center leading-tight mt-6 max-w-sm">
         Este sitio está protegido por reCAPTCHA y se aplican la{' '}

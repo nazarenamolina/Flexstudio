@@ -7,7 +7,7 @@ import {
 import type { ReactNode } from 'react';
 import { useTituloPagina } from '../hooks/useTituloPagina';
 
-const ULTIMA_ACTUALIZACION = '11 de octubre de 2026';
+const ULTIMA_ACTUALIZACION = '6 de noviembre de 2026';
 const CORREO = 'flexstudio89@gmail.com';
 
 // Proveedores que reciben datos (ley 25.326: informar a quién se ceden).
@@ -97,7 +97,10 @@ export const PoliticaPrivacidad = () => {
                   <strong>Al comprar:</strong> documento de identidad, dirección y código postal, que se usan para el comprobante de compra y los exige la pasarela de pago.
                 </li>
                 <li>
-                  <strong>Al usar la plataforma:</strong> las clases que compraste, el historial de pagos (estado y monto, nunca los datos de la tarjeta) y tu avance en cada video, para que puedas retomarlo donde lo dejaste.
+                  <strong>Al usar la plataforma:</strong> las clases que compraste, el historial de pagos (estado y monto, nunca los datos de la tarjeta), la fecha y la versión de los términos que aceptaste, tu avance en cada video, para que puedas retomarlo donde lo dejaste, y la fecha en que reprodujiste cada video por primera vez, para resolver pedidos de arrepentimiento.
+                </li>
+                <li>
+                  <strong>Al usar los botones de arrepentimiento o de baja:</strong> nombre, correo, número de comprobante y lo que nos escribas. Los guardamos para tramitar tu pedido y conservar el registro.
                 </li>
                 <li>
                   <strong>Al escribirnos por el formulario de contacto:</strong> nombre, correo y el mensaje. Se nos envían por correo electrónico y no se guardan en la plataforma.
@@ -115,7 +118,7 @@ export const PoliticaPrivacidad = () => {
                 <li>Crear y gestionar tu cuenta de alumna en la plataforma.</li>
                 <li>Procesar tus compras, emitir el comprobante y habilitar el acceso a las clases que adquieras.</li>
                 <li>Enviarte correos transaccionales: códigos de verificación, restablecimiento de contraseña y confirmaciones de compra.</li>
-                <li>Responder tus consultas.</li>
+                <li>Responder tus consultas y tramitar tus pedidos de arrepentimiento o de baja.</li>
                 <li>Proteger la plataforma contra fraudes, spam y abusos.</li>
               </ul>
               <p>No vendemos ni alquilamos tus datos, y no los usamos para publicidad.</p>

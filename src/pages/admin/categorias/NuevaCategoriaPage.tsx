@@ -69,6 +69,11 @@ export const NuevaCategoriaPage = () => {
                 {errors.titulo && <p className="text-red-500 text-xs mt-1">{errors.titulo.message}</p>}
                 <AyudaTitulo />
               </div>
+              <div>
+                <label htmlFor="primer-mes-titulo" className={labelClass}>Título del Mes 1 (opcional)</label>
+                <input id="primer-mes-titulo" type="text" maxLength={150} {...register('tituloPrimerModulo')} placeholder="Ej: Fundamentos" className={inputClass} />
+                <p className="text-gray-500 text-xs mt-1.5">La categoría se crea con su Mes 1. Los precios de abajo son los de ese mes; los demás meses se agregan después, al editarla.</p>
+              </div>
               <CamposPrecio register={register} control={control} errors={errors} labelClass={labelClass} inputClass={inputClass} />
             </div>
 

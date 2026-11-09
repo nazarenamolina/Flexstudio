@@ -7,6 +7,7 @@ import { useMoneda } from '../hooks/useMoneda';
 import { useSincronizarCarrito } from '../hooks/useSincronizarCarrito';
 import { BagHeart } from 'react-bootstrap-icons';
 import { IMAGEN_RESPALDO_CLASE, optimizarCloudinary } from '../imagenes';
+import { MESES_ACCESO } from '../modulos';
 import { tituloVisible } from '../titulos';
 
 export const FloatingCart = () => {
@@ -73,13 +74,13 @@ export const FloatingCart = () => {
                       Tu Carrito
                     </h2>
                     <p className="text-xs text-gray-500 font-medium">
-                      {cartItems.length} {cartItems.length === 1 ? 'clase seleccionada' : 'clases seleccionadas'}
+                      Se compra de a un mes
                     </p>
                   </div>
                 </div>
               </div>
 
-              <div className="flex-1 overflow-y-auto p-4 space-y-3 bg-[url('https://res.cloudinary.com/dmp7mcwie/image/upload/f_auto,q_auto/v1776544346/bg-card_dfxwsn.png')]">
+              <div className="flex-1 overflow-y-auto p-4 space-y-3 bg-[url('https://res.cloudinary.com/dmp7mcwie/image/upload/f_auto,q_auto/v1774312699/fondo_hwrosv.png')]">
                 {cartItems.map((item) => {
                   const precioItem = moneda === 'ARS' ? item.precioArs : item.precioUsd;
                   const precioItemFormateado = moneda === 'ARS'
@@ -104,8 +105,8 @@ export const FloatingCart = () => {
                           <h3 className="text-sm font-bold text-[#131313] uppercase leading-tight line-clamp-2">
                             {tituloVisible(item.titulo)}
                           </h3>
-                          <p className="text-[10px] text-[#131313]/60 font-medium uppercase tracking-wider mt-1">
-                            Clase online
+                          <p className="text-[10px] text-[#131313]/70 font-bold uppercase tracking-wider mt-1">
+                            {item.nombreModulo} · {MESES_ACCESO} meses de acceso
                           </p>
                         </div>
 

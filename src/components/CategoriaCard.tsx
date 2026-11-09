@@ -1,5 +1,6 @@
 import { useState } from 'react';
-import { Edit2, Trash2, ChevronDown, ChevronUp } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { Edit2, Trash2, ChevronDown, ChevronUp, Eye } from 'lucide-react';
 import { type Categoria } from '../api/categoria';
 import { optimizarCloudinary } from '../imagenes';
 import { tituloVisible } from '../titulos';
@@ -13,6 +14,7 @@ interface Props {
 
 export const CategoriaCard = ({ categoria, viewMode, onEdit, onDelete }: Props) => {
     const [expanded, setExpanded] = useState(false);
+    const navigate = useNavigate();
     const isGrid = viewMode === 'grid';
     const tituloMostrar = tituloVisible(categoria.titulo);
     const cantidadVideos = categoria.cantidadVideos || 0;
@@ -91,6 +93,19 @@ export const CategoriaCard = ({ categoria, viewMode, onEdit, onDelete }: Props) 
 
                 {/* BOTONES ACCIÓN */}
                 <div className={`flex items-center gap-2 shrink-0 ${isGrid ? 'mt-4' : ''}`}>
+                    <button aria-label={`Ver los videos de ${tituloMostrar}`} title={`Ver los videos de ${tituloMostrar}`}
+                        onClick={(e) => { e.stopPropagation(); navigate(`/mis-clases/${categoria.id}`); }}
+                        className="
+              p-2 sm:p-2.5 rounded-xl
+              bg-white/5 border border-white/10
+              text-white/70 hover:text-black
+              hover:bg-[#d7f250] hover:border-[#d7f250]
+              hover:shadow-[0_0_12px_rgba(215,242,80,0.3)]
+              transition-all duration-200
+            "
+                    >
+                        <Eye size={13} className="sm:w-[14px] sm:h-[14px]" />
+                    </button>
                     <button aria-label={`Editar ${tituloMostrar}`} title={`Editar ${tituloMostrar}`}
                         onClick={(e) => { e.stopPropagation(); onEdit(categoria.id); }}
                         className="

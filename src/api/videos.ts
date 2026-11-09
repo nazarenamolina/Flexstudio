@@ -15,9 +15,11 @@ export interface Video {
   imagenUrl?: string;
   orden: number;
   duracion?: number;
-  duracionFormateada?: string; 
+  duracionFormateada?: string;
   idCategoria: string;
+  idModulo: string;
   categoria?: Categoria;
+  modulo?: { id: string; numero: number; titulo?: string | null };
 }
 
 export interface VideoData {
@@ -31,6 +33,7 @@ export interface VideoData {
   categoria?: {
     titulo: string;
   };
+  modulo?: { numero: number; titulo?: string | null };
 }
 
 /** Credenciales firmadas de Mux: un token por tipo (video, miniatura y storyboard). */
@@ -90,8 +93,13 @@ export const actualizarVideoRequest = async (id: string, datos: FormData) => {
   return respuesta.data;
 };
 
-export const marcarVideoCompletadoRequest = async (idVideo: string) => {
+export const marcarVideoCompletadoRequest = async (idVideo: string): Promise<{ success: boolean; moduloTerminado?: boolean }> => {
   const respuesta = await api.post(`/videos/${idVideo}/completar`);
+  return respuesta.data;
+};
+
+export const registrarReproduccionRequest = async (idVideo: string) => {
+  const respuesta = await api.post(`/videos/${idVideo}/reproduccion`);
   return respuesta.data;
 };
 

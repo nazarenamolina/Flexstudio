@@ -100,6 +100,11 @@ export const VideoCard = ({ video, viewMode, onEdit, onDelete }: Props) => {
             <span className={`px-4 py-2 rounded-full bg-[#d7f250]/25 text-[#d7f250] text-[9px] sm:text-[10px] font-bold tracking-wide shrink-0`}>
               {(video.categoria ? tituloVisible(video.categoria.titulo) : 'Sin categoría')}
             </span>
+            {video.modulo && (
+              <span className="px-3 py-2 rounded-full bg-white/10 text-white text-[9px] sm:text-[10px] font-bold tracking-wide shrink-0">
+                Mes {video.modulo.numero}
+              </span>
+            )}
             {conError && (
               <span className="px-3 py-2 rounded-full bg-red-500/15 text-red-400 text-[9px] sm:text-[10px] font-bold tracking-wide shrink-0">
                 Error en Mux

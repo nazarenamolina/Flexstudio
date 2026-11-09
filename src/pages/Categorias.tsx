@@ -7,10 +7,14 @@ import MuxPlayer from "@mux/mux-player-react/lazy";
 import { DynamicIcon } from "../components/IconPicker";
 import { useMoneda } from "../hooks/useMoneda";
 import { useCartStore } from "../store/cartStore";
-import { useMisClases } from "../hooks/useMisClases";
+import { useAuthStore } from "../store/authStore";
 import { ScrollReveal } from "../components/ScrollReveal";
 import { useTituloPagina } from "../hooks/useTituloPagina";
 import { DatosCurso } from "../components/DatosCurso";
+import { ListaMeses } from "../components/ListaMeses";
+import { claveEstadosModulos } from "../hooks/useSincronizarCarrito";
+import { obtenerEstadosModulosRequest } from "../api/modulos";
+import { estadosParaVisitante, MESES_ACCESO, nombreModulo, type ModuloConEstado } from "../modulos";
 import { precioEn, formatearPrecio } from "../precios";
 import { IMAGEN_RESPALDO_CLASE, optimizarCloudinary } from "../imagenes";
 import { claseTarjeta, claseBotonPrincipal } from "./auth/estilos";
@@ -47,7 +51,14 @@ const CategoriaDetailPage = () => {
   useTituloPagina(categoria && tituloVisible(categoria.titulo), descripcionGoogle);
   const addToCart = useCartStore((state) => state.addToCart);
   const cartItems = useCartStore((state) => state.cartItems);
-  const { clases: misClases, cargando: cargandoMisClases } = useMisClases();
+  const esAdmin = useAuthStore((state) => state.usuario?.rol === 'ADMIN');
+  const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
+  const idUsuario = useAuthStore((state) => state.usuario?.id);
+  const estados = useQuery({
+    queryKey: claveEstadosModulos(idUsuario, id),
+    queryFn: () => obtenerEstadosModulosRequest(id!),
+    enabled: !!id && isAuthenticated,
+  });
 
   if (cargando) {
     return (
@@ -71,26 +82,37 @@ const CategoriaDetailPage = () => {
     );
   }
 
-  // Sin precio en la moneda del visitante no se puede comprar (el back la rechazaría).
-  const precio = precioEn(categoria, moneda);
   const { cursiva: primeraParte, destacada: segundaParte } = partesDelTitulo(categoria.titulo);
   const titulo = tituloVisible(categoria.titulo);
-  const estaEnCarrito = cartItems.some(item => item.id === categoria.id);
-  const yaComprado = misClases.some((c) => c.id === categoria.id);
+  // Con sesión manda lo que dice el back. Si todavía no respondió, se muestra lo mismo que a un
+  // visitante; la compra la vuelve a validar el back.
+  const modulos: ModuloConEstado[] = isAuthenticated && estados.data
+    ? estados.data
+    : estadosParaVisitante(categoria.modulos ?? []);
+  const cargandoEstados = isAuthenticated && estados.isPending;
+  // El admin entra a cualquier clase sin comprarla.
+  const tieneAcceso = esAdmin || modulos.some((m) => m.estado === 'VIGENTE');
+  const siguienteParaComprar = modulos.find((m) => m.comprable && m.estado === 'COMPRABLE') ?? modulos.find((m) => m.comprable);
+  const idEnCarrito = cartItems[0]?.id;
+  // Sin precio en la moneda del visitante no se puede comprar (el back la rechazaría).
+  const precio = siguienteParaComprar ? precioEn(siguienteParaComprar, moneda) : null;
+  const estaEnCarrito = !!siguienteParaComprar && idEnCarrito === siguienteParaComprar.id;
 
-  const handleAgregarAlCarrito = () => {
-    if (!categoria) return;
-
+  const handleAgregarAlCarrito = (modulo: ModuloConEstado) => {
+    const nombre = nombreModulo(modulo);
+    const reemplaza = !!idEnCarrito && idEnCarrito !== modulo.id;
     addToCart({
-      id: categoria.id,
+      id: modulo.id,
+      idCategoria: categoria.id,
       titulo: categoria.titulo,
-      precioArs: categoria.precioArs,
+      nombreModulo: nombre,
+      precioArs: modulo.precioArs,
+      precioUsd: modulo.precioUsd,
       imagenTarjeta: categoria.imagenTarjeta,
-      precioUsd: categoria.precioUsd,
     });
     toast.success((t) => (
       <span className="flex items-center gap-3">
-        Agregaste "{titulo}" al carrito.
+        {reemplaza ? `Se compra de a un mes: ahora tu carrito tiene "${nombre}".` : `Agregaste "${nombre}" al carrito.`}
         <button
           type="button"
           onClick={() => { toast.dismiss(t.id); navigate('/carrito'); }}
@@ -136,17 +158,24 @@ const CategoriaDetailPage = () => {
           </p>
         
           <div className="mt-8 flex flex-col sm:flex-row gap-4 w-full">
-            {yaComprado ? (
+            {tieneAcceso ? (
               <button
                 onClick={() => navigate(`/mis-clases/${categoria.id}`)}
                 className="w-full sm:w-auto flex items-center justify-center gap-2 rounded-full bg-[#ffffff] px-8 py-4 font-principal text-xl font-bold text-[#131313] shadow-[0_0_20px_rgba(255,255,255,0.3)] transition duration-700 hover:-translate-y-1 hover:bg-[#d7f250] cursor-pointer"
               >
                 <PlayCircle size={22} /> VER MASTERCLASS
               </button>
-            ) : (
+            ) : siguienteParaComprar?.pagoEnProceso ? (
+              <a
+                href="#meses"
+                className="w-full sm:w-auto flex items-center justify-center gap-2 rounded-full bg-amber-100 px-8 py-4 font-principal text-xl font-bold text-[#131313] transition duration-700 hover:-translate-y-1 hover:bg-[#ffffff]"
+              >
+                PAGO DEL MES {siguienteParaComprar.numero} EN PROCESO
+              </a>
+            ) : siguienteParaComprar ? (
               <button
-                onClick={handleAgregarAlCarrito}
-                disabled={estaEnCarrito || cargandoMoneda || cargandoMisClases || precio === null}
+                onClick={() => handleAgregarAlCarrito(siguienteParaComprar)}
+                disabled={estaEnCarrito || cargandoMoneda || cargandoEstados || precio === null}
                 className={`w-full sm:w-auto flex items-center justify-center gap-2 rounded-full px-8 py-4 font-principal text-xl font-bold cursor-pointer transition duration-700 hover:-translate-y-1 disabled:hover:translate-y-0 ${estaEnCarrito || precio === null
                   ? 'bg-[#ffffff] text-[#131313] cursor-not-allowed opacity-80'
                   : 'bg-neon-pink text-[#131313] hover:bg-[#ffffff] hover:text-[#131313]'
@@ -155,8 +184,21 @@ const CategoriaDetailPage = () => {
                 {cargandoMoneda ? 'CALCULANDO PRECIO…'
                   : precio === null ? 'NO DISPONIBLE EN TU MONEDA'
                   : estaEnCarrito ? <><Check size={20} /> YA ESTÁ EN TU CARRITO</>
-                  : <><ShoppingCart size={20} /> AGREGAR AL CARRITO · {formatearPrecio(precio, moneda)}</>}
+                  : <><ShoppingCart size={20} /> AGREGAR MES {siguienteParaComprar.numero} · {formatearPrecio(precio, moneda)}</>}
               </button>
+            ) : (
+              <span className="w-full sm:w-auto flex items-center justify-center rounded-full bg-[#ffffff] px-8 py-4 font-principal text-xl font-bold text-[#131313] opacity-80">
+                PRÓXIMAMENTE
+              </span>
+            )}
+
+            {modulos.length > 0 && (
+              <a
+                href="#meses"
+                className="w-full sm:w-auto flex items-center justify-center gap-2 rounded-full border-2 border-white px-8 py-4 font-principal text-xl font-bold text-white transition duration-700 hover:-translate-y-1 hover:bg-white hover:text-[#131313] text-center"
+              >
+                VER MESES
+              </a>
             )}
 
             {categoria.playbackIdMuestra && (
@@ -170,6 +212,17 @@ const CategoriaDetailPage = () => {
           </div>
         </ScrollReveal>
       </section>
+
+      {/* SECCIÓN MESES */}
+      {modulos.length > 0 && (
+        <section id="meses" className="mx-auto mt-16 max-w-5xl scroll-mt-32 px-6 lg:px-8">
+          <h2 className="mb-3 font-principal text-4xl uppercase leading-tight md:text-5xl text-[#131313]">Meses de la clase</h2>
+          <p className="mb-8 max-w-3xl leading-relaxed text-neutral-600">
+            Cada mes se compra por separado y el acceso dura {MESES_ACCESO} meses desde el pago. El mes siguiente se habilita cuando terminás todos los videos del anterior.
+          </p>
+          <ListaMeses idCategoria={categoria.id} modulos={modulos} idEnCarrito={idEnCarrito} onAgregar={handleAgregarAlCarrito} />
+        </section>
+      )}
 
       {/* SECCIÓN BENEFICIOS */}
       <section className="mx-auto mt-20 mb-10 flex max-w-7xl flex-col gap-12 px-6 lg:flex-row lg:px-8 overflow-hidden">

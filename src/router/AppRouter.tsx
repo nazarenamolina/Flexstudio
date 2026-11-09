@@ -11,6 +11,7 @@ import { FloatingCart } from '../components/FloatingCart';
 import { ContenidoSeguro } from '../components/ContenidoSeguro';
 import { Avisos } from '../components/Avisos';
 import { AvisoCookies } from '../components/AvisoCookies';
+import { RUTA_ARREPENTIMIENTO, RUTA_ATENCION, RUTA_BAJA } from '../legal';
 
 // Cada pantalla se descarga recién cuando se abre. Antes el sitio era un solo archivo de 3,3 MB:
 // la home bajaba también el panel admin, el reproductor de Mux, los gráficos y el registro.
@@ -42,12 +43,17 @@ const AdminVideosPage = cargar(() => import('../pages/admin/videos/AdminVideosPa
 const NuevoVideoPage = cargar(() => import('../pages/admin/videos/NuevoVideoPage'), 'NuevoVideoPage');
 const EditarVideoPage = cargar(() => import('../pages/admin/videos/EditarVideoPage'), 'EditarVideoPage');
 const HeroAdminPage = cargar(() => import('../pages/admin/hero/HeroAdminPage'), 'HeroAdminPage');
+const CuponesPage = cargar(() => import('../pages/admin/cupones/CuponesPage'), 'CuponesPage');
+const SolicitudesPage = cargar(() => import('../pages/admin/solicitudes/SolicitudesPage'), 'SolicitudesPage');
+const SolicitudConsumidorPage = cargar(() => import('../pages/SolicitudConsumidorPage'), 'SolicitudConsumidorPage') as ComponentType<{ tipo: 'ARREPENTIMIENTO' | 'BAJA' }>;
+const AtencionConsumidorPage = cargar(() => import('../pages/AtencionConsumidorPage'), 'AtencionConsumidorPage');
 
 const LayoutConNav = () => {
   return (
     <div className="flex flex-col min-h-screen">
       <HeaderComponent />
-      <main className="flex-grow">
+      {/* pt-7: el alto de BarraConsumidor. Las páginas ya compensan el resto del header fijo. */}
+      <main className="flex-grow pt-7">
         {/* El header y el footer siguen visibles mientras carga o si falla una pantalla. */}
         <ContenidoSeguro>
           <Outlet />
@@ -77,6 +83,10 @@ export const AppRouter = () => {
             <Route path='/categorias/:id' element={<Categorias />} />
             <Route path='/terminos-condiciones' element={<TerminosCondiciones />} />
             <Route path='/politica-de-privacidad' element={<PoliticaPrivacidad />} />
+            {/* Públicas a propósito: la Disposición 954/2025 prohíbe exigir registración. */}
+            <Route path={RUTA_ARREPENTIMIENTO} element={<SolicitudConsumidorPage tipo="ARREPENTIMIENTO" />} />
+            <Route path={RUTA_BAJA} element={<SolicitudConsumidorPage tipo="BAJA" />} />
+            <Route path={RUTA_ATENCION} element={<AtencionConsumidorPage />} />
             {/* Retornos de la pasarela sin pago aprobado: públicos por si la sesión no sobrevivió al viaje */}
             <Route path='/checkout/error' element={<CheckoutResultadoPage tipo="error" />} />
             <Route path='/checkout/pendiente' element={<CheckoutResultadoPage tipo="pendiente" />} />
@@ -118,6 +128,8 @@ export const AppRouter = () => {
               <Route path="videos/nuevo" element={<NuevoVideoPage />} />
               <Route path="videos/editar/:id" element={<EditarVideoPage />} />
               <Route path="carrusel" element={<HeroAdminPage />} />
+              <Route path="cupones" element={<CuponesPage />} />
+              <Route path="solicitudes" element={<SolicitudesPage />} />
             </Route>
           </Route>
         </Routes>

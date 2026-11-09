@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Navigate, Outlet, useLocation, Link } from 'react-router-dom';
-import { Home, Menu, X, Users, LayoutDashboard, Video, LogOut, ChartNoAxesCombined, GalleryHorizontal } from 'lucide-react';
+import { Home, Menu, X, Users, LayoutDashboard, Video, LogOut, ChartNoAxesCombined, GalleryHorizontal, Inbox, Tag } from 'lucide-react';
 import { useAuthStore } from '../../store/authStore';
 import { Sidebar } from './Sidebar';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -21,6 +21,8 @@ export const AdminLayout = () => {
     { name: 'Categorías', path: '/admin/categorias', icon: LayoutDashboard },
     { name: 'Videos', path: '/admin/videos', icon: Video },
     { name: 'Carrusel', path: '/admin/carrusel', icon: GalleryHorizontal },
+    { name: 'Cupones', path: '/admin/cupones', icon: Tag },
+    { name: 'Solicitudes', path: '/admin/solicitudes', icon: Inbox },
   ];
 
   const handleLogout = useCerrarSesionAdmin();

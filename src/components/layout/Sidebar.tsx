@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Home, Users, LayoutDashboard, Video, LogOut, ChartNoAxesCombined, GalleryHorizontal, type LucideIcon } from 'lucide-react';
+import { Home, Users, LayoutDashboard, Video, LogOut, ChartNoAxesCombined, GalleryHorizontal, Inbox, Tag, type LucideIcon } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAuthStore } from '../../store/authStore';
 import { type Usuario } from '../../api/auth';
@@ -26,6 +26,8 @@ export const Sidebar = () => {
     { name: 'Categorías', path: '/admin/categorias', icon: LayoutDashboard },
     { name: 'Videos', path: '/admin/videos', icon: Video },
     { name: 'Carrusel', path: '/admin/carrusel', icon: GalleryHorizontal },
+    { name: 'Cupones', path: '/admin/cupones', icon: Tag },
+    { name: 'Solicitudes', path: '/admin/solicitudes', icon: Inbox },
   ];
 
   return (

@@ -1,8 +1,4 @@
-/**
- * Pide a Cloudinary formato y calidad automáticos (WebP/AVIF según el navegador) y un ancho máximo:
- * las imágenes que sube el admin pesan varios MB. Las URLs de otros servicios o que ya traen una
- * transformación se devuelven tal cual.
- */
+
 export function optimizarCloudinary(url: string, ancho: number): string;
 export function optimizarCloudinary(url: string | null | undefined, ancho: number): string | undefined;
 export function optimizarCloudinary(url: string | null | undefined, ancho: number) {

@@ -1,7 +1,10 @@
 import { Link } from 'react-router-dom';
-import { Clock, ArrowRight, Star, PlaySquare, Infinity as InfinityIcon } from 'lucide-react';
+import { Clock, ArrowRight, Star, PlaySquare, CalendarDays } from 'lucide-react';
 import { type Categoria } from '../api/categoria';
+import { useMoneda } from '../hooks/useMoneda';
 import { IMAGEN_RESPALDO_CLASE, optimizarCloudinary } from '../imagenes';
+import { MESES_ACCESO } from '../modulos';
+import { formatearPrecio, precioEn } from '../precios';
 import { tituloVisible } from '../titulos';
 
 interface Props {
@@ -15,6 +18,9 @@ export const TarjetaClase = ({ servicio, flippedCard, setFlippedCard }: Props) =
   const imagenFondo = optimizarCloudinary(servicio.imagenTarjeta || servicio.imagenHero || IMAGEN_RESPALDO_CLASE, 800);
   const cantidadVideos = servicio.cantidadVideos || 0;
   const duracionTotal = servicio.duracionTotalFormateada || '0m';
+  const { moneda } = useMoneda();
+  const primerMes = servicio.modulos?.find((m) => m.cantidadVideos > 0);
+  const precioPrimerMes = primerMes ? precioEn(primerMes, moneda) : null;
 
   return (
     <div
@@ -94,9 +100,9 @@ export const TarjetaClase = ({ servicio, flippedCard, setFlippedCard }: Props) =
                 </div>
                 
                 <div className="flex flex-col items-center justify-center bg-white/5 border border-white/10 rounded-xl sm:rounded-2xl p-2 sm:p-3 backdrop-blur-sm text-center">
-                  <InfinityIcon className="text-[#d7f250] w-4 h-4 mb-1 sm:mb-1.5" />
-                  <span className="text-white font-black text-[10px] sm:text-sm leading-none mb-1">24/7</span>
-                  <span className="text-gray-400 text-[7px] sm:text-[9px] uppercase tracking-widest font-bold">Acceso</span>
+                  <CalendarDays className="text-[#d7f250] w-4 h-4 mb-1 sm:mb-1.5" />
+                  <span className="text-white font-black text-[10px] sm:text-sm leading-none mb-1">{MESES_ACCESO} meses</span>
+                  <span className="text-gray-400 text-[7px] sm:text-[9px] uppercase tracking-widest font-bold">Acceso por mes</span>
                 </div>
 
               </div>
@@ -104,6 +110,9 @@ export const TarjetaClase = ({ servicio, flippedCard, setFlippedCard }: Props) =
 
             {/* Botón Inferior Magnético */}
             <div className={`mt-auto transition-all duration-700 delay-200 ${isFlipped ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8 lg:group-hover:opacity-100 lg:group-hover:translate-y-0 group-focus-within:opacity-100 group-focus-within:translate-y-0'}`}>
+              {precioPrimerMes !== null && (
+                <p className="mb-2 text-center text-xs font-bold text-white sm:text-sm">Mes {primerMes!.numero}: {formatearPrecio(precioPrimerMes, moneda)}</p>
+              )}
               {/* Con teclado: al llegar con Tab a este enlace la tarjeta se da vuelta (focus-within). */}
               <Link
                 to={`/categorias/${servicio.id}`}
